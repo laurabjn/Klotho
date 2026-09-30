@@ -11,10 +11,24 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node ../../scripts/run-jest.cjs"
   },
   "devDependencies": {
     "@klotho/eslint-config": "*",
-    "eslint": "^9.39.5"
+    "eslint": "^9.39.5",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.14"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/src"
+    ]
   }
 }

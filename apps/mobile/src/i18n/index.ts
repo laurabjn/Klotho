@@ -20,6 +20,9 @@ void i18n.use(initReactI18next).init({
   fallbackLng: DEFAULT_LOCALE,
   defaultNS: DEFAULT_NAMESPACE,
   interpolation: { escapeValue: false },
+  // Translations are bundled: nothing to wait for, so never suspend rendering.
+  react: { useSuspense: false },
+  initAsync: false,
 });
 
 export default i18n;

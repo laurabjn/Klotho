@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 
 import { validateEnv } from './config/env';
-import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { AuthModule } from './interfaces/http/auth/auth.module';
+import { HttpExceptionFilter } from './interfaces/http/errors/http-exception.filter';
 import { HealthController } from './interfaces/http/health/health.controller';
+import { UsersModule } from './interfaces/http/users/users.module';
 
 @Module({
   imports: [
@@ -14,8 +18,11 @@ import { HealthController } from './interfaces/http/health/health.controller';
       envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}`, '.env'],
       validate: validateEnv,
     }),
-    PrismaModule,
+    InfrastructureModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [HealthController],
+  providers: [{ provide: APP_FILTER, useClass: HttpExceptionFilter }],
 })
 export class AppModule {}

@@ -4,11 +4,13 @@ NestJS API of Klotho, organised in Clean Architecture layers.
 
 ```
 src/
-  domain/          Entities, value objects, ports (interfaces). No NestJS, no Prisma.
+  domain/          Entities, ports (interfaces), business errors. No NestJS, no Prisma.
   application/     Use cases. Depend on domain ports only.
-  infrastructure/  Adapters implementing the ports: Prisma repositories, storage, providers.
-  interfaces/http/ NestJS controllers and DTOs.
+  infrastructure/  Adapters implementing the ports: Prisma repositories, bcrypt, JWT, mail…
+                   infrastructure.module.ts binds every port to its adapter.
+  interfaces/http/ NestJS controllers, guards, validation pipe, error filter.
   config/          Environment validation (zod).
+  testing/         In-memory fakes of the ports, for use case tests.
   generated/       Prisma client (generated, git-ignored).
 ```
 
@@ -17,26 +19,63 @@ Dependencies only point inwards. The rule is enforced by ESLint
 NestJS, Prisma or outer layers, and the application layer cannot import
 Prisma or outer layers.
 
+Request bodies are validated with the zod schemas of `@klotho/shared`, the same
+ones the mobile forms use. Errors always have the shape
+`{ statusCode, code, issues? }`; `code` is stable and used as an i18n key.
+
 ## Local setup
 
 ```sh
-cp .env.example .env
-npm run db:up              # from the repo root: PostgreSQL 15 via Docker
+cp .env.example .env       # then set JWT_ACCESS_SECRET (openssl rand -base64 48)
+npm run db:up              # from the repo root: PostgreSQL 15 via Docker (port 5433)
 npm run db:deploy          # apply migrations
 npm run dev                # http://localhost:3100/health
 ```
 
+## Endpoints
+
+Every route requires `Authorization: Bearer <accessToken>` unless marked public.
+
+| Method | Route                   | Public | Result                                        |
+| ------ | ----------------------- | ------ | --------------------------------------------- |
+| GET    | `/health`               | yes    | `{ status: 'ok' }`                            |
+| POST   | `/auth/register`        | yes    | 201 `AuthSession` · 409 email already used    |
+| POST   | `/auth/login`           | yes    | 200 `AuthSession` · 401 invalid credentials   |
+| POST   | `/auth/refresh`         | yes    | 200 `AuthTokens` (rotated) · 401              |
+| POST   | `/auth/logout`          | yes    | 204 (idempotent)                              |
+| POST   | `/auth/forgot-password` | yes    | 202, whether or not the email exists          |
+| POST   | `/auth/reset-password`  | yes    | 204 · 400 invalid or expired token            |
+| GET    | `/users/me`             | no     | `UserProfile`                                 |
+| PATCH  | `/users/me`             | no     | `UserProfile` (only `firstName`, `avatarUrl`) |
+
+### Security notes
+
+- Passwords: bcrypt (cost 12). Policy shared with the app: 8+ characters,
+  upper and lower case, digit, special character, 72 bytes max.
+- Access token: JWT HS256, 15 minutes, kept in memory by the app.
+- Refresh token: 256-bit random, 30 days, single-use. Only its SHA-256 is
+  stored. Replaying a used token revokes the whole session (theft detection).
+- Password reset: single-use token valid 1 hour; a reset signs out every device.
+- Login and forgot-password never reveal whether an account exists.
+
+### Password reset emails
+
+With `MAIL_DRIVER=console` (the only driver for now, refused in production),
+the reset link is written to the API logs. To open it on a phone running
+**Expo Go**, set `RESET_PASSWORD_URL=exp://<your-LAN-IP>:8081/--/reset-password`;
+in a development or store build the default `klotho://reset-password` works.
+
 ## Scripts
 
-| Script        | Purpose                                          |
-| ------------- | ------------------------------------------------ |
-| `dev`         | Start in watch mode                              |
-| `test`        | Unit tests (`*.spec.ts`)                         |
-| `test:e2e`    | HTTP tests with Supertest (`test/*.e2e-spec.ts`) |
-| `db:generate` | Generate the Prisma client                       |
-| `db:migrate`  | Create and apply a migration (development)       |
-| `db:deploy`   | Apply pending migrations (CI / production)       |
-| `db:studio`   | Browse the database                              |
+| Script        | Purpose                                                          |
+| ------------- | ---------------------------------------------------------------- |
+| `dev`         | Start in watch mode                                              |
+| `test`        | Unit tests (`*.spec.ts`)                                         |
+| `test:e2e`    | HTTP tests on a real database `klotho_test` (created if missing) |
+| `db:generate` | Generate the Prisma client                                       |
+| `db:migrate`  | Create and apply a migration (development)                       |
+| `db:deploy`   | Apply pending migrations (CI / production)                       |
+| `db:studio`   | Browse the database                                              |
 
 Environment files are loaded in this order: `.env.<NODE_ENV>`, then `.env`.
 Only `.env.example` is committed.

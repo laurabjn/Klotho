@@ -24,6 +24,14 @@ export function nodeConfig(tsconfigRootDir) {
         ],
       },
     },
+    {
+      // Jest matchers (expect.any, …) and HTTP response bodies are typed `any`.
+      files: ['**/*.spec.ts', '**/*.e2e-spec.ts', 'test/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+      },
+    },
     prettier,
   );
 }
