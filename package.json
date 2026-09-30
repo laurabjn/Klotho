@@ -11,7 +11,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=!@klotho/mobile",
+    "mobile": "turbo build --filter=@klotho/shared --filter=@klotho/i18n --output-logs=errors-only && npm run start -w @klotho/mobile",
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",

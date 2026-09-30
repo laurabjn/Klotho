@@ -19,3 +19,6 @@ apps/api/src/generated/
 .DS_Store
 Thumbs.db
 .idea/
+
+# Design sources (mockups, PDFs) - kept locally, only the logos are copied into apps/mobile
+Klotho_maquette/
