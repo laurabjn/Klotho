@@ -10,6 +10,7 @@ import { HealthController } from './interfaces/http/health/health.controller';
 import { PreferencesModule } from './interfaces/http/preferences/preferences.module';
 import { UsersModule } from './interfaces/http/users/users.module';
 import { WardrobeModule } from './interfaces/http/wardrobe/wardrobe.module';
+import { WeatherModule } from './interfaces/http/weather/weather.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { WardrobeModule } from './interfaces/http/wardrobe/wardrobe.module';
     UsersModule,
     PreferencesModule,
     WardrobeModule,
+    WeatherModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: HttpExceptionFilter }],

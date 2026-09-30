@@ -11,12 +11,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { colors, radii, spacing } from '@/theme/tokens';
+import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
 import { AppText } from './AppText';
 import { Chip } from './Chip';
 
-type Props =
+type Props = (
   | {
       multiple?: false;
       value: ColorKey | undefined;
@@ -26,19 +26,35 @@ type Props =
       multiple: true;
       value: ColorKey[];
       onChange: (value: ColorKey[]) => void;
-    };
+    }
+) & {
+  /**
+   * Shows only this many swatches (plus the selected ones) and an "Autres"
+   * button that opens the full palette, as in the "Filtres" mockup.
+   */
+  compactCount?: number;
+  /** Four big swatches per row, as in the onboarding mockup. */
+  large?: boolean;
+};
 
 /** Grid of colour swatches with their name, as in the "Palette complète" mockup. */
 export function ColorPicker(props: Props) {
   const { t } = useTranslation();
+  const cellStyle = [styles.cell, props.large && styles.cellLarge];
+  const swatchSize = props.large && styles.swatchLarge;
   const [family, setFamily] = useState<ColorFamily | 'all'>('all');
-  const keys =
-    family === 'all'
-      ? COLOR_KEYS
-      : (Object.keys(COLOR_FAMILIES[family]) as ColorKey[]);
+  const [expanded, setExpanded] = useState(props.compactCount === undefined);
 
   const isSelected = (key: ColorKey) =>
     props.multiple ? props.value.includes(key) : props.value === key;
+
+  const keys = !expanded
+    ? COLOR_KEYS.filter(
+        (key, i) => i < (props.compactCount ?? 0) || isSelected(key),
+      )
+    : family === 'all'
+      ? COLOR_KEYS
+      : (Object.keys(COLOR_FAMILIES[family]) as ColorKey[]);
 
   const toggle = (key: ColorKey) => {
     if (!props.multiple) return props.onChange(key);
@@ -51,20 +67,22 @@ export function ColorPicker(props: Props) {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.families}
-      >
-        {(['all', ...COLOR_FAMILY_KEYS] as const).map((key) => (
-          <Chip
-            key={key}
-            label={t(`wardrobe.colorFamilies.${key}`)}
-            selected={family === key}
-            onPress={() => setFamily(key)}
-          />
-        ))}
-      </ScrollView>
+      {expanded && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.families}
+        >
+          {(['all', ...COLOR_FAMILY_KEYS] as const).map((key) => (
+            <Chip
+              key={key}
+              label={t(`wardrobe.colorFamilies.${key}`)}
+              selected={family === key}
+              onPress={() => setFamily(key)}
+            />
+          ))}
+        </ScrollView>
+      )}
       <View style={styles.grid}>
         {keys.map((key) => {
           const selected = isSelected(key);
@@ -78,11 +96,12 @@ export function ColorPicker(props: Props) {
               }
               accessibilityLabel={label}
               onPress={() => toggle(key)}
-              style={styles.cell}
+              style={cellStyle}
             >
               <View
                 style={[
                   styles.swatch,
+                  swatchSize,
                   { backgroundColor: COLORS[key] },
                   selected && styles.swatchSelected,
                 ]}
@@ -108,37 +127,72 @@ export function ColorPicker(props: Props) {
             </Pressable>
           );
         })}
+        {!expanded && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('wardrobe.filters.otherColors')}
+            onPress={() => setExpanded(true)}
+            style={cellStyle}
+          >
+            <View style={[styles.swatch, swatchSize, styles.more]}>
+              <Ionicons name="add" size={24} color={colors.title} />
+            </View>
+            <AppText variant="hint" center style={styles.label}>
+              {t('wardrobe.filters.otherColors')}
+            </AppText>
+          </Pressable>
+        )}
       </View>
     </View>
   );
 }
 
-const SWATCH = 44;
+const SWATCH = 52;
 
 const styles = StyleSheet.create({
   container: { gap: spacing.md },
   families: { gap: spacing.sm, paddingVertical: 2 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: spacing.md },
   cell: { width: '20%', alignItems: 'center', gap: spacing.xs },
+  cellLarge: { width: '25%' },
+  swatchLarge: { width: 64, height: 64 },
   swatch: {
     width: SWATCH,
     height: SWATCH,
     borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 2,
+    borderColor: colors.surface,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  swatchSelected: { borderWidth: 2, borderColor: colors.primary },
+  more: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.input,
+  },
+  swatchSelected: { borderColor: colors.primaryLight },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 20,
-    height: 20,
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderWidth: 1.5,
+    borderColor: colors.onPrimary,
     borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
   },
   // Full cell width, so that two-word names wrap instead of being cut.
-  label: { alignSelf: 'stretch', fontSize: 11, lineHeight: 14 },
+  label: {
+    alignSelf: 'stretch',
+    fontFamily: fonts.serifRegular,
+    fontSize: 14,
+    lineHeight: 16,
+    color: colors.title,
+  },
 });

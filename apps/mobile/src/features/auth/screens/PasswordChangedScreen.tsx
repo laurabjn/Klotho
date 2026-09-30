@@ -1,64 +1,73 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { KlothoBrandRow } from '@/components/brand/KlothoLogo';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { GoldRule } from '@/components/ui/GoldRule';
-import { colors, radii, spacing } from '@/theme/tokens';
+import { photos } from '@/theme/photos';
+import { colors, spacing } from '@/theme/tokens';
+
+const CLEAR = 'rgba(251, 247, 242, 0)';
 
 export function PasswordChangedScreen() {
   const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.safe}>
-      <KlothoBrandRow />
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.brand}>
+          <KlothoBrandRow />
+        </View>
+        {/* The photo shows the rose-gold check medallion of the mockup. */}
         <View
-          style={styles.badge}
-          accessibilityElementsHidden
+          style={[styles.photo, { aspectRatio: photos.passwordChanged.ratio }]}
           importantForAccessibility="no-hide-descendants"
         >
-          <Ionicons name="checkmark" size={56} color={colors.onPrimary} />
+          <Image
+            source={photos.passwordChanged.source}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+          />
+          <LinearGradient
+            colors={[colors.background, CLEAR, CLEAR, colors.background]}
+            locations={[0, 0.2, 0.8, 1]}
+            style={StyleSheet.absoluteFill}
+          />
         </View>
-        <AppText variant="title" center>
-          {t('auth.passwordChanged.title')}
-        </AppText>
-        <GoldRule centered />
-        <AppText center>{t('auth.passwordChanged.body')}</AppText>
-      </View>
-      {/* Every session was revoked by the reset: go back to the sign-in screen. */}
-      <Button
-        label={t('auth.passwordChanged.login')}
-        onPress={() => router.replace('/login')}
-      />
+        <View style={styles.content}>
+          <AppText variant="title" center>
+            {t('auth.passwordChanged.title')}
+          </AppText>
+          <GoldRule centered />
+          <AppText center>{t('auth.passwordChanged.body')}</AppText>
+        </View>
+        {/* Every session was revoked by the reset: go back to the sign-in screen. */}
+        <View style={styles.footer}>
+          <Button
+            label={t('auth.passwordChanged.login')}
+            onPress={() => router.replace('/login')}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    padding: spacing.xl,
-    gap: spacing.xl,
-    backgroundColor: colors.background,
-  },
+  safe: { flex: 1, backgroundColor: colors.background },
+  scroll: { flexGrow: 1, paddingBottom: spacing.xl },
+  brand: { paddingHorizontal: spacing.xl, paddingTop: spacing.md },
+  photo: { width: '100%' },
   content: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
     gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
-  badge: {
-    width: 120,
-    height: 120,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    marginBottom: spacing.lg,
-  },
+  footer: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
 });

@@ -26,6 +26,8 @@ describe('validateEnv', () => {
       PHOTO_URL_TTL_SECONDS: 3600,
       PHOTOS_MAX_PER_ITEM: 5,
       UPLOAD_MAX_BYTES: 10 * 1024 * 1024,
+      WEATHER_TIMEOUT_MS: 5000,
+      WEATHER_CACHE_TTL_SECONDS: 600,
     });
   });
 
@@ -65,6 +67,19 @@ describe('validateEnv', () => {
   it('requires the storage configuration', () => {
     const { STORAGE_BUCKET: _missing, ...rest } = validEnv;
     expect(() => validateEnv(rest)).toThrow(/STORAGE_BUCKET/);
+  });
+
+  it('treats an empty weather key as missing', () => {
+    expect(
+      validateEnv({ ...validEnv, OPENWEATHER_API_KEY: ' ' })
+        .OPENWEATHER_API_KEY,
+    ).toBeUndefined();
+  });
+
+  it('requires the weather key in production', () => {
+    expect(() => validateEnv({ ...validEnv, NODE_ENV: 'production' })).toThrow(
+      /OPENWEATHER_API_KEY/,
+    );
   });
 
   it('refuses the console mailer in production', () => {

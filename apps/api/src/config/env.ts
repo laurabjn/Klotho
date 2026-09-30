@@ -42,6 +42,19 @@ export const envSchema = z
       .int()
       .positive()
       .default(10 * 1024 * 1024),
+
+    // Weather: OpenWeatherMap. Without a key, the app offers manual temperature only.
+    OPENWEATHER_API_KEY: z
+      .string()
+      .trim()
+      .optional()
+      .transform((key) => key || undefined),
+    WEATHER_TIMEOUT_MS: z.coerce.number().int().min(500).default(5000),
+    WEATHER_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).default(600),
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || env.OPENWEATHER_API_KEY, {
+    path: ['OPENWEATHER_API_KEY'],
+    message: 'is required in production',
   })
   .refine(
     (env) => !(env.NODE_ENV === 'production' && env.MAIL_DRIVER === 'console'),

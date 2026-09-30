@@ -14,6 +14,8 @@ import { errorMessageKey } from '@/lib/api/errors';
 import { colors, spacing } from '@/theme/tokens';
 
 import { authApi } from '../api/auth.api';
+import { photos } from '@/theme/photos';
+
 import { AuthLayout } from '../components/AuthLayout';
 import { useFieldError } from '../hooks/useFieldError';
 import { signIn } from '../store/auth.store';
@@ -33,9 +35,11 @@ export function LoginScreen() {
   return (
     <AuthLayout
       centeredBrand
+      photo={photos.login.source}
+      photoRatio={photos.login.ratio}
       header={
         <>
-          <AppText variant="hero" center>
+          <AppText variant="title" center>
             {t('auth.login.title')}
           </AppText>
           <AppText variant="overline" center>

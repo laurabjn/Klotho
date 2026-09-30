@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.md,
     fontFamily: fonts.serifRegular,
-    fontSize: 17,
+    fontSize: 18,
     color: colors.title,
   },
   error: { color: colors.error, marginLeft: spacing.xs },

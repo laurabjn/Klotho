@@ -1,5 +1,6 @@
 import { onboardingFr, preferencesFr } from './preferences.fr';
 import { wardrobeFr } from './wardrobe.fr';
+import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
 // Tone: tutoiement everywhere.
@@ -12,6 +13,7 @@ export const fr = {
     cancel: 'Annuler',
     or: 'ou',
     back: 'Retour',
+    close: 'Fermer',
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
   },
@@ -39,6 +41,7 @@ export const fr = {
     },
     forgotPassword: {
       title: 'Mot de passe oublié',
+      overline: 'Retrouve l’accès à ta garde-robe',
       body: "Entre ton adresse email et nous t'enverrons un lien pour réinitialiser ton mot de passe.",
       hint: "Nous t'enverrons un lien de réinitialisation à cette adresse. Pense à vérifier tes spams.",
       submit: 'Envoyer le lien',
@@ -85,9 +88,62 @@ export const fr = {
   wardrobe: wardrobeFr,
   onboarding: onboardingFr,
   preferences: preferencesFr,
+  weather: weatherFr,
+  profile: {
+    title: 'Mon profil',
+    open: 'Ouvrir mon profil',
+    overline: 'Mon univers mode, mes préférences',
+    pieces_one: 'pièce',
+    pieces_other: 'pièces',
+    favorites_one: 'tenue favorite',
+    favorites_other: 'tenues favorites',
+    edit: 'Modifier',
+    editPhoto: 'Changer ma photo',
+    notifications: 'Notifications',
+    notificationsOverline: 'Reste informée et inspirée',
+    tips: 'Conseils et inspirations personnalisés',
+    reminders: 'Rappels de tenues et suggestions',
+    privacy: 'Confidentialité',
+    help: 'Aide',
+    ok: 'D’accord',
+    dominantStyle: 'Style dominant',
+    noDominantStyle: 'Ajoute des pièces pour le découvrir',
+    styles: 'Mes styles préférés',
+    stylesOverline: 'Sélectionne les styles qui te ressemblent',
+    colors: 'Mes couleurs favorites',
+    colorsOverline: 'Les couleurs qui illuminent ta garde-robe',
+    metal: 'Mon métal préféré',
+    metalOverline: 'Le détail qui fait la différence',
+    units: 'Unités',
+    unitsOverline: 'Choisis tes préférences',
+    seeAll: 'Voir tout',
+    add: 'Ajouter',
+    empty: 'Rien de choisi pour l’instant.',
+  },
   home: {
     greeting: 'Bonjour {{firstName}}',
-    overline: 'Envie d’écrire une nouvelle histoire aujourd’hui ?',
+    overline: 'Prête à écrire une nouvelle histoire aujourd’hui ?',
+    generate: 'Générer ma tenue',
+    soonTitle: 'Bientôt disponible',
+    soonBody:
+      'Klotho composera bientôt tes tenues à partir de tes pièces, de la météo et de ton style du jour.',
+    ok: 'D’accord',
+    dailyStyle: 'Mon style du jour',
+    seeAll: 'Voir tout',
+    seeLess: 'Voir moins',
+    outfit: {
+      title: 'Tenue du jour',
+      overline: 'Bientôt, une tenue pensée pour ta journée',
+      soon: 'Bientôt disponible',
+    },
+    rediscover: {
+      overline: 'On l’oublie trop souvent',
+      title: 'Redécouvre cette pièce',
+      never: '« {{name}} » n’a pas encore été portée. Et si c’était son jour ?',
+      since:
+        '« {{name}} » n’a pas été portée depuis le {{date}}. Et si c’était son jour ?',
+      open: 'Voir la pièce',
+    },
     title: 'Bienvenue dans ton dressing',
     subtitle: 'Des tenues pensées à partir de tes vraies pièces.',
   },
@@ -115,6 +171,13 @@ export const fr = {
       length: 'Longueur inconnue',
       colorConflict:
         'Une couleur ne peut pas être à la fois favorite et à éviter',
+    },
+    weather: {
+      coordinates: 'Position invalide',
+      locationMode: 'Choix de localisation inconnu',
+      unit: 'Unité inconnue',
+      cityRequired: 'Choisis une ville',
+      query: 'Saisis au moins 2 lettres',
     },
     wardrobe: {
       category: 'Choisis une catégorie',
@@ -153,6 +216,12 @@ export const fr = {
       photoNotFound: 'Cette photo n’existe plus.',
       notFound: "Cette pièce n'existe plus.",
       invalidTemperatureRange: 'Le maximum doit être supérieur au minimum.',
+    },
+    weather: {
+      unavailable:
+        'La météo est indisponible pour le moment. Réessaie plus tard.',
+      locationMissing:
+        'Choisis une ville ou autorise la localisation pour voir la météo.',
     },
     validation: { failed: 'Certains champs sont invalides.' },
     request: { tooMany: 'Trop de tentatives. Réessaie dans quelques minutes.' },

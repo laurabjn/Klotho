@@ -22,6 +22,10 @@ import { IMAGE_PROCESSOR } from '../domain/storage/ports/image-processor';
 import { USER_REPOSITORY } from '../domain/users/ports/user.repository';
 import { WARDROBE_PHOTO_REPOSITORY } from '../domain/wardrobe/ports/wardrobe-photo.repository';
 import { WARDROBE_REPOSITORY } from '../domain/wardrobe/ports/wardrobe.repository';
+import { CITY_GEOCODER } from '../domain/weather/ports/city-geocoder';
+import { WEATHER_PROVIDER } from '../domain/weather/ports/weather-provider';
+import { WEATHER_SETTINGS_REPOSITORY } from '../domain/weather/ports/weather-settings.repository';
+import type { Clock } from '../domain/shared/ports/clock';
 import type { Env } from '../config/env';
 import { BcryptPasswordHasher } from './auth/bcrypt-password-hasher';
 import { CryptoSecureTokenGenerator } from './auth/crypto-secure-token.generator';
@@ -34,11 +38,17 @@ import { PrismaStyleProfileRepository } from './prisma/repositories/prisma-style
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository';
 import { PrismaWardrobePhotoRepository } from './prisma/repositories/prisma-wardrobe-photo.repository';
 import { PrismaWardrobeRepository } from './prisma/repositories/prisma-wardrobe.repository';
+import { PrismaWeatherSettingsRepository } from './prisma/repositories/prisma-weather-settings.repository';
 import { S3FileStorage } from './storage/s3-file-storage';
 import { SharpImageProcessor } from './storage/sharp-image-processor';
 import { SystemClock } from './time/system-clock';
+import { CachedWeatherProvider } from './weather/cached-weather-provider';
+import { OpenWeatherMapClient } from './weather/openweathermap.client';
 
 type Config = ConfigService<Env, true>;
+
+/** One client serves both the weather and the city search. */
+const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
 
 /** Binds every domain port to its infrastructure adapter. */
 @Global()
@@ -55,6 +65,34 @@ type Config = ConfigService<Env, true>;
       provide: WARDROBE_PHOTO_REPOSITORY,
       useClass: PrismaWardrobePhotoRepository,
     },
+    {
+      provide: WEATHER_SETTINGS_REPOSITORY,
+      useClass: PrismaWeatherSettingsRepository,
+    },
+    {
+      provide: OPENWEATHERMAP_CLIENT,
+      inject: [ConfigService],
+      useFactory: (config: Config) =>
+        new OpenWeatherMapClient({
+          apiKey: config.get('OPENWEATHER_API_KEY', { infer: true }),
+          timeoutMs: config.get('WEATHER_TIMEOUT_MS', { infer: true }),
+        }),
+    },
+    {
+      provide: WEATHER_PROVIDER,
+      inject: [OPENWEATHERMAP_CLIENT, CLOCK, ConfigService],
+      useFactory: (
+        client: OpenWeatherMapClient,
+        clock: Clock,
+        config: Config,
+      ) =>
+        new CachedWeatherProvider(client, clock, {
+          ttlMs:
+            config.get('WEATHER_CACHE_TTL_SECONDS', { infer: true }) * 1000,
+          maxEntries: 1000,
+        }),
+    },
+    { provide: CITY_GEOCODER, useExisting: OPENWEATHERMAP_CLIENT },
     { provide: IMAGE_PROCESSOR, useClass: SharpImageProcessor },
     {
       provide: FILE_STORAGE,
@@ -132,6 +170,9 @@ type Config = ConfigService<Env, true>;
     WARDROBE_REPOSITORY,
     STYLE_PROFILE_REPOSITORY,
     WARDROBE_PHOTO_REPOSITORY,
+    WEATHER_SETTINGS_REPOSITORY,
+    WEATHER_PROVIDER,
+    CITY_GEOCODER,
     IMAGE_PROCESSOR,
     FILE_STORAGE,
     PHOTO_SETTINGS,

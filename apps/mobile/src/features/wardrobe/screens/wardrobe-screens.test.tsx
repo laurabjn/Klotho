@@ -161,27 +161,27 @@ describe('AddWardrobeItemScreen', () => {
     await press('Continuer'); // photo step is optional
     await fireEvent.press(await screen.findByRole('radio', { name: 'Haut' }));
     await press('Continuer');
-    await screen.findByText('Étape 3/5');
+    await screen.findByLabelText('Étape 3/5');
   }
 
   async function finishWithBlack() {
     await fireEvent.press(screen.getAllByRole('radio', { name: 'Noir' })[0]!);
     await press('Continuer');
-    await screen.findByText('Étape 4/5');
+    await screen.findByLabelText('Étape 4/5');
     await press('Continuer');
-    await screen.findByText('Étape 5/5');
+    await screen.findByLabelText('Étape 5/5');
     await press('Ajouter à ma garde-robe');
   }
 
   it('starts with an optional photo step', async () => {
     await renderWithProviders(<AddWardrobeItemScreen />);
 
-    expect(screen.getByText('Étape 1/5')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Étape 1/5')).toBeOnTheScreen();
     expect(
       screen.getByRole('button', { name: 'Ajouter une photo' }),
     ).toBeOnTheScreen();
     await press('Continuer');
-    expect(await screen.findByText('Étape 2/5')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('Étape 2/5')).toBeOnTheScreen();
   });
 
   it('requires a category before the next step', async () => {
@@ -191,7 +191,7 @@ describe('AddWardrobeItemScreen', () => {
     await press('Continuer');
 
     expect(await screen.findByText('Choisis une catégorie')).toBeOnTheScreen();
-    expect(screen.getByText('Étape 2/5')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Étape 2/5')).toBeOnTheScreen();
   });
 
   it('uploads the chosen photos after creating the piece, main first', async () => {
@@ -320,7 +320,7 @@ describe('AddWardrobeItemScreen', () => {
     await press('Continuer');
 
     // 3. Couleurs: the main colour is required
-    expect(await screen.findByText('Étape 3/5')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('Étape 3/5')).toBeOnTheScreen();
     await press('Continuer');
     expect(await screen.findByText('Choisis une couleur')).toBeOnTheScreen();
     await fireEvent.press(
@@ -329,12 +329,12 @@ describe('AddWardrobeItemScreen', () => {
     await press('Continuer');
 
     // 4. Style
-    expect(await screen.findByText('Étape 4/5')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('Étape 4/5')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Romantique' }));
     await press('Continuer');
 
     // 5. Saison
-    expect(await screen.findByText('Étape 5/5')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('Étape 5/5')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Printemps' }));
     await fireEvent.changeText(screen.getByLabelText('Min °C'), '12');
     await fireEvent.changeText(screen.getByLabelText('Max °C'), '24');
@@ -362,9 +362,9 @@ describe('AddWardrobeItemScreen', () => {
     await toColorsStep();
     await fireEvent.press(screen.getAllByRole('radio', { name: 'Noir' })[0]!);
     await press('Continuer');
-    await screen.findByText('Étape 4/5');
+    await screen.findByLabelText('Étape 4/5');
     await press('Continuer');
-    await screen.findByText('Étape 5/5');
+    await screen.findByLabelText('Étape 5/5');
 
     await fireEvent.changeText(screen.getByLabelText('Min °C'), '20');
     await fireEvent.changeText(screen.getByLabelText('Max °C'), '5');

@@ -31,30 +31,30 @@ export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
 export type Season = (typeof SEASONS)[number];
 
 /**
- * Union of the styles of the specification and of the mockups, most common
- * first (the app shows the first ones and hides the rest behind "Voir tout").
+ * Union of the styles of the specification and of the mockups, in the order
+ * of the mockups ("Choisis tes styles" shows the first nine, "Voir tout" the rest).
  */
 export const STYLES = [
   'romantic',
+  'vintage',
   'casual',
   'chic',
-  'minimalist',
-  'classic',
-  'boho',
-  'vintage',
   'business',
+  'minimalist',
+  'boho',
   'y2k',
+  'classic',
   'parisian',
+  'cottagecore',
   'preppy',
   'oldMoney',
   'evening',
-  'streetwear',
   'sporty',
+  'artsy',
+  'streetwear',
   'rock',
   'glamour',
   'coquette',
-  'cottagecore',
-  'artsy',
   'vintage50s',
   'vintage60s',
   'victorian',

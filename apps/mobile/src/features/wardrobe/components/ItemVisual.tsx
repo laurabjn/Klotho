@@ -8,22 +8,8 @@ import {
 import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radii } from '@/theme/tokens';
-
-const ICONS: Record<
-  WardrobeCategory,
-  keyof typeof MaterialCommunityIcons.glyphMap
-> = {
-  TOP: 'tshirt-crew-outline',
-  BOTTOM: 'human-male-height-variant', // no trousers glyph in the set
-  DRESS: 'human-female',
-  LAYER: 'hanger',
-  SHOES: 'shoe-heel',
-  BAG: 'purse-outline',
-  ACCESSORY: 'sunglasses',
-  JEWELRY: 'necklace',
-  UNDERWEAR: 'tshirt-v-outline',
-};
+import { categoryIcons } from '@/theme/icons';
+import { radii } from '@/theme/tokens';
 
 /** Perceived brightness, to pick a readable icon colour over the swatch. */
 function isLight(hex: string): boolean {
@@ -77,8 +63,8 @@ export function ItemVisual({
       importantForAccessibility="no-hide-descendants"
     >
       <MaterialCommunityIcons
-        name={ICONS[category]}
-        size={size === 'hero' ? 96 : 52}
+        name={categoryIcons[category]}
+        size={size === 'hero' ? 96 : 40}
         color={
           isLight(hex) ? 'rgba(62, 35, 28, 0.45)' : 'rgba(255, 255, 255, 0.75)'
         }
@@ -93,9 +79,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.card - 6,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
   },
   hero: { aspectRatio: 4 / 3, borderRadius: radii.card },
 });

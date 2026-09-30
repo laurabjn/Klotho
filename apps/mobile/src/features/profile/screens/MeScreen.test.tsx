@@ -1,20 +1,125 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
+import type {
+  StyleProfile,
+  WardrobeItem,
+  WeatherSettings,
+} from '@klotho/shared';
+
 import { authApi } from '@/features/auth/api/auth.api';
 import { signIn, useAuthStore } from '@/features/auth/store/auth.store';
+import { preferencesApi } from '@/features/preferences/api/preferences.api';
+import { EMPTY_STYLE_PROFILE } from '@/features/preferences/hooks/useStyleProfile';
+import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
+import { weatherApi } from '@/features/weather/api/weather.api';
 import { renderWithProviders, session } from '@/testing/render';
 
 import { MeScreen } from './MeScreen';
 
 jest.mock('@/features/auth/api/auth.api');
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('@/features/preferences/api/preferences.api');
+jest.mock('@/features/wardrobe/api/wardrobe.api');
+jest.mock('@/features/weather/api/weather.api');
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), navigate: jest.fn() },
+}));
 const api = jest.mocked(authApi);
+const preferences = jest.mocked(preferencesApi);
+const weather = jest.mocked(weatherApi);
+
+const PROFILE: StyleProfile = {
+  ...EMPTY_STYLE_PROFILE,
+  preferredStyles: ['romantic'],
+  preferredColors: ['powderPink'],
+  preferredMetals: ['gold'],
+  onboardingCompleted: true,
+};
+const SETTINGS = {
+  locationMode: null,
+  city: null,
+  temperatureUnit: 'celsius' as const,
+};
+const piece = (styles: WardrobeItem['styles']) => ({ styles }) as WardrobeItem;
 
 describe('MeScreen', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     await signIn(session);
+    preferences.get.mockResolvedValue(PROFILE);
+    preferences.save.mockImplementation((body) =>
+      Promise.resolve({ ...PROFILE, ...body } as StyleProfile),
+    );
+    weather.settings.mockResolvedValue(SETTINGS);
+    weather.saveSettings.mockImplementation((body) =>
+      Promise.resolve({ ...SETTINGS, ...body } as WeatherSettings),
+    );
+    jest.mocked(wardrobeApi.list).mockResolvedValue({
+      items: [piece(['chic']), piece(['boho', 'chic']), piece([])],
+      total: 3,
+      page: 1,
+      pageSize: 100,
+      hasMore: false,
+    });
+  });
+
+  it('shows the pieces count, the main style and the preferences', async () => {
+    await renderWithProviders(<MeScreen />);
+
+    expect(await screen.findByLabelText('3 pièces')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Chic Style dominant')).toBeOnTheScreen();
+    expect(await screen.findByText('Romantique')).toBeOnTheScreen();
+    expect(screen.getByText('Rose poudré')).toBeOnTheScreen();
+  });
+
+  it('only summarises the styles: changes happen in the preferences', async () => {
+    await renderWithProviders(<MeScreen />);
+    await screen.findByText('Romantique');
+
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Mes styles préférés' }),
+    );
+
+    expect(router.push).toHaveBeenCalledWith('/preferences');
+    expect(preferences.save).not.toHaveBeenCalled();
+    expect(screen.queryByText('Vintage')).not.toBeOnTheScreen();
+  });
+
+  it('says what is not available yet', async () => {
+    await renderWithProviders(<MeScreen />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Modifier' }));
+
+    expect(screen.getByText('Bientôt disponible')).toBeOnTheScreen();
+  });
+
+  it('adds a metal to the preferred ones', async () => {
+    await renderWithProviders(<MeScreen />);
+    await screen.findByText('Rose poudré');
+
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Rosé' }));
+
+    await waitFor(() =>
+      expect(preferences.save).toHaveBeenCalledWith(
+        expect.objectContaining({ preferredMetals: ['gold', 'roseGold'] }),
+      ),
+    );
+  });
+
+  it('switches the temperature unit', async () => {
+    await renderWithProviders(<MeScreen />);
+    await screen.findByText('Rose poudré');
+
+    await fireEvent.press(
+      screen.getByRole('radio', { name: 'Fahrenheit (°F)' }),
+    );
+
+    await waitFor(() =>
+      expect(weather.saveSettings).toHaveBeenCalledWith({
+        ...SETTINGS,
+        temperatureUnit: 'fahrenheit',
+      }),
+    );
   });
 
   it('opens the preferences', async () => {
@@ -25,6 +130,14 @@ describe('MeScreen', () => {
     );
 
     expect(router.push).toHaveBeenCalledWith('/preferences');
+  });
+
+  it('opens the weather settings', async () => {
+    await renderWithProviders(<MeScreen />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Météo' }));
+
+    expect(router.push).toHaveBeenCalledWith('/weather-settings');
   });
 
   it('shows who is signed in', async () => {

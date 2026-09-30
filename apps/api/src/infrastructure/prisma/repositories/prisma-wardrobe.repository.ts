@@ -44,6 +44,13 @@ function toWhere(
       ],
     });
   }
+  if (filters.temperature !== undefined) {
+    const t = filters.temperature;
+    and.push(
+      { OR: [{ minTemperature: null }, { minTemperature: { lte: t } }] },
+      { OR: [{ maxTemperature: null }, { maxTemperature: { gte: t } }] },
+    );
+  }
   if (filters.q) {
     const contains = { contains: filters.q, mode: 'insensitive' as const };
     and.push({

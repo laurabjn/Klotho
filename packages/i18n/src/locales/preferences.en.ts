@@ -6,8 +6,8 @@ export const onboardingEn: TranslationResource['onboarding'] = {
   finish: 'Finish',
   back: 'Back',
   welcome: {
-    title: 'Welcome to Klotho',
-    overline: 'Create outfits with your own wardrobe',
+    title: 'Welcome\nto Klotho',
+    overline: 'Create outfits\nwith your own wardrobe',
     body: 'Photograph your clothes and let Klotho create outfits that feel like you, for every moment of your life.',
     start: 'Get started',
     skip: 'Skip for now',
@@ -15,6 +15,7 @@ export const onboardingEn: TranslationResource['onboarding'] = {
   styles: {
     title: 'Choose your styles',
     overline: 'Select the worlds that feel like you',
+    seeAll: 'See all styles',
   },
   colors: {
     title: 'Your favourite colours',
@@ -25,6 +26,20 @@ export const onboardingEn: TranslationResource['onboarding'] = {
     title: 'Your habits',
     overline: 'For outfits that really suit you',
     body: 'Everything is optional and can be changed later in Me → My preferences.',
+  },
+  weather: {
+    title: 'Weather & location',
+    overline: 'For even more relevant outfits',
+    body: 'Allow access to your location so Klotho suggests outfits suited to the weather where you are, every day.',
+    allow: 'Allow',
+    chooseCity: 'Choose my city manually',
+    privacy:
+      'Your location is only used to get the weather where you are. It stays private.',
+    learnMore: 'Learn more',
+    privacyTitle: 'Your location',
+    privacyDetails:
+      'Klotho only uses it to get the weather. It is rounded to about 1 km on your phone before being sent, and never saved. You can change your mind at any time in Me → Weather.',
+    understood: 'Got it',
   },
 };
 

@@ -1,8 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { IconName } from '@/theme/icons';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
+
+export type ChipTone = 'solid' | 'soft';
 
 interface ChipProps {
   label: string;
@@ -10,8 +13,15 @@ interface ChipProps {
   onPress?: () => void;
   /** Rendered before the label (e.g. a colour dot). */
   leading?: ReactNode;
-  /** Multi-select chips show a check when selected, single-select ones do not. */
+  icon?: IconName;
+  /**
+   * "solid": filled when selected (filters, profile). "soft": blush with a
+   * round check when selected (the piece forms of the mockups).
+   */
+  tone?: ChipTone;
   multiple?: boolean;
+  /** Display only (a summary), not a choice. */
+  readOnly?: boolean;
   testID?: string;
 }
 
@@ -21,51 +31,70 @@ export function Chip({
   selected = false,
   onPress,
   leading,
+  icon,
+  tone = 'solid',
   multiple = false,
+  readOnly = false,
   testID,
 }: ChipProps) {
+  const solid = selected && tone === 'solid';
+  const soft = selected && tone === 'soft';
+  const tint = solid ? colors.onPrimary : soft ? colors.primary : colors.body;
+
   return (
     <Pressable
-      accessibilityRole={multiple ? 'checkbox' : 'radio'}
-      accessibilityState={multiple ? { checked: selected } : { selected }}
+      accessibilityRole={readOnly ? 'text' : multiple ? 'checkbox' : 'radio'}
+      accessibilityState={
+        readOnly ? undefined : multiple ? { checked: selected } : { selected }
+      }
       accessibilityLabel={label}
-      onPress={onPress}
+      onPress={readOnly ? undefined : onPress}
+      disabled={readOnly}
       hitSlop={4}
       testID={testID}
       style={({ pressed }) => [
         styles.chip,
-        selected && styles.selected,
+        solid && styles.solid,
+        soft && styles.soft,
         pressed && styles.pressed,
       ]}
     >
       {leading}
-      {multiple && selected && (
-        <Ionicons name="checkmark" size={14} color={colors.onPrimary} />
-      )}
-      <Text
-        style={[styles.label, selected && styles.selectedLabel]}
-        numberOfLines={1}
-      >
+      {icon && <MaterialCommunityIcons name={icon} size={18} color={tint} />}
+      <Text style={[styles.label, { color: tint }]} numberOfLines={1}>
         {label}
       </Text>
+      {soft && multiple && (
+        <View style={styles.check}>
+          <Ionicons name="checkmark" size={12} color={colors.onPrimary} />
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   chip: {
-    minHeight: 38,
+    minHeight: 40,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs + 2,
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.pill,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.input,
   },
-  selected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  solid: { backgroundColor: colors.primary, borderColor: colors.primary },
+  soft: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
   pressed: { opacity: 0.7 },
-  label: { fontFamily: fonts.serif, fontSize: 16, color: colors.body },
-  selectedLabel: { color: colors.onPrimary },
+  label: { flexShrink: 1, fontFamily: fonts.serif, fontSize: 16 },
+  check: {
+    width: 18,
+    height: 18,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+  },
 });

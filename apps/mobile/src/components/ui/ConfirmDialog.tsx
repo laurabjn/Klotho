@@ -11,7 +11,8 @@ interface ConfirmDialogProps {
   title: string;
   message: string;
   confirmLabel: string;
-  cancelLabel: string;
+  /** Without it, the dialog is a simple message with one button. */
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   icon?: keyof typeof Ionicons.glyphMap;
@@ -53,18 +54,26 @@ export function ConfirmDialog({
               <Ionicons name={icon} size={26} color={colors.primary} />
             </View>
           )}
-          <AppText variant="heading" center style={styles.title}>
+          <AppText variant="title" center style={styles.title}>
             {title}
           </AppText>
           <AppText center>{message}</AppText>
+          {/* Stacked: long labels ("Se déconnecter") stay full size. */}
           <View style={styles.actions}>
             <Button
               label={confirmLabel}
+              icon="sparkles"
               decorated={false}
               loading={loading}
               onPress={onConfirm}
             />
-            <Button variant="link" label={cancelLabel} onPress={onCancel} />
+            {cancelLabel && (
+              <Button
+                variant="secondary"
+                label={cancelLabel}
+                onPress={onCancel}
+              />
+            )}
           </View>
         </View>
       </View>
@@ -76,7 +85,7 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: 'center',
-    padding: spacing.xxl,
+    padding: spacing.xl,
     backgroundColor: 'rgba(62, 35, 28, 0.4)',
   },
   card: {
@@ -100,6 +109,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primaryLight,
   },
-  title: { fontSize: 26, lineHeight: 32 },
-  actions: { marginTop: spacing.md, gap: spacing.xs },
+  title: { fontSize: 30, lineHeight: 36 },
+  actions: { marginTop: spacing.md, gap: spacing.md },
 });

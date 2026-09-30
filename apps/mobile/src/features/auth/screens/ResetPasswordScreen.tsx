@@ -18,6 +18,8 @@ import { TextField } from '@/components/ui/TextField';
 import { errorMessageKey } from '@/lib/api/errors';
 
 import { authApi } from '../api/auth.api';
+import { photos } from '@/theme/photos';
+
 import { AuthLayout } from '../components/AuthLayout';
 import { useFieldError } from '../hooks/useFieldError';
 
@@ -49,7 +51,12 @@ export function ResetPasswordScreen() {
 
   if (!token) {
     return (
-      <AuthLayout header={header}>
+      <AuthLayout
+        header={header}
+        photo={photos.register.source}
+        photoRatio={photos.register.ratio}
+        photoPlacement="side"
+      >
         <FormError message={t('auth.resetPassword.missingToken')} />
         <Button
           label={t('auth.resetPassword.requestNewLink')}
@@ -60,7 +67,12 @@ export function ResetPasswordScreen() {
   }
 
   return (
-    <AuthLayout header={header}>
+    <AuthLayout
+      header={header}
+      photo={photos.register.source}
+      photoRatio={photos.register.ratio}
+      photoPlacement="side"
+    >
       <FormError
         message={
           reset.error

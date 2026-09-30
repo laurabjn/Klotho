@@ -77,6 +77,8 @@ export interface WardrobeFilters {
   status?: WardrobeStatus[];
   /** Case-insensitive search in name, brand and sub-category. */
   q?: string;
+  /** Wearable at this temperature (°C): within the range, or no range set. */
+  temperature?: number;
 }
 
 export interface WardrobeListQuery {

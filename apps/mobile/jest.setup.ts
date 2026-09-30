@@ -24,3 +24,16 @@ jest.mock('expo-secure-store', () => {
     __store: store,
   };
 });
+
+// Location: no permission by default; tests override with jest.mocked(...).
+jest.mock('expo-location', () => ({
+  Accuracy: { Low: 2 },
+  getForegroundPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: false, canAskAgain: true }),
+  ),
+  requestForegroundPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: false, canAskAgain: true }),
+  ),
+  getLastKnownPositionAsync: jest.fn(() => Promise.resolve(null)),
+  getCurrentPositionAsync: jest.fn(),
+}));

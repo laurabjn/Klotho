@@ -1,16 +1,18 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
+import type { IconName } from '@/theme/icons';
 import { spacing } from '@/theme/tokens';
 
 import { Button } from './Button';
-import { Chip } from './Chip';
+import { Chip, type ChipTone } from './Chip';
 
 interface Option<T extends string> {
   value: T;
   label: string;
   leading?: ReactNode;
+  icon?: IconName;
 }
 
 interface BaseProps<T extends string> {
@@ -18,6 +20,9 @@ interface BaseProps<T extends string> {
   /** Shows only the first N options until "Voir tout" is pressed. */
   collapsedCount?: number;
   testIDPrefix?: string;
+  tone?: ChipTone;
+  /** One line scrolling sideways instead of wrapping. */
+  scroll?: boolean;
 }
 
 interface SingleProps<T extends string> extends BaseProps<T> {
@@ -69,8 +74,11 @@ export function ChipGroup<T extends string>(
 
   return (
     <View>
-      <View
-        style={styles.wrap}
+      <ScrollView
+        horizontal={props.scroll}
+        scrollEnabled={props.scroll}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={props.scroll ? styles.line : styles.wrap}
         accessibilityRole={props.multiple ? undefined : 'radiogroup'}
       >
         {visible.map((option) => (
@@ -78,13 +86,15 @@ export function ChipGroup<T extends string>(
             key={option.value}
             label={option.label}
             leading={option.leading}
+            icon={option.icon}
+            tone={props.tone}
             multiple={props.multiple}
             selected={isSelected(option.value)}
             onPress={() => toggle(option.value)}
             testID={testIDPrefix && `${testIDPrefix}-${option.value}`}
           />
         ))}
-      </View>
+      </ScrollView>
       {collapsible && (
         <View style={styles.more}>
           <Button
@@ -102,5 +112,6 @@ export function ChipGroup<T extends string>(
 
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  line: { flexDirection: 'row', gap: spacing.sm },
   more: { alignItems: 'flex-start' },
 });

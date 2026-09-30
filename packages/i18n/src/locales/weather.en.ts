@@ -1,0 +1,73 @@
+import type { TranslationResource } from './fr';
+
+export const weatherEn: TranslationResource['weather'] = {
+  open: 'Weather',
+  tile: {
+    open: 'See today’s weather',
+    manual: 'Entered',
+    unconfigured: 'To set up',
+    unavailable: 'Unavailable',
+    settings: 'Weather settings',
+  },
+  card: {
+    overline: 'Today’s weather',
+    feelsLike: 'Feels like {{value}}',
+    rain: '{{value}} mm of rain',
+    noRain: 'No rain',
+    wind: 'Wind {{value}} km/h',
+    manual: 'Temperature you entered',
+    useWeather: 'Back to the weather',
+    setTemperature: 'Enter the temperature',
+    unconfiguredTitle: 'Turn on the weather',
+    unconfiguredBody: 'For outfits suited to the weather.',
+    configure: 'Set up',
+    unavailable: 'The weather is unavailable right now.',
+    positionUnavailable:
+      'Your position is unavailable. Allow location or choose a city.',
+    retry: 'Try again',
+    loading: 'Loading the weather',
+  },
+  conditions: {
+    clear: 'Sunny',
+    cloudy: 'Cloudy',
+    fog: 'Fog',
+    rain: 'Rain',
+    snow: 'Snow',
+    storm: 'Storm',
+  },
+  manual: {
+    title: 'Today’s temperature',
+    hint: 'It replaces the weather for today.',
+    decrease: 'One degree less',
+    increase: 'One degree more',
+    apply: 'Apply',
+  },
+  location: {
+    useDevice: 'Use my location',
+    useDeviceHint: 'Only used to get the weather, never saved.',
+    deviceActive: 'Your location will be used for the weather.',
+    denied: 'No worries: choose a city instead.',
+    blocked:
+      'Location is turned off for Klotho. You can turn it on in the phone settings, or choose a city.',
+    openSettings: 'Open settings',
+    chooseCity: 'Choose a city',
+    searchCity: 'Search for a city',
+    searching: 'Searching…',
+    noCity: 'No city found.',
+    selectedCity: 'Chosen city: {{city}}',
+    changeCity: 'Change city',
+    fallbackCity: 'Backup city when your location is unavailable',
+  },
+  settings: {
+    title: 'Weather',
+    overline: 'Location and unit',
+    location: 'Location',
+    unit: 'Temperature unit',
+    save: 'Save',
+    loadError: 'Could not load your weather settings.',
+  },
+  units: {
+    celsius: 'Celsius (°C)',
+    fahrenheit: 'Fahrenheit (°F)',
+  },
+};

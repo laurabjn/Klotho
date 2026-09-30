@@ -11,48 +11,56 @@ import { AppText } from './AppText';
 interface ScreenHeaderProps {
   title?: string;
   overline?: string;
-  /** Rendered on the right of the back button (e.g. an action icon). */
+  /** Rendered at the end of the title row (e.g. a counter or an icon). */
   right?: ReactNode;
+  /** Tab screens have no back button. */
+  back?: boolean;
   onBack?: () => void;
 }
 
-/** Round back button + serif title, as on the mockups' inner screens. */
+/**
+ * Round back button with the serif title beside it, and the overline under
+ * the title, as on the mockups' inner screens.
+ */
 export function ScreenHeader({
   title,
   overline,
   right,
+  back = true,
   onBack,
 }: ScreenHeaderProps) {
   const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          onPress={
-            onBack ??
-            (() => (router.canGoBack() ? router.back() : router.replace('/')))
-          }
-          style={styles.back}
-        >
-          <Ionicons name="chevron-back" size={22} color={colors.title} />
-        </Pressable>
+        {back && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            onPress={
+              onBack ??
+              (() => (router.canGoBack() ? router.back() : router.replace('/')))
+            }
+            hitSlop={4}
+            style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+          >
+            <Ionicons name="chevron-back" size={22} color={colors.title} />
+          </Pressable>
+        )}
+        <View style={styles.titles}>
+          {title && <AppText variant="title">{title}</AppText>}
+          {overline && <AppText variant="overline">{overline}</AppText>}
+        </View>
         {right}
       </View>
-      {title && <AppText variant="title">{title}</AppText>}
-      {overline && <AppText variant="overline">{overline}</AppText>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { gap: spacing.sm },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  titles: { flex: 1, gap: spacing.xs },
   back: {
     width: touchTarget,
     height: touchTarget,
@@ -61,4 +69,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.input,
   },
+  pressed: { opacity: 0.7 },
 });

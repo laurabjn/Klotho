@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
@@ -66,9 +67,10 @@ export function AddWardrobeItemScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.top}>
+        <AppHeader />
         <ScreenHeader
           title={t('wardrobe.form.addTitle')}
-          overline={stepLabel}
+          overline={t('wardrobe.form.addOverline')}
           onBack={() => (step > 0 ? setStep(step - 1) : router.back())}
         />
         <StepIndicator
