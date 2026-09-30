@@ -11,7 +11,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { addPhotos } from '../api/photos.api';
 import { wardrobeApi } from '../api/wardrobe.api';
+import type { LocalPhoto } from '../photos/pick-photo';
 
 export type WardrobeListFilters = Omit<
   ListWardrobeQueryInput,
@@ -54,17 +56,6 @@ export function useWardrobeItem(id: string) {
   });
 }
 
-export function useCreateWardrobeItem() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: CreateWardrobeItemInput) => wardrobeApi.create(body),
-    onSuccess: (item) => {
-      queryClient.setQueryData(wardrobeKeys.item(item.id), item);
-      return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });
-    },
-  });
-}
-
 export function useUpdateWardrobeItem(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -82,6 +73,31 @@ export function useDeleteWardrobeItem(id: string) {
     mutationFn: () => wardrobeApi.remove(id),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: wardrobeKeys.item(id) });
+      return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });
+    },
+  });
+}
+
+/**
+ * Creates the piece, then uploads its photos one by one. A photo that fails
+ * does not cancel the piece: the number of failures is returned instead.
+ */
+export function useCreateWardrobeItemWithPhotos() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      body,
+      photos,
+    }: {
+      body: CreateWardrobeItemInput;
+      photos: LocalPhoto[];
+    }) => {
+      const created = await wardrobeApi.create(body);
+      const { item, failed } = await addPhotos(created.id, photos);
+      return { item: item ?? created, failed };
+    },
+    onSuccess: ({ item }) => {
+      queryClient.setQueryData(wardrobeKeys.item(item.id), item);
       return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });
     },
   });

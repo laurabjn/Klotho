@@ -26,6 +26,24 @@ so it works from a phone on the same Wi-Fi. To target another API, set
 `EXPO_PUBLIC_API_URL` (see `.env.example`). On Windows, allow Node.js through
 the firewall on private networks if the phone cannot reach the API.
 
+## Photos
+
+`expo-image-picker` (camera or gallery, permissions asked only when needed),
+then `expo-image-manipulator` resizes to 1600 px and re-encodes to JPEG before
+upload. Photos are displayed with `expo-image`, cached by photo id because
+their signed URLs change.
+
+## Development build (EAS)
+
+Expo Go is enough today. A development build (your own debug app) becomes
+necessary for native modules that Expo Go does not ship, and to open
+`klotho://` links:
+
+1. `npx eas-cli@latest login` (free Expo account)
+2. `npm run build:dev:android` (from apps/mobile; ~15 min in the cloud),
+   then install the APK from the link EAS gives
+3. `npm run mobile:dev` from the repo root instead of `npm run mobile`
+
 ## Session
 
 - The refresh token is stored in the OS keychain (`expo-secure-store`); the

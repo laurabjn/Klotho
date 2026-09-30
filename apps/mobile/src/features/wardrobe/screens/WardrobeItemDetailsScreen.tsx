@@ -25,23 +25,27 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { errorMessageKey } from '@/lib/api/errors';
 import { colors, radii, spacing } from '@/theme/tokens';
 
-import { ItemVisual } from '../components/ItemVisual';
 import {
   useDeleteWardrobeItem,
   useUpdateWardrobeItem,
   useWardrobeItem,
 } from '../hooks/useWardrobe';
 import { itemTitle, subcategoryLabel } from '../labels';
+import { WardrobePhotoCarousel } from '../photos/WardrobePhotoCarousel';
 
 export function WardrobeItemDetailsScreen() {
   const { t } = useTranslation();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, photosFailed } = useLocalSearchParams<{
+    id: string;
+    /** Set by the add flow when some photos could not be uploaded. */
+    photosFailed?: string;
+  }>();
   const item = useWardrobeItem(id);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       {item.data ? (
-        <Details item={item.data} />
+        <Details item={item.data} photosFailed={Number(photosFailed ?? 0)} />
       ) : item.isError ? (
         <View style={styles.content}>
           <ScreenHeader />
@@ -60,7 +64,13 @@ export function WardrobeItemDetailsScreen() {
   );
 }
 
-function Details({ item }: { item: WardrobeItem }) {
+function Details({
+  item,
+  photosFailed,
+}: {
+  item: WardrobeItem;
+  photosFailed: number;
+}) {
   const { t, i18n } = useTranslation();
   const update = useUpdateWardrobeItem(item.id);
   const remove = useDeleteWardrobeItem(item.id);
@@ -151,11 +161,12 @@ function Details({ item }: { item: WardrobeItem }) {
         ]}
       >
         <ScreenHeader />
-        <ItemVisual
-          category={item.category}
-          color={item.primaryColor}
-          size="hero"
-        />
+        <WardrobePhotoCarousel item={item} />
+        {photosFailed > 0 && (
+          <FormError
+            message={t('wardrobe.photos.uploadFailed', { count: photosFailed })}
+          />
+        )}
         <View style={styles.titleBlock}>
           <AppText variant="title">{itemTitle(t, item)}</AppText>
           <GoldRule />

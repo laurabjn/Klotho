@@ -21,7 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose -f apps/api/docker-compose.yml up -d",
-    "db:down": "docker compose -f apps/api/docker-compose.yml down"
+    "db:down": "docker compose -f apps/api/docker-compose.yml down",
+    "mobile:dev": "turbo build --filter=@klotho/shared --filter=@klotho/i18n --output-logs=errors-only && npm run start:dev-client -w @klotho/mobile"
   },
   "devDependencies": {
     "prettier": "^3.9.9",

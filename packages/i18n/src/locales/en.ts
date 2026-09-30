@@ -119,6 +119,12 @@ export const en: TranslationResource = {
     },
   },
   apiErrors: {
+    uploads: {
+      invalidImage: 'This file is not a valid photo (JPEG, PNG or WEBP).',
+      tooLarge: 'This photo is too large.',
+      notFound: 'The photo could not be added. Try again.',
+      missingFile: 'No photo was sent.',
+    },
     auth: {
       emailAlreadyUsed: 'An account already exists with this email.',
       invalidCredentials: 'Incorrect email or password.',
@@ -128,6 +134,9 @@ export const en: TranslationResource = {
       unauthorized: 'Your session has expired. Please sign in again.',
     },
     wardrobe: {
+      photoLimitReached:
+        'You reached the maximum number of photos for this piece.',
+      photoNotFound: 'This photo no longer exists.',
       notFound: 'This piece no longer exists.',
       invalidTemperatureRange: 'The maximum must be above the minimum.',
     },

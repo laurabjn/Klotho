@@ -1,11 +1,18 @@
-import type {
-  WardrobeItem,
-  WardrobeItemChanges,
-  WardrobeItemFields,
-  WardrobeListQuery,
+import {
+  sortPhotos,
+  type WardrobeItem,
+  type WardrobeItemChanges,
+  type WardrobeItemFields,
+  type WardrobeListQuery,
 } from '../domain/wardrobe/entities/wardrobe-item.entity';
 import type { WardrobeRepository } from '../domain/wardrobe/ports/wardrobe.repository';
 import type { Clock } from '../domain/shared/ports/clock';
+
+/** Copy with photos in API order, like the Prisma repository returns them. */
+const view = (item: WardrobeItem): WardrobeItem => ({
+  ...item,
+  photos: sortPhotos(item.photos),
+});
 
 const intersects = <T>(values: T[], wanted: T[] | undefined) =>
   !wanted?.length || values.some((value) => wanted.includes(value));
@@ -23,19 +30,19 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
       ...fields,
       id: `item-${++this.sequence}`,
       userId,
+      photos: [],
       wearCount: 0,
       lastWornAt: null,
       createdAt: now,
       updatedAt: now,
     };
     this.items.push(item);
-    return Promise.resolve(item);
+    return Promise.resolve(view(item));
   }
 
   findOwned(userId: string, id: string): Promise<WardrobeItem | null> {
-    return Promise.resolve(
-      this.items.find((i) => i.id === id && i.userId === userId) ?? null,
-    );
+    const item = this.items.find((i) => i.id === id && i.userId === userId);
+    return Promise.resolve(item ? view(item) : null);
   }
 
   list(userId: string, { filters, sort, page, pageSize }: WardrobeListQuery) {
@@ -72,7 +79,7 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
 
     const start = (page - 1) * pageSize;
     return Promise.resolve({
-      items: sorted.slice(start, start + pageSize),
+      items: sorted.slice(start, start + pageSize).map(view),
       total: matching.length,
     });
   }
@@ -88,7 +95,7 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
       updatedAt: this.clock.now(),
     };
     this.items[index] = updated;
-    return Promise.resolve(updated);
+    return Promise.resolve(view(updated));
   }
 
   deleteOwned(userId: string, id: string): Promise<boolean> {

@@ -17,5 +17,19 @@ services:
       timeout: 5s
       retries: 10
 
+  # S3-compatible storage for local development (R2 in production).
+  storage:
+    image: rustfs/rustfs:latest
+    container_name: klotho-storage
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${STORAGE_ACCESS_KEY_ID:-klotho}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET_ACCESS_KEY:-klotho-dev-secret}
+    ports:
+      - '${STORAGE_PORT:-9010}:9000'
+    volumes:
+      - storage-data:/data
+
 volumes:
   postgres-data:
+  storage-data:

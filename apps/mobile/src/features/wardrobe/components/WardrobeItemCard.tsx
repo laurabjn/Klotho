@@ -34,7 +34,11 @@ export function WardrobeItemCard({
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View>
-        <ItemVisual category={item.category} color={item.primaryColor} />
+        <ItemVisual
+          category={item.category}
+          color={item.primaryColor}
+          photo={item.photos[0]}
+        />
         {unavailable && (
           <View style={styles.badge}>
             <AppText variant="hint" style={styles.badgeText}>

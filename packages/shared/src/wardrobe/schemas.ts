@@ -155,6 +155,11 @@ export const listWardrobeQuerySchema = z.object({
   sort: z.enum(WARDROBE_SORTS).default('recent'),
 });
 
+export const attachPhotoSchema = z.object({
+  key: z.string().min(1).max(200),
+});
+export type AttachPhotoInput = z.infer<typeof attachPhotoSchema>;
+
 export type CreateWardrobeItemInput = z.input<typeof createWardrobeItemSchema>;
 export type CreateWardrobeItem = z.output<typeof createWardrobeItemSchema>;
 export type UpdateWardrobeItemInput = z.input<typeof updateWardrobeItemSchema>;

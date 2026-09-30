@@ -8,12 +8,16 @@ import {
   InvalidTemperatureRangeError,
   WardrobeItemNotFoundError,
 } from '../../domain/wardrobe/errors';
+import type { FileStorage } from '../../domain/storage/ports/file-storage';
 import type { WardrobeRepository } from '../../domain/wardrobe/ports/wardrobe.repository';
 import { toWardrobeItemDto } from './wardrobe-item.mapper';
 
 /** Partial update (PATCH): omitted fields are left untouched. */
 export class UpdateWardrobeItemUseCase {
-  constructor(private readonly wardrobe: WardrobeRepository) {}
+  constructor(
+    private readonly wardrobe: WardrobeRepository,
+    private readonly storage: FileStorage,
+  ) {}
 
   async execute(
     userId: string,
@@ -34,6 +38,6 @@ export class UpdateWardrobeItemUseCase {
 
     const updated = await this.wardrobe.updateOwned(userId, id, changes);
     if (!updated) throw new WardrobeItemNotFoundError();
-    return toWardrobeItemDto(updated);
+    return toWardrobeItemDto(updated, this.storage);
   }
 }

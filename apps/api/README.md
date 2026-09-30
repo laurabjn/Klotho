@@ -36,22 +36,26 @@ npm run dev                # http://localhost:3100/health
 
 Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 
-| Method | Route                   | Public | Result                                             |
-| ------ | ----------------------- | ------ | -------------------------------------------------- |
-| GET    | `/health`               | yes    | `{ status: 'ok' }`                                 |
-| POST   | `/auth/register`        | yes    | 201 `AuthSession` · 409 email already used         |
-| POST   | `/auth/login`           | yes    | 200 `AuthSession` · 401 invalid credentials        |
-| POST   | `/auth/refresh`         | yes    | 200 `AuthTokens` (rotated) · 401                   |
-| POST   | `/auth/logout`          | yes    | 204 (idempotent)                                   |
-| POST   | `/auth/forgot-password` | yes    | 202, whether or not the email exists               |
-| POST   | `/auth/reset-password`  | yes    | 204 · 400 invalid or expired token                 |
-| GET    | `/users/me`             | no     | `UserProfile`                                      |
-| PATCH  | `/users/me`             | no     | `UserProfile` (only `firstName`, `avatarUrl`)      |
-| GET    | `/wardrobe`             | no     | `Page<WardrobeItem>`, filters and pagination below |
-| POST   | `/wardrobe`             | no     | 201 `WardrobeItem` (owner = authenticated user)    |
-| GET    | `/wardrobe/:id`         | no     | `WardrobeItem` · 404 if missing or not mine        |
-| PATCH  | `/wardrobe/:id`         | no     | `WardrobeItem` (partial update) · 404              |
-| DELETE | `/wardrobe/:id`         | no     | 204 · 404                                          |
+| Method | Route                                | Public | Result                                                    |
+| ------ | ------------------------------------ | ------ | --------------------------------------------------------- |
+| GET    | `/health`                            | yes    | `{ status: 'ok' }`                                        |
+| POST   | `/auth/register`                     | yes    | 201 `AuthSession` · 409 email already used                |
+| POST   | `/auth/login`                        | yes    | 200 `AuthSession` · 401 invalid credentials               |
+| POST   | `/auth/refresh`                      | yes    | 200 `AuthTokens` (rotated) · 401                          |
+| POST   | `/auth/logout`                       | yes    | 204 (idempotent)                                          |
+| POST   | `/auth/forgot-password`              | yes    | 202, whether or not the email exists                      |
+| POST   | `/auth/reset-password`               | yes    | 204 · 400 invalid or expired token                        |
+| GET    | `/users/me`                          | no     | `UserProfile`                                             |
+| PATCH  | `/users/me`                          | no     | `UserProfile` (only `firstName`, `avatarUrl`)             |
+| GET    | `/wardrobe`                          | no     | `Page<WardrobeItem>`, filters and pagination below        |
+| POST   | `/wardrobe`                          | no     | 201 `WardrobeItem` (owner = authenticated user)           |
+| GET    | `/wardrobe/:id`                      | no     | `WardrobeItem` · 404 if missing or not mine               |
+| PATCH  | `/wardrobe/:id`                      | no     | `WardrobeItem` (partial update) · 404                     |
+| DELETE | `/wardrobe/:id`                      | no     | 204 · 404                                                 |
+| POST   | `/uploads/wardrobe`                  | no     | 201 `UploadedPhoto` (multipart, field `file`) · 413 · 415 |
+| POST   | `/wardrobe/:id/photos`               | no     | 201 item · 400 unknown upload · 409 limit (5)             |
+| PATCH  | `/wardrobe/:id/photos/:photoId/main` | no     | item (this photo becomes the main one)                    |
+| DELETE | `/wardrobe/:id/photos/:photoId`      | no     | item (next photo becomes main)                            |
 
 ### Wardrobe list
 
@@ -61,6 +65,25 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 - `color` matches the main colour or a secondary one; `q` searches name, brand and sub-category.
 - `sort`: `recent` (default), `mostWorn`, `leastWorn`, `alphabetical`. `pageSize` is capped at 100.
 - Values (categories, colours, styles…) are the keys of `packages/shared/src/wardrobe/taxonomy.ts`.
+
+### Photos
+
+1. `POST /uploads/wardrobe` receives the picture. The server checks the real
+   format (JPEG, PNG or WEBP, whatever the file name), applies the camera
+   orientation, bounds it to 1600 px, re-encodes it as JPEG and **drops every
+   metadata (EXIF, GPS position)**. It returns a key owned by the user.
+2. `POST /wardrobe/:id/photos` attaches that key to an item. A key can only be
+   attached by its owner, once.
+
+Files live in a **private** S3-compatible bucket (Cloudflare R2 in production,
+the RustFS container locally). Items expose their photos through signed URLs
+valid `PHOTO_URL_TTL_SECONDS` (1 hour); the app caches them by photo id.
+Deleting a photo or an item deletes the files.
+
+Local storage: `npm run db:up` also starts RustFS on port 9010
+(credentials in `.env.example`); the bucket is created at start-up when
+`STORAGE_CREATE_BUCKET=true`. On a phone, set `STORAGE_PUBLIC_ENDPOINT` to
+`http://<your-PC-IP>:9010` so that photo links are reachable.
 
 ### Security notes
 

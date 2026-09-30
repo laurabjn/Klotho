@@ -27,16 +27,43 @@ export interface WardrobeItem {
   brand: string | null;
   size: string | null;
   status: WardrobeStatus;
+  /** Main photo first, then by position. */
+  photos: WardrobePhoto[];
   wearCount: number;
   lastWornAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
+export interface WardrobePhoto {
+  id: string;
+  itemId: string;
+  storageKey: string;
+  width: number;
+  height: number;
+  /** Order of addition; stable, never renumbered. */
+  position: number;
+  isMain: boolean;
+  createdAt: Date;
+}
+
+/** An item has exactly one main photo as soon as it has photos. */
+export function sortPhotos(photos: WardrobePhoto[]): WardrobePhoto[] {
+  return [...photos].sort(
+    (a, b) => Number(b.isMain) - Number(a.isMain) || a.position - b.position,
+  );
+}
+
 /** Fields the owner can set; usage fields are maintained by the app. */
 export type WardrobeItemFields = Omit<
   WardrobeItem,
-  'id' | 'userId' | 'wearCount' | 'lastWornAt' | 'createdAt' | 'updatedAt'
+  | 'id'
+  | 'userId'
+  | 'photos'
+  | 'wearCount'
+  | 'lastWornAt'
+  | 'createdAt'
+  | 'updatedAt'
 >;
 
 export type WardrobeItemChanges = Partial<WardrobeItemFields>;
