@@ -1,3 +1,4 @@
+import { onboardingFr, preferencesFr } from './preferences.fr';
 import { wardrobeFr } from './wardrobe.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -82,6 +83,8 @@ export const fr = {
     body: 'Cette partie de Klotho arrive dans une prochaine version.',
   },
   wardrobe: wardrobeFr,
+  onboarding: onboardingFr,
+  preferences: preferencesFr,
   home: {
     greeting: 'Bonjour {{firstName}}',
     overline: 'Envie d’écrire une nouvelle histoire aujourd’hui ?',
@@ -106,6 +109,13 @@ export const fr = {
       mismatch: 'Les mots de passe ne correspondent pas',
     },
     avatarUrl: { invalid: 'Image invalide' },
+    preferences: {
+      metal: 'Métal inconnu',
+      bottoms: 'Choix inconnu',
+      length: 'Longueur inconnue',
+      colorConflict:
+        'Une couleur ne peut pas être à la fois favorite et à éviter',
+    },
     wardrobe: {
       category: 'Choisis une catégorie',
       color: 'Choisis une couleur',

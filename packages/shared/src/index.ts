@@ -5,6 +5,7 @@ export * from './auth/types';
 export * from './wardrobe/schemas';
 export * from './wardrobe/taxonomy';
 export * from './wardrobe/types';
+export * from './preferences/schemas';
 
 export type HealthStatus = 'ok';
 

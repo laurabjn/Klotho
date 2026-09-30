@@ -61,37 +61,87 @@ export const STYLES = [
 ] as const;
 export type Style = (typeof STYLES)[number];
 
-/** Palette of the mockups ("Palette complète"), plus common basics. */
-export const COLORS = {
-  white: '#FFFFFF',
-  offWhite: '#F7F2EA',
-  ecru: '#FAEFE1',
-  sand: '#EAD8C6',
-  linen: '#DFCBB9',
-  taupe: '#9E8370',
-  caramel: '#C1885A',
-  chocolate: '#6E4533',
-  powderPink: '#EFCDC4',
-  nudePink: '#D19B8D',
-  oldRose: '#CFA397',
-  raspberry: '#914046',
-  red: '#C33F36',
-  terracotta: '#B26849',
-  orange: '#EA7D4A',
-  softYellow: '#F8DDA6',
-  lemon: '#FBE9A8',
-  sage: '#A7AB96',
-  olive: '#7D7555',
-  skyBlue: '#BBCAD9',
-  denim: '#69809A',
-  navy: '#2D3847',
-  lilac: '#CAB9C6',
-  plum: '#805556',
-  grey: '#9F9893',
-  black: '#343434',
-  gold: '#C9A27A',
-  silver: '#C0C0C4',
+/**
+ * Palette of the mockups ("Palette complète"), plus common basics, grouped by
+ * family. Items store the key, so keys are never renamed.
+ */
+export const COLOR_FAMILIES = {
+  neutrals: {
+    white: '#FFFFFF',
+    offWhite: '#F7F2EA',
+    ecru: '#FAEFE1',
+    lightGrey: '#D6D3CF',
+    grey: '#9F9893',
+    charcoal: '#4B4A4C',
+    black: '#343434',
+  },
+  browns: {
+    sand: '#EAD8C6',
+    linen: '#DFCBB9',
+    taupe: '#9E8370',
+    camel: '#C19A6B',
+    caramel: '#C1885A',
+    cognac: '#9A5B32',
+    chocolate: '#6E4533',
+  },
+  pinksAndReds: {
+    powderPink: '#EFCDC4',
+    nudePink: '#D19B8D',
+    oldRose: '#CFA397',
+    coral: '#EE8572',
+    fuchsia: '#C8407F',
+    raspberry: '#914046',
+    red: '#C33F36',
+    burgundy: '#6E2233',
+  },
+  warm: {
+    peach: '#F6C3A5',
+    orange: '#EA7D4A',
+    terracotta: '#B26849',
+    mustard: '#D1A53A',
+    softYellow: '#F8DDA6',
+    lemon: '#F2D54A',
+  },
+  greens: {
+    mint: '#BFDCC8',
+    sage: '#A7AB96',
+    khaki: '#A39A6E',
+    olive: '#7D7555',
+    emerald: '#2E7D5B',
+    forestGreen: '#2F4A3A',
+  },
+  blues: {
+    skyBlue: '#BBCAD9',
+    turquoise: '#4FB3B0',
+    denim: '#69809A',
+    petrol: '#2E5E6B',
+    royalBlue: '#3057A8',
+    navy: '#2D3847',
+  },
+  purples: {
+    lilac: '#CAB9C6',
+    mauve: '#B48AA3',
+    purple: '#6B4A8C',
+    plum: '#805556',
+  },
+  metallics: {
+    gold: '#C9A27A',
+    silver: '#C0C0C4',
+  },
 } as const;
+export type ColorFamily = keyof typeof COLOR_FAMILIES;
+export const COLOR_FAMILY_KEYS = Object.keys(COLOR_FAMILIES) as ColorFamily[];
+
+export const COLORS = {
+  ...COLOR_FAMILIES.neutrals,
+  ...COLOR_FAMILIES.browns,
+  ...COLOR_FAMILIES.pinksAndReds,
+  ...COLOR_FAMILIES.warm,
+  ...COLOR_FAMILIES.greens,
+  ...COLOR_FAMILIES.blues,
+  ...COLOR_FAMILIES.purples,
+  ...COLOR_FAMILIES.metallics,
+};
 export type ColorKey = keyof typeof COLORS;
 export const COLOR_KEYS = Object.keys(COLORS) as [ColorKey, ...ColorKey[]];
 

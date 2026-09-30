@@ -7,6 +7,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthModule } from './interfaces/http/auth/auth.module';
 import { HttpExceptionFilter } from './interfaces/http/errors/http-exception.filter';
 import { HealthController } from './interfaces/http/health/health.controller';
+import { PreferencesModule } from './interfaces/http/preferences/preferences.module';
 import { UsersModule } from './interfaces/http/users/users.module';
 import { WardrobeModule } from './interfaces/http/wardrobe/wardrobe.module';
 
@@ -22,6 +23,7 @@ import { WardrobeModule } from './interfaces/http/wardrobe/wardrobe.module';
     InfrastructureModule,
     AuthModule,
     UsersModule,
+    PreferencesModule,
     WardrobeModule,
   ],
   controllers: [HealthController],

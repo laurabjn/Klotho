@@ -1,6 +1,9 @@
 import { SUPPORTED_LOCALES, resources } from '@klotho/i18n';
 import {
+  BOTTOM_PREFERENCES,
   COLOR_KEYS,
+  LENGTHS,
+  METALS,
   PASSWORD_RULES,
   PATTERNS,
   SEASONS,
@@ -33,6 +36,9 @@ describe('wardrobe taxonomy translations', () => {
     ...WARDROBE_STATUSES.map((key) => `wardrobe.statuses.${key}`),
     ...PATTERNS.map((key) => `wardrobe.patterns.${key}`),
     ...WARDROBE_SORTS.map((key) => `wardrobe.sorts.${key}`),
+    ...METALS.map((key) => `preferences.metals.${key}`),
+    ...LENGTHS.map((key) => `preferences.lengths.${key}`),
+    ...BOTTOM_PREFERENCES.map((key) => `preferences.bottomOptions.${key}`),
     ...[1, 2, 3, 4, 5].flatMap((level) => [
       `wardrobe.warmth.${level}`,
       `wardrobe.formality.${level}`,

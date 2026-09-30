@@ -1,11 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
-import { COLOR_KEYS, COLORS, type ColorKey } from '@klotho/shared';
+import {
+  COLOR_FAMILIES,
+  COLOR_FAMILY_KEYS,
+  COLOR_KEYS,
+  COLORS,
+  type ColorFamily,
+  type ColorKey,
+} from '@klotho/shared';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { colors, radii, spacing } from '@/theme/tokens';
 
 import { AppText } from './AppText';
+import { Chip } from './Chip';
 
 type Props =
   | {
@@ -22,6 +31,11 @@ type Props =
 /** Grid of colour swatches with their name, as in the "Palette complète" mockup. */
 export function ColorPicker(props: Props) {
   const { t } = useTranslation();
+  const [family, setFamily] = useState<ColorFamily | 'all'>('all');
+  const keys =
+    family === 'all'
+      ? COLOR_KEYS
+      : (Object.keys(COLOR_FAMILIES[family]) as ColorKey[]);
 
   const isSelected = (key: ColorKey) =>
     props.multiple ? props.value.includes(key) : props.value === key;
@@ -36,49 +50,65 @@ export function ColorPicker(props: Props) {
   };
 
   return (
-    <View style={styles.grid}>
-      {COLOR_KEYS.map((key) => {
-        const selected = isSelected(key);
-        const label = t(`wardrobe.colors.${key}`);
-        return (
-          <Pressable
+    <View style={styles.container}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.families}
+      >
+        {(['all', ...COLOR_FAMILY_KEYS] as const).map((key) => (
+          <Chip
             key={key}
-            accessibilityRole={props.multiple ? 'checkbox' : 'radio'}
-            accessibilityState={
-              props.multiple ? { checked: selected } : { selected }
-            }
-            accessibilityLabel={label}
-            onPress={() => toggle(key)}
-            style={styles.cell}
-          >
-            <View
-              style={[
-                styles.swatch,
-                { backgroundColor: COLORS[key] },
-                selected && styles.swatchSelected,
-              ]}
+            label={t(`wardrobe.colorFamilies.${key}`)}
+            selected={family === key}
+            onPress={() => setFamily(key)}
+          />
+        ))}
+      </ScrollView>
+      <View style={styles.grid}>
+        {keys.map((key) => {
+          const selected = isSelected(key);
+          const label = t(`wardrobe.colors.${key}`);
+          return (
+            <Pressable
+              key={key}
+              accessibilityRole={props.multiple ? 'checkbox' : 'radio'}
+              accessibilityState={
+                props.multiple ? { checked: selected } : { selected }
+              }
+              accessibilityLabel={label}
+              onPress={() => toggle(key)}
+              style={styles.cell}
             >
-              {selected && (
-                <View style={styles.badge}>
-                  <Ionicons
-                    name="checkmark"
-                    size={12}
-                    color={colors.onPrimary}
-                  />
-                </View>
-              )}
-            </View>
-            <AppText
-              variant="hint"
-              center
-              numberOfLines={2}
-              style={styles.label}
-            >
-              {label}
-            </AppText>
-          </Pressable>
-        );
-      })}
+              <View
+                style={[
+                  styles.swatch,
+                  { backgroundColor: COLORS[key] },
+                  selected && styles.swatchSelected,
+                ]}
+              >
+                {selected && (
+                  <View style={styles.badge}>
+                    <Ionicons
+                      name="checkmark"
+                      size={12}
+                      color={colors.onPrimary}
+                    />
+                  </View>
+                )}
+              </View>
+              <AppText
+                variant="hint"
+                center
+                numberOfLines={2}
+                style={styles.label}
+              >
+                {label}
+              </AppText>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -86,6 +116,8 @@ export function ColorPicker(props: Props) {
 const SWATCH = 44;
 
 const styles = StyleSheet.create({
+  container: { gap: spacing.md },
+  families: { gap: spacing.sm, paddingVertical: 2 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: spacing.md },
   cell: { width: '20%', alignItems: 'center', gap: spacing.xs },
   swatch: {
@@ -107,5 +139,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
   },
-  label: { fontSize: 11, lineHeight: 14 },
+  // Full cell width, so that two-word names wrap instead of being cut.
+  label: { alignSelf: 'stretch', fontSize: 11, lineHeight: 14 },
 });

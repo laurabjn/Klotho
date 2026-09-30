@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
@@ -32,6 +33,12 @@ export function MeScreen() {
           body={t('comingSoon.body')}
         />
       </View>
+      <Button
+        variant="secondary"
+        icon="color-palette-outline"
+        label={t('preferences.open')}
+        onPress={() => router.push('/preferences')}
+      />
       <Button
         variant="secondary"
         icon="log-out-outline"
