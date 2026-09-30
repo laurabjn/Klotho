@@ -1,17 +1,16 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
-import { authApi } from '@/features/auth/api/auth.api';
-import { signIn, useAuthStore } from '@/features/auth/store/auth.store';
+import { signIn } from '@/features/auth/store/auth.store';
 import { renderWithProviders, session } from '@/testing/render';
 
 import { HomeScreen } from './HomeScreen';
 
 jest.mock('@/features/auth/api/auth.api');
-const api = jest.mocked(authApi);
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 
 describe('HomeScreen', () => {
   beforeEach(async () => {
-    jest.clearAllMocks();
     await signIn(session);
   });
 
@@ -23,34 +22,13 @@ describe('HomeScreen', () => {
     ).toBeOnTheScreen();
   });
 
-  it('asks for confirmation, then signs out', async () => {
-    api.logout.mockResolvedValue(undefined);
+  it('offers to add a piece', async () => {
     await renderWithProviders(<HomeScreen />);
 
     await fireEvent.press(
-      screen.getByRole('button', { name: 'Se déconnecter' }),
+      screen.getByRole('button', { name: 'Ajouter une pièce' }),
     );
-    expect(screen.getByText('Se déconnecter ?')).toBeOnTheScreen();
-    expect(useAuthStore.getState().status).toBe('signedIn');
 
-    const buttons = screen.getAllByRole('button', { name: 'Se déconnecter' });
-    await fireEvent.press(buttons[buttons.length - 1]!);
-
-    await waitFor(() =>
-      expect(useAuthStore.getState().status).toBe('signedOut'),
-    );
-    expect(api.logout).toHaveBeenCalledWith('refresh-1');
-  });
-
-  it('keeps the session when the user cancels', async () => {
-    await renderWithProviders(<HomeScreen />);
-
-    await fireEvent.press(
-      screen.getByRole('button', { name: 'Se déconnecter' }),
-    );
-    await fireEvent.press(screen.getByRole('button', { name: 'Annuler' }));
-
-    expect(screen.queryByText('Se déconnecter ?')).not.toBeOnTheScreen();
-    expect(useAuthStore.getState().status).toBe('signedIn');
+    expect(router.push).toHaveBeenCalledWith('/piece/new');
   });
 });

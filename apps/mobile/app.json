@@ -37,9 +37,6 @@
       ],
       "expo-secure-store"
     ],
-    "scheme": "klotho",
-    "experiments": {
-      "typedRoutes": true
-    }
+    "scheme": "klotho"
   }
 }

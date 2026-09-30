@@ -1,4 +1,5 @@
 import type { TranslationResource } from './fr';
+import { wardrobeEn } from './wardrobe.en';
 
 export const en: TranslationResource = {
   common: {
@@ -68,6 +69,18 @@ export const en: TranslationResource = {
         'You will need to sign in again to access your account and your wardrobe.',
     },
   },
+  tabs: {
+    home: 'Home',
+    wardrobe: 'My wardrobe',
+    inspirations: 'Inspiration',
+    calendar: 'Calendar',
+    me: 'Me',
+  },
+  comingSoon: {
+    title: 'Coming soon',
+    body: 'This part of Klotho is coming in a future version.',
+  },
+  wardrobe: wardrobeEn,
   home: {
     greeting: 'Hello {{firstName}}',
     overline: 'Ready to write a new story today?',
@@ -91,6 +104,19 @@ export const en: TranslationResource = {
       mismatch: 'Passwords do not match',
     },
     avatarUrl: { invalid: 'Invalid image' },
+    wardrobe: {
+      category: 'Choose a category',
+      color: 'Choose a colour',
+      style: 'Unknown style',
+      season: 'Unknown season',
+      status: 'Unknown status',
+      pattern: 'Unknown pattern',
+      level: 'Choose a level between 1 and 5',
+      temperature: 'Between -30 °C and 50 °C',
+      temperatureRange: 'The maximum must be above the minimum',
+      tooLong: 'Text too long',
+      tooMany: 'Too many choices',
+    },
   },
   apiErrors: {
     auth: {
@@ -100,6 +126,10 @@ export const en: TranslationResource = {
       invalidResetToken:
         'This link has expired or was already used. Request a new one.',
       unauthorized: 'Your session has expired. Please sign in again.',
+    },
+    wardrobe: {
+      notFound: 'This piece no longer exists.',
+      invalidTemperatureRange: 'The maximum must be above the minimum.',
     },
     validation: { failed: 'Some fields are invalid.' },
     request: { tooMany: 'Too many attempts. Try again in a few minutes.' },

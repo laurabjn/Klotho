@@ -63,6 +63,10 @@ export function Button({
           )}
           {icon && <Ionicons name={icon} size={18} color={textColor} />}
           <Text
+            // Never wrap a button label: shrink it slightly when space is short.
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
             style={[
               styles.label,
               variant === 'link' && styles.linkLabel,
@@ -85,7 +89,7 @@ const styles = StyleSheet.create({
   primary: {
     minHeight: 54,
     borderRadius: radii.pill,
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: spacing.xl,
     backgroundColor: colors.primary,
     shadowColor: colors.primary,
     shadowOpacity: 0.35,
@@ -97,7 +101,7 @@ const styles = StyleSheet.create({
   secondary: {
     minHeight: 52,
     borderRadius: radii.pill,
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: spacing.xl,
     borderWidth: 1,
     borderColor: colors.primary,
     backgroundColor: 'transparent',
@@ -105,7 +109,12 @@ const styles = StyleSheet.create({
   link: { minHeight: touchTarget, paddingHorizontal: spacing.sm },
   pressed: { opacity: 0.6 },
   disabled: { opacity: 0.5 },
-  content: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  label: { fontFamily: fonts.serif, fontSize: 20 },
+  content: {
+    maxWidth: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  label: { flexShrink: 1, fontFamily: fonts.serif, fontSize: 20 },
   linkLabel: { fontSize: 17, textDecorationLine: 'underline' },
 });

@@ -8,6 +8,7 @@ import { AuthModule } from './interfaces/http/auth/auth.module';
 import { HttpExceptionFilter } from './interfaces/http/errors/http-exception.filter';
 import { HealthController } from './interfaces/http/health/health.controller';
 import { UsersModule } from './interfaces/http/users/users.module';
+import { WardrobeModule } from './interfaces/http/wardrobe/wardrobe.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from './interfaces/http/users/users.module';
     InfrastructureModule,
     AuthModule,
     UsersModule,
+    WardrobeModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: HttpExceptionFilter }],

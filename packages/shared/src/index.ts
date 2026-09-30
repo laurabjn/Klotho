@@ -2,6 +2,9 @@
 
 export * from './auth/schemas';
 export * from './auth/types';
+export * from './wardrobe/schemas';
+export * from './wardrobe/taxonomy';
+export * from './wardrobe/types';
 
 export type HealthStatus = 'ok';
 
