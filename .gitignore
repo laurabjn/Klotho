@@ -3,6 +3,8 @@ node_modules/
 
 # Builds
 dist/
+# Compiled demo scripts (apps/api: db:seed:demo, outfits:demo)
+.scripts/
 coverage/
 .turbo/
 *.tsbuildinfo

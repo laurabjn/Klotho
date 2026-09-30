@@ -7,6 +7,7 @@ export * from './wardrobe/taxonomy';
 export * from './wardrobe/types';
 export * from './preferences/schemas';
 export * from './weather/schemas';
+export * from './outfits/taxonomy';
 
 export type HealthStatus = 'ok';
 
