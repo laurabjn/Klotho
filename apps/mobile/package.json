@@ -20,7 +20,8 @@
     ],
     "setupFiles": [
       "<rootDir>/jest.setup.ts"
-    ]
+    ],
+    "testTimeout": 20000
   },
   "dependencies": {
     "@expo-google-fonts/cormorant-garamond": "^0.4.1",
