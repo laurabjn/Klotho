@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
+import { FormError } from '@/components/ui/FormError';
 import { colors, radii, spacing } from '@/theme/tokens';
 
 import type { LocalPhoto } from './pick-photo';
@@ -99,6 +100,7 @@ export function LocalPhotoGrid({ photos, onChange }: LocalPhotoGridProps) {
           ? t('wardrobe.photos.mainHint')
           : t('wardrobe.photos.limit', { max: PHOTOS_MAX_PER_ITEM })}
       </AppText>
+      <FormError message={source.error} />
       {source.element}
     </View>
   );

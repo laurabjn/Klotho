@@ -208,6 +208,10 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
     '5': 'Very dressy',
   },
   photos: {
+    primerBody:
+      'It lets you add your pieces to your wardrobe easily, by taking a photo or importing it from your gallery.',
+    allow: 'Allow access',
+    later: 'Not now',
     title: 'Photos',
     add: 'Add a photo',
     sourceTitle: 'Add a photo',
@@ -226,6 +230,7 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
     mainHint:
       'The first photo is the main one. Tap another photo to choose it.',
     uploading: 'Uploading photos…',
+    pickFailed: 'The photo could not be loaded. Try again.',
     uploadFailed_one:
       'One photo could not be uploaded. You can add it again from this page.',
     uploadFailed_other:

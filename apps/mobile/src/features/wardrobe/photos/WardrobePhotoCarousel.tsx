@@ -141,7 +141,9 @@ export function WardrobePhotoCarousel({ item }: { item: WardrobeItem }) {
       </View>
       <FormError
         message={
-          error ? t(errorMessageKey(error) as 'apiErrors.unknown') : null
+          error
+            ? t(errorMessageKey(error) as 'apiErrors.unknown')
+            : source.error
         }
       />
       {source.element}

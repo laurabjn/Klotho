@@ -207,6 +207,10 @@ export const wardrobeFr = {
     '5': 'Très habillé',
   },
   photos: {
+    primerBody:
+      'Cela nous permet d’ajouter facilement tes pièces à ton dressing, en les prenant en photo ou en les important depuis ta galerie.',
+    allow: 'Autoriser l’accès',
+    later: 'Plus tard',
     title: 'Photos',
     add: 'Ajouter une photo',
     sourceTitle: 'Ajouter une photo',
@@ -225,6 +229,7 @@ export const wardrobeFr = {
     mainHint:
       'La première photo est la photo principale. Appuie sur une autre photo pour la choisir.',
     uploading: 'Envoi des photos…',
+    pickFailed: 'La photo n’a pas pu être chargée. Réessaie.',
     uploadFailed_one:
       'Une photo n’a pas pu être envoyée. Tu peux la rajouter depuis cette fiche.',
     uploadFailed_other:

@@ -20,6 +20,21 @@ export type PickResult =
 const MAX_SIDE = 1600;
 const JPEG_QUALITY = 0.8;
 
+/**
+ * Current permission, without asking: "ask" means the system dialog can
+ * still be shown, "blocked" that only the phone settings can grant it.
+ */
+export async function permissionState(
+  source: PhotoSource,
+): Promise<'granted' | 'ask' | 'blocked'> {
+  const response =
+    source === 'camera'
+      ? await ImagePicker.getCameraPermissionsAsync()
+      : await ImagePicker.getMediaLibraryPermissionsAsync();
+  if (response.granted) return 'granted';
+  return response.canAskAgain ? 'ask' : 'blocked';
+}
+
 async function ensurePermission(source: PhotoSource) {
   const response =
     source === 'camera'

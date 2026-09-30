@@ -1,9 +1,11 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 
-import { compressPhoto, pickPhoto } from './pick-photo';
+import { compressPhoto, permissionState, pickPhoto } from './pick-photo';
 
 jest.mock('expo-image-picker', () => ({
+  getCameraPermissionsAsync: jest.fn(),
+  getMediaLibraryPermissionsAsync: jest.fn(),
   requestCameraPermissionsAsync: jest.fn(),
   requestMediaLibraryPermissionsAsync: jest.fn(),
   launchCameraAsync: jest.fn(),
@@ -109,4 +111,22 @@ describe('pickPhoto', () => {
     await expect(pickPhoto('library')).resolves.toEqual({ status: 'canceled' });
     expect(mockSaveAsync).not.toHaveBeenCalled();
   });
+});
+
+describe('permissionState', () => {
+  it.each([
+    [{ granted: true, canAskAgain: true }, 'granted'],
+    [{ granted: false, canAskAgain: true }, 'ask'],
+    [{ granted: false, canAskAgain: false }, 'blocked'],
+  ] as const)(
+    'reads the permission without asking (%#)',
+    async (response, expected) => {
+      picker.getCameraPermissionsAsync.mockResolvedValue(
+        response as unknown as ImagePicker.PermissionResponse,
+      );
+
+      await expect(permissionState('camera')).resolves.toBe(expected);
+      expect(picker.requestCameraPermissionsAsync).not.toHaveBeenCalled();
+    },
+  );
 });

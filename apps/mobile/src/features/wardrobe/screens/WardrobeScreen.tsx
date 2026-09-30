@@ -260,6 +260,11 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    // Full height of the bar: Android otherwise clips the tall serif glyphs
+    // of the placeholder (Cormorant has long ascenders and descenders).
+    alignSelf: 'stretch',
+    paddingVertical: 0,
+    textAlignVertical: 'center',
     fontFamily: fonts.serifRegular,
     fontSize: 17,
     color: colors.title,

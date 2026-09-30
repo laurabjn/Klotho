@@ -12,7 +12,7 @@ import { renderWithProviders } from '@/testing/render';
 
 import { photosApi } from '../api/photos.api';
 import { wardrobeApi } from '../api/wardrobe.api';
-import { pickPhoto } from '../photos/pick-photo';
+import { permissionState, pickPhoto } from '../photos/pick-photo';
 import { page, wardrobeItem } from '../testing';
 import { AddWardrobeItemScreen } from './AddWardrobeItemScreen';
 import { EditWardrobeItemScreen } from './EditWardrobeItemScreen';
@@ -20,7 +20,10 @@ import { WardrobeItemDetailsScreen } from './WardrobeItemDetailsScreen';
 import { WardrobeScreen } from './WardrobeScreen';
 
 jest.mock('../api/wardrobe.api');
-jest.mock('../photos/pick-photo', () => ({ pickPhoto: jest.fn() }));
+jest.mock('../photos/pick-photo', () => ({
+  pickPhoto: jest.fn(),
+  permissionState: jest.fn(),
+}));
 jest.mock('expo-router', () => ({
   router: {
     push: jest.fn(),
@@ -39,6 +42,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   jest.restoreAllMocks();
   jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+  // Permission already granted unless a test says otherwise.
+  jest.mocked(permissionState).mockResolvedValue('granted');
 });
 
 describe('WardrobeScreen', () => {
@@ -251,10 +256,40 @@ describe('AddWardrobeItemScreen', () => {
     );
   });
 
-  it('explains how to allow the camera after a refusal', async () => {
-    jest
-      .mocked(pickPhoto)
-      .mockResolvedValue({ status: 'denied', canAskAgain: false });
+  it('explains why before the system permission dialog', async () => {
+    jest.mocked(permissionState).mockResolvedValue('ask');
+    jest.mocked(pickPhoto).mockResolvedValue({ status: 'canceled' });
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    await press('Ajouter une photo');
+    await press('Choisir dans la galerie');
+
+    expect(
+      await screen.findByText('Autoriser l’accès à tes photos'),
+    ).toBeOnTheScreen();
+    expect(pickPhoto).not.toHaveBeenCalled();
+    await press('Autoriser l’accès');
+    await waitFor(() => expect(pickPhoto).toHaveBeenCalledWith('library'));
+  });
+
+  it('asks nothing when the user chooses "Plus tard"', async () => {
+    jest.mocked(permissionState).mockResolvedValue('ask');
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    await press('Ajouter une photo');
+    await press('Prendre une photo');
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Plus tard' }),
+    );
+
+    expect(
+      screen.queryByText('Autoriser l’appareil photo'),
+    ).not.toBeOnTheScreen();
+    expect(pickPhoto).not.toHaveBeenCalled();
+  });
+
+  it('points to the settings when the permission was refused for good', async () => {
+    jest.mocked(permissionState).mockResolvedValue('blocked');
     await renderWithProviders(<AddWardrobeItemScreen />);
 
     await press('Ajouter une photo');
@@ -263,6 +298,7 @@ describe('AddWardrobeItemScreen', () => {
     expect(
       await screen.findByText('Autoriser l’appareil photo'),
     ).toBeOnTheScreen();
+    expect(pickPhoto).not.toHaveBeenCalled();
     await press('Ouvrir les réglages');
     expect(Linking.openSettings).toHaveBeenCalled();
   });
@@ -437,6 +473,13 @@ describe('WardrobeItemDetailsScreen', () => {
 
       await waitFor(() => expect(attach).toHaveBeenCalledWith('item-42', 'k'));
       expect(await screen.findByLabelText('Photo 3 sur 3')).toBeOnTheScreen();
+      // Let the button leave its loading state before the test ends.
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', { name: 'Ajouter une photo' }).props
+            .accessibilityState,
+        ).toMatchObject({ busy: false }),
+      );
     });
 
     it('deletes the displayed photo after confirmation', async () => {
@@ -455,6 +498,11 @@ describe('WardrobeItemDetailsScreen', () => {
 
       await waitFor(() => expect(remove).toHaveBeenCalledWith('item-42', 'p1'));
       expect(await screen.findByLabelText('Photo 1 sur 1')).toBeOnTheScreen();
+      await waitFor(() =>
+        expect(
+          screen.queryByText('Supprimer cette photo ?'),
+        ).not.toBeOnTheScreen(),
+      );
     });
 
     it('tells when photos of the add flow could not be uploaded', async () => {

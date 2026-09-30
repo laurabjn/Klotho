@@ -1,4 +1,5 @@
 import type { UploadedPhoto, WardrobeItem } from '@klotho/shared';
+import { File } from 'expo-file-system';
 
 import { request } from '@/lib/api/http';
 
@@ -8,12 +9,9 @@ export const photosApi = {
   /** Step 1: sends the picture; the server re-encodes it and strips its metadata. */
   upload: (photo: LocalPhoto) => {
     const form = new FormData();
-    // React Native reads the file from its URI when given this shape.
-    form.append('file', {
-      uri: photo.uri,
-      name: 'photo.jpg',
-      type: 'image/jpeg',
-    } as unknown as Blob);
+    // Expo replaces the global fetch with expo/fetch, which does not support
+    // React Native's { uri, name, type } parts: send a real File (a Blob).
+    form.append('file', new File(photo.uri));
     return request<UploadedPhoto>('/uploads/wardrobe', {
       method: 'POST',
       form,
