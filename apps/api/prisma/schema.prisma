@@ -19,6 +19,7 @@ model User {
 
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  wardrobeItems       WardrobeItem[]
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -49,4 +50,57 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum WardrobeCategory {
+  TOP
+  BOTTOM
+  DRESS
+  LAYER
+  SHOES
+  BAG
+  ACCESSORY
+  JEWELRY
+  UNDERWEAR
+}
+
+enum WardrobeStatus {
+  AVAILABLE
+  WASHING
+  LENT
+  ARCHIVED
+  SOLD
+  DONATED
+}
+
+/// Colours, styles, seasons and pattern are keys of the shared taxonomy (packages/shared).
+model WardrobeItem {
+  id              String           @id @default(cuid())
+  userId          String
+  name            String?
+  category        WardrobeCategory
+  subcategory     String?
+  primaryColor    String
+  secondaryColors String[]
+  pattern         String?
+  material        String?
+  styles          String[]
+  seasons         String[]
+  minTemperature  Int?
+  maxTemperature  Int?
+  warmthLevel     Int?
+  formalityLevel  Int?
+  brand           String?
+  size            String?
+  status          WardrobeStatus   @default(AVAILABLE)
+  wearCount       Int              @default(0)
+  lastWornAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category, status])
+  @@index([userId, createdAt])
+  @@index([userId, lastWornAt])
 }

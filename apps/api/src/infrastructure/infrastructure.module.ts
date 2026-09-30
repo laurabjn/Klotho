@@ -13,6 +13,7 @@ import { SECURE_TOKEN_GENERATOR } from '../domain/auth/ports/secure-token.genera
 import { MAILER } from '../domain/notifications/ports/mailer';
 import { CLOCK } from '../domain/shared/ports/clock';
 import { USER_REPOSITORY } from '../domain/users/ports/user.repository';
+import { WARDROBE_REPOSITORY } from '../domain/wardrobe/ports/wardrobe.repository';
 import type { Env } from '../config/env';
 import { BcryptPasswordHasher } from './auth/bcrypt-password-hasher';
 import { CryptoSecureTokenGenerator } from './auth/crypto-secure-token.generator';
@@ -22,6 +23,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
 import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token.repository';
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository';
+import { PrismaWardrobeRepository } from './prisma/repositories/prisma-wardrobe.repository';
 import { SystemClock } from './time/system-clock';
 
 type Config = ConfigService<Env, true>;
@@ -32,6 +34,7 @@ type Config = ConfigService<Env, true>;
   providers: [
     PrismaService,
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
+    { provide: WARDROBE_REPOSITORY, useClass: PrismaWardrobeRepository },
     {
       provide: REFRESH_TOKEN_REPOSITORY,
       useClass: PrismaRefreshTokenRepository,
@@ -75,6 +78,7 @@ type Config = ConfigService<Env, true>;
   exports: [
     PrismaService,
     USER_REPOSITORY,
+    WARDROBE_REPOSITORY,
     REFRESH_TOKEN_REPOSITORY,
     PASSWORD_RESET_TOKEN_REPOSITORY,
     SECURE_TOKEN_GENERATOR,

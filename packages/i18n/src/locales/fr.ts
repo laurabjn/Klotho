@@ -1,3 +1,5 @@
+import { wardrobeFr } from './wardrobe.fr';
+
 // French is the reference locale: every other locale must match its keys.
 // Tone: tutoiement everywhere.
 export const fr = {
@@ -68,6 +70,18 @@ export const fr = {
         'Tu devras te reconnecter pour accéder à ton compte et à ton dressing.',
     },
   },
+  tabs: {
+    home: 'Accueil',
+    wardrobe: 'Ma garde-robe',
+    inspirations: 'Inspirations',
+    calendar: 'Calendrier',
+    me: 'Moi',
+  },
+  comingSoon: {
+    title: 'Bientôt disponible',
+    body: 'Cette partie de Klotho arrive dans une prochaine version.',
+  },
+  wardrobe: wardrobeFr,
   home: {
     greeting: 'Bonjour {{firstName}}',
     overline: 'Envie d’écrire une nouvelle histoire aujourd’hui ?',
@@ -92,6 +106,19 @@ export const fr = {
       mismatch: 'Les mots de passe ne correspondent pas',
     },
     avatarUrl: { invalid: 'Image invalide' },
+    wardrobe: {
+      category: 'Choisis une catégorie',
+      color: 'Choisis une couleur',
+      style: 'Style inconnu',
+      season: 'Saison inconnue',
+      status: 'Statut inconnu',
+      pattern: 'Motif inconnu',
+      level: 'Choisis un niveau entre 1 et 5',
+      temperature: 'Entre -30 °C et 50 °C',
+      temperatureRange: 'Le maximum doit être supérieur au minimum',
+      tooLong: 'Texte trop long',
+      tooMany: 'Trop de choix',
+    },
   },
   // API error codes (ApiErrorBody.code).
   apiErrors: {
@@ -102,6 +129,10 @@ export const fr = {
       invalidResetToken:
         'Ce lien a expiré ou a déjà été utilisé. Demande un nouveau lien.',
       unauthorized: 'Ta session a expiré. Reconnecte-toi.',
+    },
+    wardrobe: {
+      notFound: "Cette pièce n'existe plus.",
+      invalidTemperatureRange: 'Le maximum doit être supérieur au minimum.',
     },
     validation: { failed: 'Certains champs sont invalides.' },
     request: { tooMany: 'Trop de tentatives. Réessaie dans quelques minutes.' },

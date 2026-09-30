@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,26 +6,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { KlothoBrandRow } from '@/components/brand/KlothoLogo';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { GoldRule } from '@/components/ui/GoldRule';
-import { signOut, useAuthStore } from '@/features/auth/store/auth.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { colors, spacing } from '@/theme/tokens';
 
-/** Placeholder home until Sprint 2+ (weather, outfit of the day, wardrobe). */
+/** Placeholder home until the weather and outfit of the day (Sprints 5-7). */
 export function HomeScreen() {
   const { t } = useTranslation();
   const firstName = useAuthStore((state) => state.user?.firstName ?? '');
-  const [confirmVisible, setConfirmVisible] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
-
-  const handleSignOut = async () => {
-    setSigningOut(true);
-    // Unmounts this screen once the session is cleared.
-    await signOut();
-  };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <KlothoBrandRow />
       <View style={styles.content}>
         <AppText variant="title">{t('home.greeting', { firstName })}</AppText>
@@ -34,21 +25,8 @@ export function HomeScreen() {
         <AppText>{t('home.subtitle')}</AppText>
       </View>
       <Button
-        variant="secondary"
-        icon="log-out-outline"
-        label={t('auth.logout.action')}
-        onPress={() => setConfirmVisible(true)}
-      />
-      <ConfirmDialog
-        visible={confirmVisible}
-        icon="log-out-outline"
-        title={t('auth.logout.confirmTitle')}
-        message={t('auth.logout.confirmBody')}
-        confirmLabel={t('auth.logout.action')}
-        cancelLabel={t('common.cancel')}
-        loading={signingOut}
-        onConfirm={() => void handleSignOut()}
-        onCancel={() => setConfirmVisible(false)}
+        label={t('wardrobe.add')}
+        onPress={() => router.push('/piece/new')}
       />
     </SafeAreaView>
   );

@@ -36,17 +36,31 @@ npm run dev                # http://localhost:3100/health
 
 Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 
-| Method | Route                   | Public | Result                                        |
-| ------ | ----------------------- | ------ | --------------------------------------------- |
-| GET    | `/health`               | yes    | `{ status: 'ok' }`                            |
-| POST   | `/auth/register`        | yes    | 201 `AuthSession` · 409 email already used    |
-| POST   | `/auth/login`           | yes    | 200 `AuthSession` · 401 invalid credentials   |
-| POST   | `/auth/refresh`         | yes    | 200 `AuthTokens` (rotated) · 401              |
-| POST   | `/auth/logout`          | yes    | 204 (idempotent)                              |
-| POST   | `/auth/forgot-password` | yes    | 202, whether or not the email exists          |
-| POST   | `/auth/reset-password`  | yes    | 204 · 400 invalid or expired token            |
-| GET    | `/users/me`             | no     | `UserProfile`                                 |
-| PATCH  | `/users/me`             | no     | `UserProfile` (only `firstName`, `avatarUrl`) |
+| Method | Route                   | Public | Result                                             |
+| ------ | ----------------------- | ------ | -------------------------------------------------- |
+| GET    | `/health`               | yes    | `{ status: 'ok' }`                                 |
+| POST   | `/auth/register`        | yes    | 201 `AuthSession` · 409 email already used         |
+| POST   | `/auth/login`           | yes    | 200 `AuthSession` · 401 invalid credentials        |
+| POST   | `/auth/refresh`         | yes    | 200 `AuthTokens` (rotated) · 401                   |
+| POST   | `/auth/logout`          | yes    | 204 (idempotent)                                   |
+| POST   | `/auth/forgot-password` | yes    | 202, whether or not the email exists               |
+| POST   | `/auth/reset-password`  | yes    | 204 · 400 invalid or expired token                 |
+| GET    | `/users/me`             | no     | `UserProfile`                                      |
+| PATCH  | `/users/me`             | no     | `UserProfile` (only `firstName`, `avatarUrl`)      |
+| GET    | `/wardrobe`             | no     | `Page<WardrobeItem>`, filters and pagination below |
+| POST   | `/wardrobe`             | no     | 201 `WardrobeItem` (owner = authenticated user)    |
+| GET    | `/wardrobe/:id`         | no     | `WardrobeItem` · 404 if missing or not mine        |
+| PATCH  | `/wardrobe/:id`         | no     | `WardrobeItem` (partial update) · 404              |
+| DELETE | `/wardrobe/:id`         | no     | 204 · 404                                          |
+
+### Wardrobe list
+
+`GET /wardrobe?page=1&pageSize=24&category=TOP,BOTTOM&color=gold&season=summer&style=chic&status=AVAILABLE&q=levis&sort=recent`
+
+- Every filter is optional; lists are comma separated (OR inside a filter, AND between filters).
+- `color` matches the main colour or a secondary one; `q` searches name, brand and sub-category.
+- `sort`: `recent` (default), `mostWorn`, `leastWorn`, `alphabetical`. `pageSize` is capped at 100.
+- Values (categories, colours, styles…) are the keys of `packages/shared/src/wardrobe/taxonomy.ts`.
 
 ### Security notes
 

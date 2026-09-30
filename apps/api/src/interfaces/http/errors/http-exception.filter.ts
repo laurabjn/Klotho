@@ -19,6 +19,10 @@ import {
   EmailAlreadyUsedError,
   UserNotFoundError,
 } from '../../../domain/users/errors';
+import {
+  InvalidTemperatureRangeError,
+  WardrobeItemNotFoundError,
+} from '../../../domain/wardrobe/errors';
 
 const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [EmailAlreadyUsedError, HttpStatus.CONFLICT],
@@ -27,6 +31,8 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [InvalidResetTokenError, HttpStatus.BAD_REQUEST],
   // Neutral 404: the user behind a valid token no longer exists.
   [UserNotFoundError, HttpStatus.NOT_FOUND],
+  [WardrobeItemNotFoundError, HttpStatus.NOT_FOUND],
+  [InvalidTemperatureRangeError, HttpStatus.BAD_REQUEST],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {
