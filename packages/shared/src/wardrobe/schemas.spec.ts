@@ -5,6 +5,7 @@ import {
 } from './schemas';
 import {
   COLORS,
+  COLOR_FAMILIES,
   COLOR_KEYS,
   SUBCATEGORIES,
   WARDROBE_CATEGORIES,
@@ -18,6 +19,17 @@ const minimal = { category: 'TOP', primaryColor: 'powderPink' };
 describe('taxonomy', () => {
   it('gives every colour a hex value', () => {
     for (const key of COLOR_KEYS) expect(COLORS[key]).toMatch(/^#[0-9A-F]{6}$/);
+  });
+
+  it('puts every colour in exactly one family', () => {
+    const grouped = Object.values(COLOR_FAMILIES).flatMap(Object.keys);
+    expect(grouped).toHaveLength(COLOR_KEYS.length);
+    expect(new Set(grouped)).toEqual(new Set(COLOR_KEYS));
+  });
+
+  it('keeps the colours already stored on items', () => {
+    for (const key of ['softYellow', 'lemon', 'navy', 'gold'])
+      expect(COLOR_KEYS).toContain(key);
   });
 
   it('suggests sub-categories for every category', () => {
@@ -42,7 +54,7 @@ describe('createWardrobeItemSchema', () => {
     [{ primaryColor: 'black' }, 'errors.wardrobe.category'],
     [{ category: 'TOP' }, 'errors.wardrobe.color'],
     [{ ...minimal, category: 'HAT' }, 'errors.wardrobe.category'],
-    [{ ...minimal, primaryColor: 'fuchsia' }, 'errors.wardrobe.color'],
+    [{ ...minimal, primaryColor: 'neonGreen' }, 'errors.wardrobe.color'],
     [{ ...minimal, styles: ['gothic'] }, 'errors.wardrobe.style'],
     [{ ...minimal, seasons: ['monsoon'] }, 'errors.wardrobe.season'],
     [{ ...minimal, status: 'LOST' }, 'errors.wardrobe.status'],

@@ -14,6 +14,7 @@ import { PASSWORD_HASHER } from '../domain/auth/ports/password-hasher';
 import { PASSWORD_RESET_TOKEN_REPOSITORY } from '../domain/auth/ports/password-reset-token.repository';
 import { REFRESH_TOKEN_REPOSITORY } from '../domain/auth/ports/refresh-token.repository';
 import { SECURE_TOKEN_GENERATOR } from '../domain/auth/ports/secure-token.generator';
+import { STYLE_PROFILE_REPOSITORY } from '../domain/preferences/ports/style-profile.repository';
 import { MAILER } from '../domain/notifications/ports/mailer';
 import { CLOCK } from '../domain/shared/ports/clock';
 import { FILE_STORAGE } from '../domain/storage/ports/file-storage';
@@ -29,6 +30,7 @@ import { ConsoleMailer } from './mail/console-mailer';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
 import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token.repository';
+import { PrismaStyleProfileRepository } from './prisma/repositories/prisma-style-profile.repository';
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository';
 import { PrismaWardrobePhotoRepository } from './prisma/repositories/prisma-wardrobe-photo.repository';
 import { PrismaWardrobeRepository } from './prisma/repositories/prisma-wardrobe.repository';
@@ -45,6 +47,10 @@ type Config = ConfigService<Env, true>;
     PrismaService,
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
     { provide: WARDROBE_REPOSITORY, useClass: PrismaWardrobeRepository },
+    {
+      provide: STYLE_PROFILE_REPOSITORY,
+      useClass: PrismaStyleProfileRepository,
+    },
     {
       provide: WARDROBE_PHOTO_REPOSITORY,
       useClass: PrismaWardrobePhotoRepository,
@@ -124,6 +130,7 @@ type Config = ConfigService<Env, true>;
     PrismaService,
     USER_REPOSITORY,
     WARDROBE_REPOSITORY,
+    STYLE_PROFILE_REPOSITORY,
     WARDROBE_PHOTO_REPOSITORY,
     IMAGE_PROCESSOR,
     FILE_STORAGE,

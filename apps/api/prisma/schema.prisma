@@ -20,6 +20,7 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   wardrobeItems       WardrobeItem[]
+  styleProfile        StyleProfile?
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -120,4 +121,25 @@ model WardrobeItemPhoto {
   item WardrobeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   @@index([itemId, position])
+}
+
+/// One per user, created by the onboarding (or its "skip"). Keys come from packages/shared.
+model StyleProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  preferredStyles     String[]
+  preferredColors     String[]
+  avoidedColors       String[]
+  facePreferredColors String[]
+  colorSeason         String?
+  preferredMetals     String[]
+  acceptsHeels        Boolean?
+  preferredBottoms    String[]
+  preferredFormality  Int?
+  minLength           String?
+  avoidsDeepNeckline  Boolean?
+  onboardedAt         DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

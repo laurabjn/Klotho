@@ -1,9 +1,11 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, type ColorValue } from 'react-native';
 
+import { SplashView } from '@/components/brand/SplashView';
+import { useStyleProfile } from '@/features/preferences/hooks/useStyleProfile';
 import { colors, fonts } from '@/theme/tokens';
 
 type IconProps = { color: ColorValue; focused: boolean };
@@ -43,6 +45,16 @@ function ionicon(
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  const profile = useStyleProfile();
+
+  // The onboarding is offered once, until it is completed or skipped. If the
+  // profile cannot be loaded (offline), the app stays usable.
+  if (profile.isPending) {
+    return <SplashView />;
+  }
+  if (profile.data && !profile.data.onboardingCompleted) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <Tabs

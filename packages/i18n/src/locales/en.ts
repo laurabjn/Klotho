@@ -1,4 +1,5 @@
 import type { TranslationResource } from './fr';
+import { onboardingEn, preferencesEn } from './preferences.en';
 import { wardrobeEn } from './wardrobe.en';
 
 export const en: TranslationResource = {
@@ -81,6 +82,8 @@ export const en: TranslationResource = {
     body: 'This part of Klotho is coming in a future version.',
   },
   wardrobe: wardrobeEn,
+  onboarding: onboardingEn,
+  preferences: preferencesEn,
   home: {
     greeting: 'Hello {{firstName}}',
     overline: 'Ready to write a new story today?',
@@ -104,6 +107,12 @@ export const en: TranslationResource = {
       mismatch: 'Passwords do not match',
     },
     avatarUrl: { invalid: 'Invalid image' },
+    preferences: {
+      metal: 'Unknown metal',
+      bottoms: 'Unknown choice',
+      length: 'Unknown length',
+      colorConflict: 'A colour cannot be both a favourite and to avoid',
+    },
     wardrobe: {
       category: 'Choose a category',
       color: 'Choose a colour',

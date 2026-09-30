@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import { authApi } from '@/features/auth/api/auth.api';
 import { signIn, useAuthStore } from '@/features/auth/store/auth.store';
@@ -7,12 +8,23 @@ import { renderWithProviders, session } from '@/testing/render';
 import { MeScreen } from './MeScreen';
 
 jest.mock('@/features/auth/api/auth.api');
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 const api = jest.mocked(authApi);
 
 describe('MeScreen', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     await signIn(session);
+  });
+
+  it('opens the preferences', async () => {
+    await renderWithProviders(<MeScreen />);
+
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Mes préférences' }),
+    );
+
+    expect(router.push).toHaveBeenCalledWith('/preferences');
   });
 
   it('shows who is signed in', async () => {
