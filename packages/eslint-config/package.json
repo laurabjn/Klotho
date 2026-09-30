@@ -1,0 +1,18 @@
+{
+  "name": "@klotho/eslint-config",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./node": "./node.js"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.71.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9"
+  }
+}

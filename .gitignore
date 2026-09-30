@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# Environment - only .env.example files are committed
+.env
+.env.*
+!.env.example
+
+# Generated
+apps/api/src/generated/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
