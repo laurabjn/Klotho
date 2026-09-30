@@ -206,11 +206,42 @@ export const wardrobeFr = {
     '4': 'Habillé',
     '5': 'Très habillé',
   },
+  photos: {
+    title: 'Photos',
+    add: 'Ajouter une photo',
+    sourceTitle: 'Ajouter une photo',
+    camera: 'Prendre une photo',
+    library: 'Choisir dans la galerie',
+    main: 'Principale',
+    setMain: 'Définir comme principale',
+    remove: 'Retirer la photo',
+    delete: 'Supprimer la photo',
+    deleteTitle: 'Supprimer cette photo ?',
+    deleteBody: 'La pièce reste dans ta garde-robe.',
+    count: '{{count}}/{{max}} photos',
+    limit: 'Tu peux ajouter jusqu’à {{max}} photos.',
+    stepHint:
+      'Ajoute une ou plusieurs photos pour reconnaître ta pièce en un coup d’œil. Tu pourras aussi le faire plus tard.',
+    mainHint:
+      'La première photo est la photo principale. Appuie sur une autre photo pour la choisir.',
+    uploading: 'Envoi des photos…',
+    uploadFailed_one:
+      'Une photo n’a pas pu être envoyée. Tu peux la rajouter depuis cette fiche.',
+    uploadFailed_other:
+      '{{count}} photos n’ont pas pu être envoyées. Tu peux les rajouter depuis cette fiche.',
+    permissionLibraryTitle: 'Autoriser l’accès à tes photos',
+    permissionCameraTitle: 'Autoriser l’appareil photo',
+    permissionBody:
+      'Klotho en a besoin pour ajouter tes pièces. Tu peux l’autoriser dans les réglages de ton téléphone.',
+    openSettings: 'Ouvrir les réglages',
+    photoOf: 'Photo {{index}} sur {{count}}',
+  },
   form: {
     addTitle: 'Ajouter une pièce',
     editTitle: 'Modifier la pièce',
     step: 'Étape {{current}}/{{total}}',
     steps: {
+      photo: 'Photo',
       info: 'Infos',
       colors: 'Couleurs',
       style: 'Style',

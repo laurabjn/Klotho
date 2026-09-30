@@ -122,6 +122,13 @@ export const fr = {
   },
   // API error codes (ApiErrorBody.code).
   apiErrors: {
+    uploads: {
+      invalidImage:
+        'Ce fichier n’est pas une photo valide (JPEG, PNG ou WEBP).',
+      tooLarge: 'Cette photo est trop lourde.',
+      notFound: 'La photo n’a pas pu être ajoutée. Réessaie.',
+      missingFile: 'Aucune photo n’a été envoyée.',
+    },
     auth: {
       emailAlreadyUsed: 'Un compte existe déjà avec cet email.',
       invalidCredentials: 'Email ou mot de passe incorrect.',
@@ -131,6 +138,9 @@ export const fr = {
       unauthorized: 'Ta session a expiré. Reconnecte-toi.',
     },
     wardrobe: {
+      photoLimitReached:
+        'Tu as atteint le nombre maximum de photos pour cette pièce.',
+      photoNotFound: 'Cette photo n’existe plus.',
       notFound: "Cette pièce n'existe plus.",
       invalidTemperatureRange: 'Le maximum doit être supérieur au minimum.',
     },

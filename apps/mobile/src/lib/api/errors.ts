@@ -26,6 +26,14 @@ const KNOWN_CODES = new Set([
   'auth.unauthorized',
   'validation.failed',
   'request.tooMany',
+  'uploads.invalidImage',
+  'uploads.tooLarge',
+  'uploads.notFound',
+  'uploads.missingFile',
+  'wardrobe.notFound',
+  'wardrobe.photoNotFound',
+  'wardrobe.photoLimitReached',
+  'wardrobe.invalidTemperatureRange',
 ]);
 
 /** i18n key of the message to show for any error thrown by the API client. */

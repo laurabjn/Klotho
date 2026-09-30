@@ -5,11 +5,14 @@ import {
   within,
 } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Linking } from 'react-native';
 
 import { NetworkError } from '@/lib/api/errors';
 import { renderWithProviders } from '@/testing/render';
 
+import { photosApi } from '../api/photos.api';
 import { wardrobeApi } from '../api/wardrobe.api';
+import { pickPhoto } from '../photos/pick-photo';
 import { page, wardrobeItem } from '../testing';
 import { AddWardrobeItemScreen } from './AddWardrobeItemScreen';
 import { EditWardrobeItemScreen } from './EditWardrobeItemScreen';
@@ -17,6 +20,7 @@ import { WardrobeItemDetailsScreen } from './WardrobeItemDetailsScreen';
 import { WardrobeScreen } from './WardrobeScreen';
 
 jest.mock('../api/wardrobe.api');
+jest.mock('../photos/pick-photo', () => ({ pickPhoto: jest.fn() }));
 jest.mock('expo-router', () => ({
   router: {
     push: jest.fn(),
@@ -33,6 +37,8 @@ const press = (name: string) =>
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
+  jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
 });
 
 describe('WardrobeScreen', () => {
@@ -139,21 +145,137 @@ describe('WardrobeScreen', () => {
 });
 
 describe('AddWardrobeItemScreen', () => {
+  const localPhoto = (n: number) => ({
+    uri: `file:///photo-${n}.jpg`,
+    width: 1200,
+    height: 1600,
+  });
+
+  /** Goes from the photo step to the colours step with a valid category. */
+  async function toColorsStep() {
+    await press('Continuer'); // photo step is optional
+    await fireEvent.press(await screen.findByRole('radio', { name: 'Haut' }));
+    await press('Continuer');
+    await screen.findByText('Étape 3/5');
+  }
+
+  async function finishWithBlack() {
+    await fireEvent.press(screen.getAllByRole('radio', { name: 'Noir' })[0]!);
+    await press('Continuer');
+    await screen.findByText('Étape 4/5');
+    await press('Continuer');
+    await screen.findByText('Étape 5/5');
+    await press('Ajouter à ma garde-robe');
+  }
+
+  it('starts with an optional photo step', async () => {
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    expect(screen.getByText('Étape 1/5')).toBeOnTheScreen();
+    expect(
+      screen.getByRole('button', { name: 'Ajouter une photo' }),
+    ).toBeOnTheScreen();
+    await press('Continuer');
+    expect(await screen.findByText('Étape 2/5')).toBeOnTheScreen();
+  });
+
   it('requires a category before the next step', async () => {
     await renderWithProviders(<AddWardrobeItemScreen />);
+    await press('Continuer');
 
     await press('Continuer');
 
     expect(await screen.findByText('Choisis une catégorie')).toBeOnTheScreen();
-    expect(screen.getByText('Étape 1/4')).toBeOnTheScreen();
+    expect(screen.getByText('Étape 2/5')).toBeOnTheScreen();
   });
 
-  it('creates a piece through the four steps', async () => {
+  it('uploads the chosen photos after creating the piece, main first', async () => {
+    jest
+      .mocked(pickPhoto)
+      .mockResolvedValueOnce({ status: 'picked', photo: localPhoto(1) })
+      .mockResolvedValueOnce({ status: 'picked', photo: localPhoto(2) });
+    api.create.mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    const upload = jest
+      .spyOn(photosApi, 'upload')
+      .mockImplementation((photo) =>
+        Promise.resolve({ key: `key-${photo.uri}`, width: 1200, height: 1600 }),
+      );
+    const attach = jest
+      .spyOn(photosApi, 'attach')
+      .mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    for (let i = 0; i < 2; i += 1) {
+      await press('Ajouter une photo');
+      await press('Choisir dans la galerie');
+      await waitFor(() => expect(pickPhoto).toHaveBeenCalledTimes(i + 1));
+    }
+    // The second photo becomes the main one.
+    await fireEvent.press(
+      await screen.findByRole('button', {
+        name: /Photo 2 sur 2, Définir comme principale/,
+      }),
+    );
+    await toColorsStep();
+    await finishWithBlack();
+
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith('/piece/new-item'),
+    );
+    expect(pickPhoto).toHaveBeenCalledWith('library');
+    expect(upload.mock.calls.map(([photo]) => photo.uri)).toEqual([
+      'file:///photo-2.jpg',
+      'file:///photo-1.jpg',
+    ]);
+    expect(attach).toHaveBeenCalledWith('new-item', 'key-file:///photo-2.jpg');
+  });
+
+  it('keeps the piece when a photo fails, and says so', async () => {
+    jest
+      .mocked(pickPhoto)
+      .mockResolvedValue({ status: 'picked', photo: localPhoto(1) });
+    api.create.mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    jest.spyOn(photosApi, 'upload').mockRejectedValue(new NetworkError());
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    await press('Ajouter une photo');
+    await press('Prendre une photo');
+    await screen.findByRole('button', { name: /Photo 1 sur 1/ });
+    await toColorsStep();
+    await finishWithBlack();
+
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith(
+        '/piece/new-item?photosFailed=1',
+      ),
+    );
+  });
+
+  it('explains how to allow the camera after a refusal', async () => {
+    jest
+      .mocked(pickPhoto)
+      .mockResolvedValue({ status: 'denied', canAskAgain: false });
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    await press('Ajouter une photo');
+    await press('Prendre une photo');
+
+    expect(
+      await screen.findByText('Autoriser l’appareil photo'),
+    ).toBeOnTheScreen();
+    await press('Ouvrir les réglages');
+    expect(Linking.openSettings).toHaveBeenCalled();
+  });
+
+  it('creates a piece through all the steps', async () => {
     api.create.mockResolvedValue(wardrobeItem({ id: 'new-item' }));
     await renderWithProviders(<AddWardrobeItemScreen />);
 
-    // 1. Infos
-    await fireEvent.press(screen.getByRole('radio', { name: 'Haut' }));
+    // 1. Photo (skipped)
+    await press('Continuer');
+
+    // 2. Infos
+    await fireEvent.press(await screen.findByRole('radio', { name: 'Haut' }));
     await fireEvent.press(screen.getByRole('radio', { name: 'Blouse' }));
     await fireEvent.changeText(
       screen.getByLabelText('Ex. : Blouse fleurie'),
@@ -161,8 +283,8 @@ describe('AddWardrobeItemScreen', () => {
     );
     await press('Continuer');
 
-    // 2. Couleurs: the main colour is required
-    expect(await screen.findByText('Étape 2/4')).toBeOnTheScreen();
+    // 3. Couleurs: the main colour is required
+    expect(await screen.findByText('Étape 3/5')).toBeOnTheScreen();
     await press('Continuer');
     expect(await screen.findByText('Choisis une couleur')).toBeOnTheScreen();
     await fireEvent.press(
@@ -170,13 +292,13 @@ describe('AddWardrobeItemScreen', () => {
     );
     await press('Continuer');
 
-    // 3. Style
-    expect(await screen.findByText('Étape 3/4')).toBeOnTheScreen();
+    // 4. Style
+    expect(await screen.findByText('Étape 4/5')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Romantique' }));
     await press('Continuer');
 
-    // 4. Saison
-    expect(await screen.findByText('Étape 4/4')).toBeOnTheScreen();
+    // 5. Saison
+    expect(await screen.findByText('Étape 5/5')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Printemps' }));
     await fireEvent.changeText(screen.getByLabelText('Min °C'), '12');
     await fireEvent.changeText(screen.getByLabelText('Max °C'), '24');
@@ -201,15 +323,12 @@ describe('AddWardrobeItemScreen', () => {
 
   it('refuses a temperature range upside down', async () => {
     await renderWithProviders(<AddWardrobeItemScreen />);
-    await fireEvent.press(screen.getByRole('radio', { name: 'Haut' }));
+    await toColorsStep();
+    await fireEvent.press(screen.getAllByRole('radio', { name: 'Noir' })[0]!);
     await press('Continuer');
-    await fireEvent.press(
-      (await screen.findAllByRole('radio', { name: 'Noir' }))[0]!,
-    );
+    await screen.findByText('Étape 4/5');
     await press('Continuer');
-    await screen.findByText('Étape 3/4');
-    await press('Continuer');
-    await screen.findByText('Étape 4/4');
+    await screen.findByText('Étape 5/5');
 
     await fireEvent.changeText(screen.getByLabelText('Min °C'), '20');
     await fireEvent.changeText(screen.getByLabelText('Max °C'), '5');
@@ -271,6 +390,83 @@ describe('WardrobeItemDetailsScreen', () => {
 
     await waitFor(() => expect(router.back).toHaveBeenCalled());
     expect(api.remove).toHaveBeenCalledWith('item-42');
+  });
+
+  describe('photos', () => {
+    const photo = (id: string, isMain: boolean) => ({
+      id,
+      url: `https://storage.test/${id}.jpg?signature=x`,
+      width: 1200,
+      height: 1600,
+      isMain,
+    });
+    const withPhotos = {
+      ...item,
+      photos: [photo('p1', true), photo('p2', false)],
+    };
+
+    beforeEach(() => {
+      api.get.mockResolvedValue(withPhotos);
+    });
+
+    it('shows the photos, the main one first', async () => {
+      await renderWithProviders(<WardrobeItemDetailsScreen />);
+
+      expect(await screen.findByLabelText('Photo 1 sur 2')).toBeOnTheScreen();
+      expect(screen.getByLabelText('Photo 2 sur 2')).toBeOnTheScreen();
+      expect(screen.getByText('Principale')).toBeOnTheScreen();
+    });
+
+    it('adds a photo from the gallery', async () => {
+      jest.mocked(pickPhoto).mockResolvedValue({
+        status: 'picked',
+        photo: { uri: 'file:///new.jpg', width: 800, height: 600 },
+      });
+      jest
+        .spyOn(photosApi, 'upload')
+        .mockResolvedValue({ key: 'k', width: 800, height: 600 });
+      const attach = jest.spyOn(photosApi, 'attach').mockResolvedValue({
+        ...withPhotos,
+        photos: [...withPhotos.photos, photo('p3', false)],
+      });
+      await renderWithProviders(<WardrobeItemDetailsScreen />);
+      await screen.findByLabelText('Photo 1 sur 2');
+
+      await press('Ajouter une photo');
+      await press('Choisir dans la galerie');
+
+      await waitFor(() => expect(attach).toHaveBeenCalledWith('item-42', 'k'));
+      expect(await screen.findByLabelText('Photo 3 sur 3')).toBeOnTheScreen();
+    });
+
+    it('deletes the displayed photo after confirmation', async () => {
+      const remove = jest
+        .spyOn(photosApi, 'remove')
+        .mockResolvedValue({ ...withPhotos, photos: [photo('p2', true)] });
+      await renderWithProviders(<WardrobeItemDetailsScreen />);
+      await screen.findByLabelText('Photo 1 sur 2');
+
+      await press('Supprimer la photo');
+      expect(screen.getByText('Supprimer cette photo ?')).toBeOnTheScreen();
+      const buttons = screen.getAllByRole('button', {
+        name: 'Supprimer la photo',
+      });
+      await fireEvent.press(buttons[buttons.length - 1]!);
+
+      await waitFor(() => expect(remove).toHaveBeenCalledWith('item-42', 'p1'));
+      expect(await screen.findByLabelText('Photo 1 sur 1')).toBeOnTheScreen();
+    });
+
+    it('tells when photos of the add flow could not be uploaded', async () => {
+      jest
+        .mocked(useLocalSearchParams)
+        .mockReturnValue({ id: 'item-42', photosFailed: '2' });
+      await renderWithProviders(<WardrobeItemDetailsScreen />);
+
+      expect(
+        await screen.findByText(/2 photos n’ont pas pu être envoyées/),
+      ).toBeOnTheScreen();
+    });
   });
 });
 

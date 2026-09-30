@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
 import { FormScrollView } from '@/components/ui/FormScrollView';
@@ -17,55 +18,71 @@ import {
   SECTION_ORDER,
   SECTIONS,
   useWardrobeItemForm,
+  type SectionKey,
 } from '../form/WardrobeItemFormSections';
-import { useCreateWardrobeItem } from '../hooks/useWardrobe';
+import { useCreateWardrobeItemWithPhotos } from '../hooks/useWardrobe';
+import { LocalPhotoGrid } from '../photos/LocalPhotoGrid';
+import type { LocalPhoto } from '../photos/pick-photo';
 
-/** Stepper as on the mockup (the "Photo" step arrives with Sprint 3). */
+type Step = 'photo' | SectionKey;
+
+/** Stepper as on the mockup: Photo (optional), Infos, Couleurs, Style, Saison. */
+const STEPS: Step[] = ['photo', ...SECTION_ORDER];
+
 export function AddWardrobeItemScreen() {
   const { t } = useTranslation();
   const form = useWardrobeItemForm();
-  const create = useCreateWardrobeItem();
+  const create = useCreateWardrobeItemWithPhotos();
   const [step, setStep] = useState(0);
+  const [photos, setPhotos] = useState<LocalPhoto[]>([]);
 
-  const key = SECTION_ORDER[step]!;
-  const Section = SECTIONS[key];
-  const isLast = step === SECTION_ORDER.length - 1;
-  const stepLabels = SECTION_ORDER.map((section) =>
-    t(`wardrobe.form.steps.${section}`),
-  );
+  const key = STEPS[step]!;
+  const isLast = step === STEPS.length - 1;
+  const stepLabel = t('wardrobe.form.step', {
+    current: step + 1,
+    total: STEPS.length,
+  });
 
   const next = async () => {
-    if (!(await form.trigger(SECTION_FIELDS[key]))) return;
+    if (key !== 'photo' && !(await form.trigger(SECTION_FIELDS[key]))) return;
     if (!isLast) return setStep(step + 1);
-    await form.handleSubmit((values) =>
-      create.mutate(values, {
-        onSuccess: (item) => router.replace(`/piece/${item.id}`),
-      }),
+    await form.handleSubmit((body) =>
+      create.mutate(
+        { body, photos },
+        {
+          onSuccess: ({ item, failed }) =>
+            router.replace(
+              failed > 0
+                ? `/piece/${item.id}?photosFailed=${failed}`
+                : `/piece/${item.id}`,
+            ),
+        },
+      ),
     )();
   };
+
+  const Section = key === 'photo' ? null : SECTIONS[key];
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.top}>
         <ScreenHeader
           title={t('wardrobe.form.addTitle')}
-          overline={t('wardrobe.form.step', {
-            current: step + 1,
-            total: SECTION_ORDER.length,
-          })}
+          overline={stepLabel}
           onBack={() => (step > 0 ? setStep(step - 1) : router.back())}
         />
         <StepIndicator
-          steps={stepLabels}
+          steps={STEPS.map((s) => t(`wardrobe.form.steps.${s}`))}
           current={step}
-          accessibilityLabel={t('wardrobe.form.step', {
-            current: step + 1,
-            total: SECTION_ORDER.length,
-          })}
+          accessibilityLabel={stepLabel}
         />
       </View>
       <FormScrollView contentStyle={styles.form}>
-        <Section form={form} />
+        {Section ? (
+          <Section form={form} />
+        ) : (
+          <LocalPhotoGrid photos={photos} onChange={setPhotos} />
+        )}
       </FormScrollView>
       <View style={styles.footer}>
         <FormError
@@ -75,6 +92,11 @@ export function AddWardrobeItemScreen() {
               : null
           }
         />
+        {create.isPending && photos.length > 0 && (
+          <AppText variant="hint" center accessibilityLiveRegion="polite">
+            {t('wardrobe.photos.uploading')}
+          </AppText>
+        )}
         <Button
           label={
             isLast ? t('wardrobe.form.create') : t('wardrobe.form.continue')

@@ -20,8 +20,14 @@ import {
   UserNotFoundError,
 } from '../../../domain/users/errors';
 import {
+  InvalidImageError,
+  UploadNotFoundError,
+} from '../../../domain/storage/errors';
+import {
   InvalidTemperatureRangeError,
+  PhotoLimitReachedError,
   WardrobeItemNotFoundError,
+  WardrobePhotoNotFoundError,
 } from '../../../domain/wardrobe/errors';
 
 const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
@@ -33,6 +39,10 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [UserNotFoundError, HttpStatus.NOT_FOUND],
   [WardrobeItemNotFoundError, HttpStatus.NOT_FOUND],
   [InvalidTemperatureRangeError, HttpStatus.BAD_REQUEST],
+  [WardrobePhotoNotFoundError, HttpStatus.NOT_FOUND],
+  [PhotoLimitReachedError, HttpStatus.CONFLICT],
+  [InvalidImageError, HttpStatus.UNSUPPORTED_MEDIA_TYPE],
+  [UploadNotFoundError, HttpStatus.BAD_REQUEST],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {
@@ -40,6 +50,7 @@ const HTTP_STATUS_CODE: Partial<Record<number, string>> = {
   [HttpStatus.UNAUTHORIZED]: 'auth.unauthorized',
   [HttpStatus.FORBIDDEN]: 'auth.forbidden',
   [HttpStatus.NOT_FOUND]: 'request.notFound',
+  [HttpStatus.PAYLOAD_TOO_LARGE]: 'uploads.tooLarge',
   [HttpStatus.TOO_MANY_REQUESTS]: 'request.tooMany',
 };
 

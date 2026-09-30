@@ -7,6 +7,15 @@ import type {
   WardrobeStatus,
 } from './taxonomy';
 
+/** A photo of an item. The URL is signed and expires (about 1 hour). */
+export interface WardrobePhoto {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  isMain: boolean;
+}
+
 /** A wardrobe item as returned by the API. */
 export interface WardrobeItem {
   id: string;
@@ -26,6 +35,8 @@ export interface WardrobeItem {
   brand: string | null;
   size: string | null;
   status: WardrobeStatus;
+  /** Main photo first, then in the order they were added. */
+  photos: WardrobePhoto[];
   wearCount: number;
   lastWornAt: string | null;
   createdAt: string;
@@ -38,4 +49,11 @@ export interface Page<T> {
   page: number;
   pageSize: number;
   hasMore: boolean;
+}
+
+/** Result of POST /uploads/wardrobe, to attach with POST /wardrobe/:id/photos. */
+export interface UploadedPhoto {
+  key: string;
+  width: number;
+  height: number;
 }

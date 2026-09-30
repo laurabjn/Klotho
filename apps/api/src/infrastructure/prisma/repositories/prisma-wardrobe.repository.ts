@@ -11,7 +11,12 @@ import type { Prisma } from '../../../generated/prisma/client';
 import { isRecordNotFound } from '../prisma-errors';
 import { PrismaService } from '../prisma.service';
 
-type Row = Prisma.WardrobeItemGetPayload<object>;
+/** Photos are always loaded with their item, main photo first. */
+const include = {
+  photos: { orderBy: [{ isMain: 'desc' }, { position: 'asc' }] },
+} satisfies Prisma.WardrobeItemInclude;
+
+type Row = Prisma.WardrobeItemGetPayload<{ include: typeof include }>;
 
 // Taxonomy keys are validated by the shared schemas before being stored.
 const toDomain = (row: Row): WardrobeItem => row as WardrobeItem;
@@ -64,13 +69,17 @@ export class PrismaWardrobeRepository implements WardrobeRepository {
     fields: WardrobeItemFields,
   ): Promise<WardrobeItem> {
     return toDomain(
-      await this.prisma.wardrobeItem.create({ data: { ...fields, userId } }),
+      await this.prisma.wardrobeItem.create({
+        data: { ...fields, userId },
+        include,
+      }),
     );
   }
 
   async findOwned(userId: string, id: string): Promise<WardrobeItem | null> {
     const row = await this.prisma.wardrobeItem.findFirst({
       where: { id, userId },
+      include,
     });
     return row && toDomain(row);
   }
@@ -80,6 +89,7 @@ export class PrismaWardrobeRepository implements WardrobeRepository {
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.wardrobeItem.findMany({
         where,
+        include,
         orderBy: ORDER_BY[query.sort],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
@@ -100,6 +110,7 @@ export class PrismaWardrobeRepository implements WardrobeRepository {
         await this.prisma.wardrobeItem.update({
           where: { id, userId },
           data: changes,
+          include,
         }),
       );
     } catch (error) {

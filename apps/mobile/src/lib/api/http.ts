@@ -4,10 +4,14 @@ import { resolveApiUrl } from './config';
 import { ApiError, NetworkError } from './errors';
 
 const TIMEOUT_MS = 15_000;
+/** Photo uploads can be slow on mobile networks. */
+const UPLOAD_TIMEOUT_MS = 60_000;
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
+  /** Multipart body (file upload); takes precedence over `body`. */
+  form?: FormData;
   /** Sends the access token and transparently refreshes it once on 401. */
   auth?: boolean;
 }
@@ -31,17 +35,24 @@ async function send(
   accessToken: string | null,
 ) {
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  // For FormData, fetch sets the multipart Content-Type with its boundary.
+  if (!options.form && options.body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    options.form ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS,
+  );
   try {
     return await fetch(`${resolveApiUrl()}${path}`, {
       method: options.method ?? 'GET',
       headers,
       body:
-        options.body === undefined ? undefined : JSON.stringify(options.body),
+        options.form ??
+        (options.body === undefined ? undefined : JSON.stringify(options.body)),
       signal: controller.signal,
     });
   } catch (error) {

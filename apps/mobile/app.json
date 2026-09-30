@@ -35,7 +35,16 @@
           "backgroundColor": "#FBF7F2"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Klotho a besoin de tes photos pour ajouter tes pièces à ta garde-robe.",
+          "cameraPermission": "Klotho a besoin de l’appareil photo pour photographier tes pièces.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "scheme": "klotho"
   }

@@ -22,6 +22,26 @@ export const envSchema = z
 
     // Only "console" exists for now: emails are written to the server log.
     MAIL_DRIVER: z.enum(['console']).default('console'),
+
+    // Photo storage: any S3-compatible service (Cloudflare R2, RustFS locally).
+    STORAGE_ENDPOINT: z.url(),
+    /** Address put in the signed photo links; must be reachable by the app. */
+    STORAGE_PUBLIC_ENDPOINT: z.url().optional(),
+    STORAGE_REGION: z.string().min(1).default('auto'),
+    STORAGE_BUCKET: z.string().min(3),
+    STORAGE_ACCESS_KEY_ID: z.string().min(1),
+    STORAGE_SECRET_ACCESS_KEY: z.string().min(1),
+    STORAGE_CREATE_BUCKET: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    PHOTO_URL_TTL_SECONDS: z.coerce.number().int().min(60).default(3600),
+    PHOTOS_MAX_PER_ITEM: z.coerce.number().int().min(1).max(20).default(5),
+    UPLOAD_MAX_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(10 * 1024 * 1024),
   })
   .refine(
     (env) => !(env.NODE_ENV === 'production' && env.MAIL_DRIVER === 'console'),

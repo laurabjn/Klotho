@@ -10,6 +10,7 @@ import {
 } from '../../domain/wardrobe/errors';
 import { FixedClock, MINUTE } from '../../testing/fakes';
 import { InMemoryWardrobeRepository } from '../../testing/in-memory-wardrobe.repository';
+import { InMemoryFileStorage } from '../../testing/storage-fakes';
 import { CreateWardrobeItemUseCase } from './create-wardrobe-item.use-case';
 import { DeleteWardrobeItemUseCase } from './delete-wardrobe-item.use-case';
 import { GetWardrobeItemUseCase } from './get-wardrobe-item.use-case';
@@ -22,6 +23,7 @@ const OTHER = 'user-other';
 describe('Wardrobe use cases', () => {
   let clock: FixedClock;
   let repository: InMemoryWardrobeRepository;
+  let storage: InMemoryFileStorage;
   let create: CreateWardrobeItemUseCase;
   let list: ListWardrobeItemsUseCase;
   let get: GetWardrobeItemUseCase;
@@ -38,11 +40,12 @@ describe('Wardrobe use cases', () => {
   beforeEach(() => {
     clock = new FixedClock();
     repository = new InMemoryWardrobeRepository(clock);
-    create = new CreateWardrobeItemUseCase(repository);
-    list = new ListWardrobeItemsUseCase(repository);
-    get = new GetWardrobeItemUseCase(repository);
-    update = new UpdateWardrobeItemUseCase(repository);
-    remove = new DeleteWardrobeItemUseCase(repository);
+    storage = new InMemoryFileStorage();
+    create = new CreateWardrobeItemUseCase(repository, storage);
+    list = new ListWardrobeItemsUseCase(repository, storage);
+    get = new GetWardrobeItemUseCase(repository, storage);
+    update = new UpdateWardrobeItemUseCase(repository, storage);
+    remove = new DeleteWardrobeItemUseCase(repository, storage);
   });
 
   describe('CreateWardrobeItemUseCase', () => {

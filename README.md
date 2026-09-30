@@ -25,7 +25,7 @@ Les tâches sont orchestrées par Turborepo.
 ```sh
 npm install
 cp apps/api/.env.example apps/api/.env
-npm run db:up                         # PostgreSQL 15
+npm run db:up                         # PostgreSQL 15 + stockage photos (RustFS)
 npm run db:deploy -w @klotho/api      # migrations
 ```
 
@@ -34,6 +34,7 @@ Puis, dans **deux terminaux séparés** :
 ```sh
 npm run dev      # terminal 1 : API (http://localhost:3100) + packages en watch
 npm run mobile   # terminal 2 : Expo, avec le QR code à scanner dans Expo Go
+# ou, avec le development build installé : npm run mobile:dev
 ```
 
 Expo tourne dans son propre terminal : lancé via Turborepo, il n'est pas

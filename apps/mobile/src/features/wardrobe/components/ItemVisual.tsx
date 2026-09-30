@@ -1,5 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, type ColorKey, type WardrobeCategory } from '@klotho/shared';
+import {
+  COLORS,
+  type ColorKey,
+  type WardrobeCategory,
+  type WardrobePhoto,
+} from '@klotho/shared';
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import { colors, radii } from '@/theme/tokens';
@@ -26,19 +32,40 @@ function isLight(hex: string): boolean {
 }
 
 /**
- * Stand-in for the photo (Sprint 3): the main colour with the category icon.
- * Decorative only: the card or screen already names the piece.
+ * The main photo when there is one, otherwise the main colour with the
+ * category icon. Decorative only: the card or screen already names the piece.
  */
 export function ItemVisual({
   category,
   color,
+  photo,
   size = 'card',
 }: {
   category: WardrobeCategory;
   color: ColorKey;
+  photo?: WardrobePhoto;
   size?: 'card' | 'hero';
 }) {
   const hex = COLORS[color];
+  if (photo) {
+    return (
+      <Image
+        // Signed URLs change on every load: cache by photo id instead.
+        source={{ uri: photo.url, cacheKey: photo.id }}
+        contentFit="cover"
+        transition={150}
+        recyclingKey={photo.id}
+        // The item colour shows while the photo loads.
+        style={[
+          styles.box,
+          size === 'hero' && styles.hero,
+          { backgroundColor: hex },
+        ]}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      />
+    );
+  }
   return (
     <View
       style={[

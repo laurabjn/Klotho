@@ -5,6 +5,10 @@ import {
   AUTH_SETTINGS,
   type AuthSettings,
 } from '../application/auth/auth-settings';
+import {
+  PHOTO_SETTINGS,
+  type PhotoSettings,
+} from '../application/wardrobe/photos/photo-settings';
 import { ACCESS_TOKEN_SERVICE } from '../domain/auth/ports/access-token.service';
 import { PASSWORD_HASHER } from '../domain/auth/ports/password-hasher';
 import { PASSWORD_RESET_TOKEN_REPOSITORY } from '../domain/auth/ports/password-reset-token.repository';
@@ -12,7 +16,10 @@ import { REFRESH_TOKEN_REPOSITORY } from '../domain/auth/ports/refresh-token.rep
 import { SECURE_TOKEN_GENERATOR } from '../domain/auth/ports/secure-token.generator';
 import { MAILER } from '../domain/notifications/ports/mailer';
 import { CLOCK } from '../domain/shared/ports/clock';
+import { FILE_STORAGE } from '../domain/storage/ports/file-storage';
+import { IMAGE_PROCESSOR } from '../domain/storage/ports/image-processor';
 import { USER_REPOSITORY } from '../domain/users/ports/user.repository';
+import { WARDROBE_PHOTO_REPOSITORY } from '../domain/wardrobe/ports/wardrobe-photo.repository';
 import { WARDROBE_REPOSITORY } from '../domain/wardrobe/ports/wardrobe.repository';
 import type { Env } from '../config/env';
 import { BcryptPasswordHasher } from './auth/bcrypt-password-hasher';
@@ -23,7 +30,10 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
 import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token.repository';
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository';
+import { PrismaWardrobePhotoRepository } from './prisma/repositories/prisma-wardrobe-photo.repository';
 import { PrismaWardrobeRepository } from './prisma/repositories/prisma-wardrobe.repository';
+import { S3FileStorage } from './storage/s3-file-storage';
+import { SharpImageProcessor } from './storage/sharp-image-processor';
 import { SystemClock } from './time/system-clock';
 
 type Config = ConfigService<Env, true>;
@@ -35,6 +45,41 @@ type Config = ConfigService<Env, true>;
     PrismaService,
     { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
     { provide: WARDROBE_REPOSITORY, useClass: PrismaWardrobeRepository },
+    {
+      provide: WARDROBE_PHOTO_REPOSITORY,
+      useClass: PrismaWardrobePhotoRepository,
+    },
+    { provide: IMAGE_PROCESSOR, useClass: SharpImageProcessor },
+    {
+      provide: FILE_STORAGE,
+      inject: [ConfigService],
+      useFactory: async (config: Config) => {
+        const storage = new S3FileStorage({
+          endpoint: config.get('STORAGE_ENDPOINT', { infer: true }),
+          publicEndpoint: config.get('STORAGE_PUBLIC_ENDPOINT', {
+            infer: true,
+          }),
+          region: config.get('STORAGE_REGION', { infer: true }),
+          bucket: config.get('STORAGE_BUCKET', { infer: true }),
+          accessKeyId: config.get('STORAGE_ACCESS_KEY_ID', { infer: true }),
+          secretAccessKey: config.get('STORAGE_SECRET_ACCESS_KEY', {
+            infer: true,
+          }),
+          urlTtlSeconds: config.get('PHOTO_URL_TTL_SECONDS', { infer: true }),
+        });
+        if (config.get('STORAGE_CREATE_BUCKET', { infer: true })) {
+          await storage.ensureBucket();
+        }
+        return storage;
+      },
+    },
+    {
+      provide: PHOTO_SETTINGS,
+      inject: [ConfigService],
+      useFactory: (config: Config): PhotoSettings => ({
+        maxPerItem: config.get('PHOTOS_MAX_PER_ITEM', { infer: true }),
+      }),
+    },
     {
       provide: REFRESH_TOKEN_REPOSITORY,
       useClass: PrismaRefreshTokenRepository,
@@ -79,6 +124,10 @@ type Config = ConfigService<Env, true>;
     PrismaService,
     USER_REPOSITORY,
     WARDROBE_REPOSITORY,
+    WARDROBE_PHOTO_REPOSITORY,
+    IMAGE_PROCESSOR,
+    FILE_STORAGE,
+    PHOTO_SETTINGS,
     REFRESH_TOKEN_REPOSITORY,
     PASSWORD_RESET_TOKEN_REPOSITORY,
     SECURE_TOKEN_GENERATOR,

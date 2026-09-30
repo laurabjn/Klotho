@@ -207,11 +207,42 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
     '4': 'Dressy',
     '5': 'Very dressy',
   },
+  photos: {
+    title: 'Photos',
+    add: 'Add a photo',
+    sourceTitle: 'Add a photo',
+    camera: 'Take a photo',
+    library: 'Choose from gallery',
+    main: 'Main',
+    setMain: 'Set as main photo',
+    remove: 'Remove photo',
+    delete: 'Delete photo',
+    deleteTitle: 'Delete this photo?',
+    deleteBody: 'The piece stays in your wardrobe.',
+    count: '{{count}}/{{max}} photos',
+    limit: 'You can add up to {{max}} photos.',
+    stepHint:
+      'Add one or more photos to recognise your piece at a glance. You can also do it later.',
+    mainHint:
+      'The first photo is the main one. Tap another photo to choose it.',
+    uploading: 'Uploading photos…',
+    uploadFailed_one:
+      'One photo could not be uploaded. You can add it again from this page.',
+    uploadFailed_other:
+      '{{count}} photos could not be uploaded. You can add them again from this page.',
+    permissionLibraryTitle: 'Allow access to your photos',
+    permissionCameraTitle: 'Allow the camera',
+    permissionBody:
+      'Klotho needs it to add your pieces. You can allow it in your phone settings.',
+    openSettings: 'Open settings',
+    photoOf: 'Photo {{index}} of {{count}}',
+  },
   form: {
     addTitle: 'Add a piece',
     editTitle: 'Edit the piece',
     step: 'Step {{current}}/{{total}}',
     steps: {
+      photo: 'Photo',
       info: 'Details',
       colors: 'Colours',
       style: 'Style',

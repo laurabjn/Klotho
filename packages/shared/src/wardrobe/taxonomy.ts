@@ -170,3 +170,13 @@ export const LEVEL_MIN = 1;
 export const LEVEL_MAX = 5;
 export const TEMPERATURE_MIN = -30;
 export const TEMPERATURE_MAX = 50;
+
+/** Formats accepted at upload; the server re-encodes everything to JPEG. */
+export const ACCEPTED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const;
+
+/** Default photo limit per item (the API can be configured differently). */
+export const PHOTOS_MAX_PER_ITEM = 5;

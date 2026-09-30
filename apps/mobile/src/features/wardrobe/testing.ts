@@ -24,6 +24,7 @@ export function wardrobeItem(
     brand: null,
     size: null,
     status: 'AVAILABLE',
+    photos: [],
     wearCount: 0,
     lastWornAt: null,
     createdAt: '2026-10-01T08:00:00.000Z',

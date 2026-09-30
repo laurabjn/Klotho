@@ -1,10 +1,14 @@
 import type { CreateWardrobeItem, WardrobeItem } from '@klotho/shared';
 
+import type { FileStorage } from '../../domain/storage/ports/file-storage';
 import type { WardrobeRepository } from '../../domain/wardrobe/ports/wardrobe.repository';
 import { toWardrobeItemDto } from './wardrobe-item.mapper';
 
 export class CreateWardrobeItemUseCase {
-  constructor(private readonly wardrobe: WardrobeRepository) {}
+  constructor(
+    private readonly wardrobe: WardrobeRepository,
+    private readonly storage: FileStorage,
+  ) {}
 
   /** The owner is always the authenticated user, never taken from the body. */
   async execute(
@@ -29,6 +33,6 @@ export class CreateWardrobeItemUseCase {
       size: input.size ?? null,
       status: input.status,
     });
-    return toWardrobeItemDto(item);
+    return toWardrobeItemDto(item, this.storage);
   }
 }
