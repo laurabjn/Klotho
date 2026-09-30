@@ -8,7 +8,11 @@ import i18n from '@/i18n';
 export async function renderWithProviders(ui: ReactElement) {
   await i18n.changeLanguage('fr');
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: {
+      // gcTime: Infinity avoids garbage-collection timers that outlive the test.
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   return render(
     <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
