@@ -40,6 +40,12 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
     return Promise.resolve(view(item));
   }
 
+  findAllOwned(userId: string): Promise<WardrobeItem[]> {
+    return Promise.resolve(
+      this.items.filter((i) => i.userId === userId).map(view),
+    );
+  }
+
   findOwned(userId: string, id: string): Promise<WardrobeItem | null> {
     const item = this.items.find((i) => i.id === id && i.userId === userId);
     return Promise.resolve(item ? view(item) : null);

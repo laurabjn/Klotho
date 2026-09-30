@@ -110,15 +110,29 @@ in a development or store build the default `klotho://reset-password` works.
 
 ## Scripts
 
-| Script        | Purpose                                                          |
-| ------------- | ---------------------------------------------------------------- |
-| `dev`         | Start in watch mode                                              |
-| `test`        | Unit tests (`*.spec.ts`)                                         |
-| `test:e2e`    | HTTP tests on a real database `klotho_test` (created if missing) |
-| `db:generate` | Generate the Prisma client                                       |
-| `db:migrate`  | Create and apply a migration (development)                       |
-| `db:deploy`   | Apply pending migrations (CI / production)                       |
-| `db:studio`   | Browse the database                                              |
+| Script         | Purpose                                                                         |
+| -------------- | ------------------------------------------------------------------------------- |
+| `dev`          | Start in watch mode                                                             |
+| `test`         | Unit tests (`*.spec.ts`)                                                        |
+| `test:e2e`     | HTTP tests on a real database `klotho_test` (created if missing)                |
+| `db:generate`  | Generate the Prisma client                                                      |
+| `db:migrate`   | Create and apply a migration (development)                                      |
+| `db:deploy`    | Apply pending migrations (CI / production)                                      |
+| `db:studio`    | Browse the database                                                             |
+| `db:seed:demo` | (Re)create the demo account `demo@klotho.fr` / `Klotho2026!` (development only) |
+| `outfits:demo` | Run the outfit engine for an account and print the looks                        |
+
+### Demo data
+
+`npm run db:seed:demo -w @klotho/api` recreates a demo account: 36 varied
+pieces (every category, pieces in the wash, lent, archived, a wear history),
+a style profile and Paris for the weather. Run it again to start from scratch.
+
+`npm run outfits:demo -w @klotho/api -- [options]` prints the 5 looks of the
+outfit engine with their detailed score. Options: `--temperature 12`,
+`--occasion work` (walk, everyday, date, restaurant, work, evening, ceremony),
+`--style romantic`, `--impose "Jupe midi"`, `--rain`, `--no-heels`,
+`--no-color black`, `--email other@example.com`.
 
 Environment files are loaded in this order: `.env.<NODE_ENV>`, then `.env`.
 Only `.env.example` is committed.

@@ -83,6 +83,14 @@ export class PrismaWardrobeRepository implements WardrobeRepository {
     );
   }
 
+  async findAllOwned(userId: string): Promise<WardrobeItem[]> {
+    const rows = await this.prisma.wardrobeItem.findMany({
+      where: { userId },
+      include,
+    });
+    return rows.map(toDomain);
+  }
+
   async findOwned(userId: string, id: string): Promise<WardrobeItem | null> {
     const row = await this.prisma.wardrobeItem.findFirst({
       where: { id, userId },

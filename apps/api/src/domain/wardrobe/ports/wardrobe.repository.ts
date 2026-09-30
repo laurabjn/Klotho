@@ -12,6 +12,8 @@ import type {
 export interface WardrobeRepository {
   create(userId: string, fields: WardrobeItemFields): Promise<WardrobeItem>;
   findOwned(userId: string, id: string): Promise<WardrobeItem | null>;
+  /** The whole wardrobe of a user, whatever the status (outfit engine). */
+  findAllOwned(userId: string): Promise<WardrobeItem[]>;
   list(
     userId: string,
     query: WardrobeListQuery,

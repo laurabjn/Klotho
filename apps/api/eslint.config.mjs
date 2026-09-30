@@ -8,7 +8,7 @@ const frameworkImports = [
 ];
 
 export default [
-  { ignores: ['src/generated/**', 'prisma.config.ts'] },
+  { ignores: ['src/generated/**', 'prisma.config.ts', '.scripts/**'] },
   ...nodeConfig(import.meta.dirname),
   // Clean Architecture boundaries: dependencies only point inwards.
   {
