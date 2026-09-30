@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/brand/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
@@ -63,6 +64,7 @@ function Editor({ profile }: { profile: StyleProfile }) {
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
+        <AppHeader />
         <ScreenHeader
           title={t('preferences.title')}
           overline={t('preferences.overline')}

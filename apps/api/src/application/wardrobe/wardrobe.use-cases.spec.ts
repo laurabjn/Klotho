@@ -73,6 +73,8 @@ describe('Wardrobe use cases', () => {
         primaryColor: 'powderPink',
         seasons: ['spring', 'summer'],
         styles: ['romantic'],
+        minTemperature: 15,
+        maxTemperature: 30,
       });
       await add(LAURA, {
         name: 'Jean droit',
@@ -134,6 +136,9 @@ describe('Wardrobe use cases', () => {
       [{ style: 'casual' }, ['Jean droit']],
       [{ color: 'gold' }, ['Ceinture']], // secondary colour
       [{ q: 'levis' }, ['Jean droit']], // brand, case-insensitive
+      // Wearable at 5 °C; pieces without a range always match.
+      [{ temperature: '5' }, ['Ceinture', 'Jean droit']],
+      [{ temperature: '20' }, ['Ceinture', 'Jean droit', 'Blouse fleurie']],
     ])('filters by %j', async (filter, expected) => {
       const page = await list.execute(LAURA, query(filter));
 

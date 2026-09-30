@@ -10,7 +10,8 @@ import {
 
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
-type Variant = 'primary' | 'secondary' | 'link';
+/** "outline": thin blush border and dark text ("Passer pour l'instant"). */
+type Variant = 'primary' | 'secondary' | 'outline' | 'link';
 
 interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   label: string;
@@ -36,7 +37,9 @@ export function Button({
       ? colors.onPrimary
       : variant === 'link'
         ? colors.link
-        : colors.primary;
+        : variant === 'outline'
+          ? colors.title
+          : colors.primary;
 
   return (
     <Pressable
@@ -106,6 +109,14 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     backgroundColor: 'transparent',
   },
+  outline: {
+    minHeight: 52,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.xl,
+    borderWidth: 1,
+    borderColor: '#E2C4BA',
+    backgroundColor: 'rgba(252, 248, 243, 0.85)',
+  },
   link: { minHeight: touchTarget, paddingHorizontal: spacing.sm },
   pressed: { opacity: 0.6 },
   disabled: { opacity: 0.5 },
@@ -115,6 +126,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  label: { flexShrink: 1, fontFamily: fonts.serif, fontSize: 20 },
+  label: { flexShrink: 1, fontFamily: fonts.serif, fontSize: 22 },
   linkLabel: { fontSize: 17, textDecorationLine: 'underline' },
 });

@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { WARDROBE_CATEGORIES, type WardrobeCategory } from '@klotho/shared';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -15,9 +15,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useDebouncedValue } from '@/lib/useDebouncedValue';
+import { categoryIcons } from '@/theme/icons';
+import { useCompactLayout } from '@/theme/useCompactLayout';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
 import {
@@ -27,7 +31,6 @@ import {
   type SheetFilters,
 } from '../components/FiltersSheet';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import {
   useWardrobeList,
   type WardrobeListFilters,
@@ -35,38 +38,61 @@ import {
 
 export function WardrobeScreen() {
   const { t } = useTranslation();
-  const [category, setCategory] = useState<WardrobeCategory | null>(null);
   const [search, setSearch] = useState('');
   const [sheetFilters, setSheetFilters] =
     useState<SheetFilters>(EMPTY_SHEET_FILTERS);
   const [sheetVisible, setSheetVisible] = useState(false);
   const q = useDebouncedValue(search.trim());
+  const columns = useCompactLayout() ? 2 : 3;
 
-  const filters = useMemo<WardrobeListFilters>(
-    () => ({
-      ...sheetFilters,
-      category: category ? [category] : [],
+  const filters = useMemo<WardrobeListFilters>(() => {
+    const { temperature, ...rest } = sheetFilters;
+    return {
+      ...rest,
+      ...(temperature !== null && { temperature }),
       ...(q && { q }),
-    }),
-    [sheetFilters, category, q],
-  );
+    };
+  }, [sheetFilters, q]);
+  const categories = sheetFilters.category;
+  // The chips of the screen pick one category; the sheet can pick several.
+  const setCategory = (category: WardrobeCategory | null) =>
+    setSheetFilters((current) => ({
+      ...current,
+      category: category ? [category] : [],
+    }));
   const list = useWardrobeList(filters);
 
   const items = list.data?.pages.flatMap((page) => page.items) ?? [];
   const total = list.data?.pages[0]?.total ?? 0;
   const activeFilters = countActiveFilters(sheetFilters);
-  const isFiltered = activeFilters > 0 || category !== null || q !== '';
+  const isFiltered = activeFilters > 0 || categories.length > 0 || q !== '';
 
   const clearFilters = () => {
-    setCategory(null);
     setSearch('');
     setSheetFilters(EMPTY_SHEET_FILTERS);
   };
 
   const header = (
     <View style={styles.header}>
-      <AppText variant="title">{t('wardrobe.title')}</AppText>
-      <AppText variant="overline">{t('wardrobe.overline')}</AppText>
+      <AppHeader />
+      <View style={styles.titleRow}>
+        <View style={styles.titles}>
+          <AppText variant="title">{t('wardrobe.title')}</AppText>
+          <AppText variant="overline">{t('wardrobe.overline')}</AppText>
+        </View>
+        {list.isSuccess && total > 0 && (
+          <View style={styles.count} accessibilityLiveRegion="polite">
+            <MaterialCommunityIcons
+              name="bag-personal-outline"
+              size={18}
+              color={colors.title}
+            />
+            <AppText style={styles.countText}>
+              {t('wardrobe.count', { count: total })}
+            </AppText>
+          </View>
+        )}
+      </View>
       <View style={styles.searchRow}>
         <View style={styles.search}>
           <Ionicons name="search-outline" size={20} color={colors.muted} />
@@ -77,6 +103,7 @@ export function WardrobeScreen() {
             placeholderTextColor={colors.placeholder}
             accessibilityLabel={t('wardrobe.searchPlaceholder')}
             returnKeyType="search"
+            maxFontSizeMultiplier={1.2}
             style={styles.searchInput}
           />
         </View>
@@ -93,8 +120,8 @@ export function WardrobeScreen() {
             activeFilters > 0 && styles.filterButtonActive,
           ]}
         >
-          <Ionicons
-            name="options-outline"
+          <MaterialCommunityIcons
+            name="tune-variant"
             size={22}
             color={activeFilters > 0 ? colors.onPrimary : colors.title}
           />
@@ -110,27 +137,31 @@ export function WardrobeScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.categoriesScroll}
         contentContainerStyle={styles.categories}
       >
         <Chip
           label={t('wardrobe.all')}
-          selected={category === null}
+          icon="view-grid-outline"
+          selected={categories.length === 0}
           onPress={() => setCategory(null)}
         />
         {WARDROBE_CATEGORIES.map((value) => (
           <Chip
             key={value}
             label={t(`wardrobe.categories.${value}`)}
-            selected={category === value}
-            onPress={() => setCategory(category === value ? null : value)}
+            icon={categoryIcons[value]}
+            selected={categories.includes(value)}
+            onPress={() =>
+              setCategory(
+                categories.length === 1 && categories[0] === value
+                  ? null
+                  : value,
+              )
+            }
           />
         ))}
       </ScrollView>
-      {list.isSuccess && total > 0 && (
-        <AppText variant="hint" accessibilityLiveRegion="polite">
-          {t('wardrobe.count', { count: total })}
-        </AppText>
-      )}
     </View>
   );
 
@@ -176,13 +207,15 @@ export function WardrobeScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        numColumns={2}
+        // FlatList needs a new instance when the number of columns changes.
+        key={columns}
+        numColumns={columns}
         columnWrapperStyle={styles.columns}
         contentContainerStyle={styles.content}
         ListHeaderComponent={header}
         ListEmptyComponent={renderEmpty}
         renderItem={({ item }) => (
-          <View style={styles.cell}>
+          <View style={[styles.cell, { maxWidth: `${100 / columns}%` }]}>
             <WardrobeItemCard
               item={item}
               onPress={() => router.push(`/piece/${item.id}`)}
@@ -241,19 +274,31 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   header: {
-    gap: spacing.md,
-    paddingTop: spacing.lg,
+    gap: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.xs,
   },
-  searchRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  titles: { flex: 1, gap: spacing.xs },
+  count: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs + 2,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.input,
+    backgroundColor: colors.input,
+  },
+  countText: { fontFamily: fonts.serif, fontSize: 16, color: colors.title },
+  searchRow: { flexDirection: 'row', gap: spacing.sm },
   search: {
     flex: 1,
-    minHeight: touchTarget,
+    minHeight: touchTarget + 4,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
+    borderRadius: radii.input,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.input,
@@ -266,16 +311,18 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     textAlignVertical: 'center',
     fontFamily: fonts.serifRegular,
-    fontSize: 17,
+    fontSize: 16,
     color: colors.title,
   },
   filterButton: {
-    width: touchTarget,
-    height: touchTarget,
-    borderRadius: radii.pill,
+    width: touchTarget + 4,
+    height: touchTarget + 4,
+    borderRadius: radii.input,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#DCC5BB',
+    backgroundColor: colors.input,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   filterButtonActive: { backgroundColor: colors.primary },
   filterCount: {
@@ -291,9 +338,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.title,
   },
   filterCountText: { color: colors.onPrimary, fontSize: 11, lineHeight: 14 },
-  categories: { gap: spacing.sm, paddingRight: spacing.lg },
-  columns: { gap: spacing.md },
-  cell: { flex: 1, maxWidth: '50%' },
+  // Full-bleed line, scrolling under the screen edges.
+  categoriesScroll: { marginHorizontal: -spacing.lg },
+  categories: { gap: spacing.sm, paddingHorizontal: spacing.lg },
+  columns: { gap: spacing.sm },
+  cell: { flex: 1 },
   loader: { marginTop: spacing.xxxl },
   fab: {
     position: 'absolute',

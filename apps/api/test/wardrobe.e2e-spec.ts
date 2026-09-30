@@ -120,6 +120,8 @@ describe('Wardrobe (e2e)', () => {
         primaryColor: 'powderPink',
         seasons: ['spring', 'summer'],
         styles: ['romantic'],
+        minTemperature: 15,
+        maxTemperature: 30,
       });
       await add(laura, {
         name: 'Jean droit',
@@ -176,6 +178,7 @@ describe('Wardrobe (e2e)', () => {
       ['?style=casual', ['Jean droit']],
       ['?color=gold', ['Ceinture']],
       ['?q=LEVIS', ['Jean droit']],
+      ['?temperature=5', ['Ceinture', 'Jean droit']],
       ['?sort=alphabetical', ['Blouse fleurie', 'Ceinture', 'Jean droit']],
     ])('supports %s', async (query, expected) => {
       const page = await list(laura, query);

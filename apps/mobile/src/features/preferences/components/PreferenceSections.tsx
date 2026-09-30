@@ -1,15 +1,11 @@
 import {
   BOTTOM_PREFERENCES,
   LENGTHS,
-  METALS,
   SEASONS,
-  STYLES,
   type BottomPreference,
   type ColorKey,
   type Length,
-  type Metal,
   type Season,
-  type Style,
   type StyleProfileFields,
 } from '@klotho/shared';
 import type { ReactNode } from 'react';
@@ -21,7 +17,11 @@ import { ChipGroup } from '@/components/ui/ChipGroup';
 import { ColorPicker } from '@/components/ui/ColorPicker';
 import { LevelPicker } from '@/components/ui/LevelPicker';
 import { SectionTitle } from '@/components/ui/SectionTitle';
-import { spacing } from '@/theme/tokens';
+import type { IconName } from '@/theme/icons';
+import { colors, spacing } from '@/theme/tokens';
+
+import { MetalPicker } from './MetalPicker';
+import { StyleCards } from './StyleCards';
 
 export interface SectionProps {
   value: StyleProfileFields;
@@ -32,21 +32,35 @@ function Section({
   title,
   note,
   hint,
+  aside,
   children,
 }: {
   title: string;
   note?: string;
   hint?: string;
+  /** Rose hint on the right of a capitalised title, as on the colour mockups. */
+  aside?: string;
   children: ReactNode;
 }) {
   return (
     <View style={styles.section}>
-      <SectionTitle title={title} note={note} />
+      <SectionTitle
+        title={title}
+        note={note}
+        variant={aside ? 'overline' : 'label'}
+        aside={aside}
+      />
       {hint && <AppText variant="hint">{hint}</AppText>}
       {children}
     </View>
   );
 }
+
+const BOTTOM_ICONS: Record<BottomPreference, IconName> = {
+  skirts: 'human-female-dance',
+  dresses: 'human-female',
+  trousers: 'human-male-height-variant',
+};
 
 /** Tri-state choice (yes / no / no preference) shown as three chips. */
 function triState(value: boolean | null): 'yes' | 'no' | 'none' {
@@ -63,14 +77,7 @@ export function StylesSection({ value, onChange }: SectionProps) {
       title={t('preferences.styles')}
       note={t('preferences.severalChoices')}
     >
-      <ChipGroup<Style>
-        multiple
-        collapsedCount={9}
-        testIDPrefix="style"
-        options={STYLES.map((style) => ({
-          value: style,
-          label: t(`wardrobe.styles.${style}`),
-        }))}
+      <StyleCards
         value={value.preferredStyles}
         onChange={(preferredStyles) => onChange({ ...value, preferredStyles })}
       />
@@ -82,7 +89,11 @@ export function StylesSection({ value, onChange }: SectionProps) {
  * Favourite and avoided colours. A colour cannot be in both lists: choosing
  * it in one removes it from the other.
  */
-export function ColorsSection({ value, onChange }: SectionProps) {
+export function ColorsSection({
+  value,
+  onChange,
+  large = false,
+}: SectionProps & { large?: boolean }) {
   const { t } = useTranslation();
   const without = (list: ColorKey[], removed: ColorKey[]) =>
     list.filter((color) => !removed.includes(color));
@@ -91,10 +102,11 @@ export function ColorsSection({ value, onChange }: SectionProps) {
     <>
       <Section
         title={t('preferences.colors')}
-        hint={t('preferences.colorsHint')}
+        aside={t('preferences.colorsHint')}
       >
         <ColorPicker
           multiple
+          large={large}
           value={value.preferredColors}
           onChange={(preferredColors) =>
             onChange({
@@ -105,13 +117,15 @@ export function ColorsSection({ value, onChange }: SectionProps) {
           }
         />
       </Section>
+      <View style={styles.divider} />
       <Section
         title={t('preferences.avoided')}
-        note={t('preferences.optional')}
+        aside={t('preferences.optional')}
         hint={t('preferences.avoidedHint')}
       >
         <ColorPicker
           multiple
+          large={large}
           value={value.avoidedColors}
           onChange={(avoidedColors) =>
             onChange({
@@ -132,29 +146,37 @@ export function PracticalSection({ value, onChange }: SectionProps) {
     <>
       <Section
         title={t('preferences.metal')}
-        note={t('preferences.severalChoices')}
+        aside={t('preferences.severalChoices')}
         hint={t('preferences.metalHint')}
       >
-        <ChipGroup<Metal>
-          multiple
-          testIDPrefix="metal"
-          options={METALS.map((metal) => ({
-            value: metal,
-            label: t(`preferences.metals.${metal}`),
-          }))}
+        <MetalPicker
           value={value.preferredMetals}
           onChange={(preferredMetals) =>
             onChange({ ...value, preferredMetals })
           }
         />
       </Section>
-      <Section title={t('preferences.heels')}>
+      <Section title={t('preferences.heels')} aside={t('preferences.optional')}>
         <ChipGroup<'yes' | 'no' | 'none'>
+          scroll
+          tone="soft"
           testIDPrefix="heels"
           options={[
-            { value: 'yes', label: t('preferences.heelsYes') },
-            { value: 'no', label: t('preferences.heelsNo') },
-            { value: 'none', label: t('preferences.noPreference') },
+            {
+              value: 'yes',
+              label: t('preferences.heelsYes'),
+              icon: 'shoe-heel',
+            },
+            {
+              value: 'no',
+              label: t('preferences.heelsNo'),
+              icon: 'shoe-ballet',
+            },
+            {
+              value: 'none',
+              label: t('preferences.noPreference'),
+              icon: 'minus-circle-outline',
+            },
           ]}
           value={triState(value.acceptsHeels)}
           onChange={(choice) =>
@@ -164,13 +186,16 @@ export function PracticalSection({ value, onChange }: SectionProps) {
       </Section>
       <Section
         title={t('preferences.bottoms')}
-        note={t('preferences.severalChoices')}
+        aside={t('preferences.severalChoices')}
       >
         <ChipGroup<BottomPreference>
           multiple
+          scroll
+          tone="soft"
           options={BOTTOM_PREFERENCES.map((bottom) => ({
             value: bottom,
             label: t(`preferences.bottomOptions.${bottom}`),
+            icon: BOTTOM_ICONS[bottom],
           }))}
           value={value.preferredBottoms}
           onChange={(preferredBottoms) =>
@@ -178,7 +203,9 @@ export function PracticalSection({ value, onChange }: SectionProps) {
           }
         />
       </Section>
+      <View style={styles.divider} />
       <LevelPicker
+        labelVariant="overline"
         label={t('preferences.formality')}
         value={value.preferredFormality}
         onChange={(preferredFormality) =>
@@ -265,5 +292,6 @@ export function AdvancedSection({ value, onChange }: SectionProps) {
 }
 
 const styles = StyleSheet.create({
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
   section: { gap: spacing.md },
 });

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/brand/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
@@ -57,8 +58,12 @@ function EditForm({ item }: { item: WardrobeItem }) {
 
   return (
     <>
-      <View style={styles.padded}>
-        <ScreenHeader title={t('wardrobe.form.editTitle')} />
+      <View style={[styles.padded, styles.top]}>
+        <AppHeader />
+        <ScreenHeader
+          title={t('wardrobe.form.editTitle')}
+          overline={t('wardrobe.form.editOverline')}
+        />
       </View>
       <FormScrollView contentStyle={styles.form}>
         {SECTION_ORDER.map((key) => {
@@ -88,6 +93,7 @@ function EditForm({ item }: { item: WardrobeItem }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.xl, paddingTop: spacing.md },
+  top: { gap: spacing.lg },
   loader: { marginTop: spacing.xxxl },
   form: { gap: spacing.xxl, padding: spacing.xl },
   footer: {

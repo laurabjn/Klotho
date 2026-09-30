@@ -1,7 +1,9 @@
 import type { StyleProfile } from '@klotho/shared';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import * as Location from 'expo-location';
 
+import { weatherApi } from '@/features/weather/api/weather.api';
 import { renderWithProviders } from '@/testing/render';
 
 import { preferencesApi } from '../api/preferences.api';
@@ -10,10 +12,12 @@ import { OnboardingScreen } from './OnboardingScreen';
 import { PreferencesScreen } from './PreferencesScreen';
 
 jest.mock('../api/preferences.api');
+jest.mock('@/features/weather/api/weather.api');
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), back: jest.fn(), canGoBack: () => true },
 }));
 const api = jest.mocked(preferencesApi);
+const weather = jest.mocked(weatherApi);
 
 const press = (name: string) =>
   fireEvent.press(screen.getByRole('button', { name }));
@@ -48,19 +52,20 @@ describe('OnboardingScreen', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
     await waitForIdle();
     expect(api.save).toHaveBeenCalledWith(EMPTY_STYLE_PROFILE);
+    expect(weather.saveSettings).not.toHaveBeenCalled();
   });
 
-  it('saves the choices of the four steps', async () => {
+  it('saves the choices of the five steps', async () => {
     api.save.mockResolvedValue(saved());
     await renderWithProviders(<OnboardingScreen />);
 
     await press('Commencer');
-    expect(screen.getByText('Étape 2/4')).toBeOnTheScreen();
+    expect(screen.getByText('Étape 2/5')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Romantique' }));
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Vintage' }));
     await press('Continuer');
 
-    expect(screen.getByText('Étape 3/4')).toBeOnTheScreen();
+    expect(screen.getByText('Étape 3/5')).toBeOnTheScreen();
     const [favoritePink] = screen.getAllByRole('checkbox', {
       name: 'Rose poudré',
     });
@@ -69,12 +74,25 @@ describe('OnboardingScreen', () => {
     await fireEvent.press(blacks[1]!); // second picker: colours to avoid
     await press('Continuer');
 
-    expect(screen.getByText('Étape 4/4')).toBeOnTheScreen();
+    expect(screen.getByText('Étape 4/5')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('metal-gold'));
     await fireEvent.press(screen.getByTestId('metal-roseGold'));
     await fireEvent.press(screen.getByTestId('heels-no'));
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Des jupes' }));
-    await press('Terminer');
+    await press('Continuer');
+
+    expect(screen.getByText('Étape 5/5')).toBeOnTheScreen();
+    jest.mocked(Location.requestForegroundPermissionsAsync).mockResolvedValue({
+      granted: true,
+      canAskAgain: true,
+    } as Location.LocationPermissionResponse);
+    weather.saveSettings.mockResolvedValue({
+      locationMode: 'device',
+      city: null,
+      temperatureUnit: 'celsius',
+    });
+    // "Autoriser" asks the permission, then ends the onboarding.
+    await press('Autoriser');
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
     await waitForIdle();
@@ -86,6 +104,54 @@ describe('OnboardingScreen', () => {
       preferredMetals: ['gold', 'roseGold'],
       acceptsHeels: false,
       preferredBottoms: ['skirts'],
+    });
+    expect(weather.saveSettings).toHaveBeenCalledWith({
+      locationMode: 'device',
+      city: null,
+    });
+  });
+
+  it('offers a city when the location is refused', async () => {
+    const lyon = {
+      name: 'Lyon',
+      country: 'FR',
+      region: null,
+      latitude: 45.76,
+      longitude: 4.84,
+    };
+    api.save.mockResolvedValue(saved());
+    weather.cities.mockResolvedValue([lyon]);
+    weather.saveSettings.mockResolvedValue({
+      locationMode: 'city',
+      city: lyon,
+      temperatureUnit: 'celsius',
+    });
+    jest.mocked(Location.requestForegroundPermissionsAsync).mockResolvedValue({
+      granted: false,
+      canAskAgain: true,
+    } as Location.LocationPermissionResponse);
+    await renderWithProviders(<OnboardingScreen />);
+    for (const next of ['Commencer', 'Continuer', 'Continuer', 'Continuer'])
+      await press(next);
+
+    await press('Autoriser');
+    expect(
+      await screen.findByText('Pas de souci : choisis plutôt une ville.'),
+    ).toBeOnTheScreen();
+    await fireEvent.changeText(
+      screen.getByLabelText('Rechercher une ville'),
+      'Lyo',
+    );
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Lyon, FR' }),
+    );
+    await press('Terminer');
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+    await waitForIdle();
+    expect(weather.saveSettings).toHaveBeenCalledWith({
+      locationMode: 'city',
+      city: lyon,
     });
   });
 
@@ -101,6 +167,9 @@ describe('OnboardingScreen', () => {
     await fireEvent.press(avoidedBlack!);
     await fireEvent.press(favoriteBlack!);
     await press('Continuer');
+    await press('Continuer');
+    // Finishing without a city: no weather settings are saved.
+    await press('Choisir ma ville manuellement');
     await press('Terminer');
 
     await waitFor(() => expect(api.save).toHaveBeenCalled());
@@ -111,6 +180,7 @@ describe('OnboardingScreen', () => {
         avoidedColors: [],
       }),
     );
+    expect(weather.saveSettings).not.toHaveBeenCalled();
   });
 });
 

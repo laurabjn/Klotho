@@ -34,6 +34,8 @@ const KNOWN_CODES = new Set([
   'wardrobe.photoNotFound',
   'wardrobe.photoLimitReached',
   'wardrobe.invalidTemperatureRange',
+  'weather.unavailable',
+  'weather.locationMissing',
 ]);
 
 /** i18n key of the message to show for any error thrown by the API client. */

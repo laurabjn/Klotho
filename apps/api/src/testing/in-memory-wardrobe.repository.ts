@@ -58,6 +58,14 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
       .filter((i) => intersects(i.styles, filters.style))
       .filter(
         (i) =>
+          filters.temperature === undefined ||
+          ((i.minTemperature === null ||
+            i.minTemperature <= filters.temperature) &&
+            (i.maxTemperature === null ||
+              i.maxTemperature >= filters.temperature)),
+      )
+      .filter(
+        (i) =>
           !q ||
           [i.name, i.brand, i.subcategory].some((text) =>
             text?.toLowerCase().includes(q),

@@ -30,6 +30,12 @@ import { ColorPicker } from '@/components/ui/ColorPicker';
 import { LevelPicker } from '@/components/ui/LevelPicker';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { TextField } from '@/components/ui/TextField';
+import {
+  categoryIcons,
+  seasonIcons,
+  statusIcons,
+  styleIcons,
+} from '@/theme/icons';
 import { useFieldError } from '@/features/auth/hooks/useFieldError';
 import { colors, spacing } from '@/theme/tokens';
 
@@ -142,10 +148,12 @@ function InfoSection({ form }: { form: WardrobeForm }) {
             error={error(errors.category)}
           >
             <ChipGroup
+              tone="soft"
               testIDPrefix="category"
               options={WARDROBE_CATEGORIES.map((value) => ({
                 value,
                 label: t(`wardrobe.category.${value}`),
+                icon: categoryIcons[value],
               }))}
               value={field.value}
               onChange={(value) => {
@@ -164,6 +172,7 @@ function InfoSection({ form }: { form: WardrobeForm }) {
           render={({ field }) => (
             <Field title={t('wardrobe.form.subcategory')} note={optional}>
               <ChipGroup
+                tone="soft"
                 allowNone
                 options={SUBCATEGORIES[category].map((value) => ({
                   value,
@@ -297,6 +306,7 @@ function ColorsSection({ form }: { form: WardrobeForm }) {
         render={({ field }) => (
           <Field title={t('wardrobe.form.pattern')} note={optional}>
             <ChipGroup
+              tone="soft"
               allowNone
               options={PATTERNS.map((value) => ({
                 value,
@@ -327,11 +337,13 @@ function StyleSection({ form }: { form: WardrobeForm }) {
             note={`${optional} · ${several}`}
           >
             <ChipGroup
+              tone="soft"
               multiple
               collapsedCount={9}
               options={STYLES.map((value) => ({
                 value,
                 label: t(`wardrobe.styles.${value}`),
+                icon: styleIcons[value],
               }))}
               value={field.value ?? []}
               onChange={field.onChange}
@@ -373,10 +385,12 @@ function SeasonSection({ form }: { form: WardrobeForm }) {
             note={`${optional} · ${several}`}
           >
             <ChipGroup
+              tone="soft"
               multiple
               options={SEASONS.map((value) => ({
                 value,
                 label: t(`wardrobe.seasons.${value}`),
+                icon: seasonIcons[value],
               }))}
               value={field.value ?? []}
               onChange={field.onChange}
@@ -444,9 +458,11 @@ export function StatusSection({ form }: { form: WardrobeForm }) {
       render={({ field }) => (
         <Field title={t('wardrobe.form.status')}>
           <ChipGroup
+            tone="soft"
             options={WARDROBE_STATUSES.map((value) => ({
               value,
               label: t(`wardrobe.statuses.${value}`),
+              icon: statusIcons[value],
             }))}
             value={field.value}
             onChange={(value) => field.onChange(value ?? 'AVAILABLE')}

@@ -11,6 +11,14 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
   filters: {
     open: 'Filters',
     title: 'Filters',
+    overline: 'Refine your selection',
+    categories: 'Categories',
+    colors: 'Colours',
+    styles: 'Styles',
+    seasons: 'Seasons',
+    temperature: 'Temperature',
+    anyTemperature: 'Any',
+    otherColors: 'Others',
     reset: 'Reset',
     apply: 'Apply',
     sort: 'Sort by',
@@ -273,7 +281,9 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
   },
   form: {
     addTitle: 'Add a piece',
-    editTitle: 'Edit the piece',
+    addOverline: 'Add a garment to your wardrobe',
+    editTitle: 'Edit a piece',
+    editOverline: 'Update the details of your wardrobe',
     step: 'Step {{current}}/{{total}}',
     steps: {
       photo: 'Photo',
@@ -312,6 +322,7 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
     saved: 'Piece saved',
   },
   detail: {
+    title: 'Piece details',
     edit: 'Edit',
     delete: 'Delete',
     deleteTitle: 'Delete this piece?',

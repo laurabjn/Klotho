@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import { AppText } from '@/components/ui/AppText';
-import { fonts, spacing } from '@/theme/tokens';
+import { colors, fonts, spacing } from '@/theme/tokens';
 
 import logoXml from './logo-xml';
 import monogramXml from './monogram-xml';
@@ -31,7 +31,7 @@ export function KlothoBrandRow({ centered = false }: { centered?: boolean }) {
       accessibilityRole="image"
       accessibilityLabel="Klotho"
     >
-      <SvgXml xml={monogramXml} width={34} height={34} />
+      <SvgXml xml={monogramXml} width={56} height={56} />
       <AppText style={styles.wordmark}>Klotho</AppText>
     </View>
   );
@@ -40,5 +40,10 @@ export function KlothoBrandRow({ centered = false }: { centered?: boolean }) {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   centered: { alignSelf: 'center' },
-  wordmark: { fontFamily: fonts.serif, fontSize: 26, color: '#6E5046' },
+  wordmark: {
+    fontFamily: fonts.serif,
+    fontSize: 44,
+    lineHeight: 56,
+    color: colors.title,
+  },
 });

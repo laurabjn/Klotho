@@ -5,8 +5,8 @@ export const onboardingFr = {
   finish: 'Terminer',
   back: 'Retour',
   welcome: {
-    title: 'Bienvenue dans Klotho',
-    overline: 'Compose des tenues avec ta propre garde-robe',
+    title: 'Bienvenue\ndans Klotho',
+    overline: 'Compose des tenues\navec ta propre garde-robe',
     body: 'Photographie tes vêtements, et laisse Klotho créer des tenues qui te ressemblent, pour chaque moment de ta vie.',
     start: 'Commencer',
     skip: 'Passer pour l’instant',
@@ -14,6 +14,7 @@ export const onboardingFr = {
   styles: {
     title: 'Choisis tes styles',
     overline: 'Sélectionne les univers qui te ressemblent',
+    seeAll: 'Voir tous les styles',
   },
   colors: {
     title: 'Tes couleurs favorites',
@@ -24,6 +25,20 @@ export const onboardingFr = {
     title: 'Tes habitudes',
     overline: 'Pour des tenues qui te conviennent vraiment',
     body: 'Tout est facultatif, et modifiable plus tard dans Moi → Mes préférences.',
+  },
+  weather: {
+    title: 'Météo & localisation',
+    overline: 'Pour des tenues encore plus pertinentes',
+    body: 'Autorise l’accès à ta localisation pour que Klotho te propose des tenues adaptées à la météo de ta région, chaque jour.',
+    allow: 'Autoriser',
+    chooseCity: 'Choisir ma ville manuellement',
+    privacy:
+      'Ta localisation est uniquement utilisée pour obtenir la météo de ta région. Elle reste confidentielle.',
+    learnMore: 'En savoir plus',
+    privacyTitle: 'Ta localisation',
+    privacyDetails:
+      'Klotho s’en sert seulement pour connaître la météo. Elle est arrondie à environ 1 km sur ton téléphone avant d’être envoyée, et n’est jamais enregistrée. Tu peux changer d’avis à tout moment dans Moi → Météo.',
+    understood: 'J’ai compris',
   },
 } as const;
 

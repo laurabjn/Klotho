@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   WARDROBE_STATUSES,
   type WardrobeItem,
@@ -13,6 +13,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { ChipGroup } from '@/components/ui/ChipGroup';
@@ -20,10 +21,10 @@ import { ColorDot } from '@/components/ui/ColorDot';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
-import { GoldRule } from '@/components/ui/GoldRule';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { errorMessageKey } from '@/lib/api/errors';
-import { colors, radii, spacing } from '@/theme/tokens';
+import { categoryIcons, statusIcons, type IconName } from '@/theme/icons';
+import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
 import {
   useDeleteWardrobeItem,
@@ -94,61 +95,98 @@ function Details({
           ? t('wardrobe.detail.temperatureUpTo', { max: item.maxTemperature })
           : null;
 
-  const rows: [string, ReactNode][] = [
-    [t('wardrobe.form.category'), t(`wardrobe.category.${item.category}`)],
+  const rows: [IconName, string, ReactNode][] = [
+    [
+      categoryIcons[item.category],
+      t('wardrobe.form.category'),
+      t(`wardrobe.category.${item.category}`),
+    ],
     ...(item.subcategory
       ? [
           [
+            'tag-outline',
             t('wardrobe.form.subcategory'),
             subcategoryLabel(t, item.subcategory),
-          ] as [string, string],
+          ] as [IconName, string, string],
         ]
       : []),
     ...(item.pattern
       ? [
           [
+            'checkerboard',
             t('wardrobe.form.pattern'),
             t(`wardrobe.patterns.${item.pattern}`),
-          ] as [string, string],
-        ]
-      : []),
-    ...(item.seasons.length
-      ? [
-          [
-            t('wardrobe.form.seasons'),
-            item.seasons.map((s) => t(`wardrobe.seasons.${s}`)).join(', '),
-          ] as [string, string],
+          ] as [IconName, string, string],
         ]
       : []),
     ...(temperature
-      ? [[t('wardrobe.form.temperature'), temperature] as [string, string]]
+      ? [
+          ['thermometer', t('wardrobe.form.temperature'), temperature] as [
+            IconName,
+            string,
+            string,
+          ],
+        ]
+      : []),
+    ...(item.material
+      ? [
+          ['flower-outline', t('wardrobe.form.material'), item.material] as [
+            IconName,
+            string,
+            string,
+          ],
+        ]
+      : []),
+    ...(item.brand
+      ? [
+          ['tag-heart-outline', t('wardrobe.form.brand'), item.brand] as [
+            IconName,
+            string,
+            string,
+          ],
+        ]
+      : []),
+    ...(item.size
+      ? [
+          ['ruler', t('wardrobe.form.size'), item.size] as [
+            IconName,
+            string,
+            string,
+          ],
+        ]
+      : []),
+  ];
+
+  // The three cards of the mockup: season, warmth, occasion (formality).
+  const infoCards: [IconName, string, string][] = [
+    ...(item.seasons.length
+      ? [
+          [
+            'leaf',
+            t('wardrobe.form.seasons'),
+            item.seasons.map((s) => t(`wardrobe.seasons.${s}`)).join('\n'),
+          ] as [IconName, string, string],
+        ]
       : []),
     ...(item.warmthLevel
       ? [
           [
+            'thermometer',
             t('wardrobe.form.warmth'),
             t(`wardrobe.warmth.${item.warmthLevel}` as 'wardrobe.warmth.1'),
-          ] as [string, string],
+          ] as [IconName, string, string],
         ]
       : []),
     ...(item.formalityLevel
       ? [
           [
+            'calendar-blank-outline',
             t('wardrobe.form.formality'),
             t(
               `wardrobe.formality.${item.formalityLevel}` as 'wardrobe.formality.1',
             ),
-          ] as [string, string],
+          ] as [IconName, string, string],
         ]
-      : []),
-    ...(item.material
-      ? [[t('wardrobe.form.material'), item.material] as [string, string]]
-      : []),
-    ...(item.brand
-      ? [[t('wardrobe.form.brand'), item.brand] as [string, string]]
-      : []),
-    ...(item.size
-      ? [[t('wardrobe.form.size'), item.size] as [string, string]]
       : []),
   ];
 
@@ -160,25 +198,35 @@ function Details({
           { paddingBottom: spacing.xxxl + bottom },
         ]}
       >
-        <ScreenHeader />
+        <AppHeader />
+        <ScreenHeader title={t('wardrobe.detail.title')} />
         <WardrobePhotoCarousel item={item} />
         {photosFailed > 0 && (
           <FormError
             message={t('wardrobe.photos.uploadFailed', { count: photosFailed })}
           />
         )}
-        <View style={styles.titleBlock}>
-          <AppText variant="title">{itemTitle(t, item)}</AppText>
-          <GoldRule />
-        </View>
+        <AppText variant="title">{itemTitle(t, item)}</AppText>
 
         <View style={styles.colors}>
           {[item.primaryColor, ...item.secondaryColors].map((color) => (
             <View key={color} style={styles.colorChip}>
-              <ColorDot color={color} size={14} />
-              <AppText variant="hint">{t(`wardrobe.colors.${color}`)}</AppText>
+              <ColorDot color={color} size={16} />
+              <AppText style={styles.chipText}>
+                {t(`wardrobe.colors.${color}`)}
+              </AppText>
             </View>
           ))}
+          <View style={styles.colorChip}>
+            <MaterialCommunityIcons
+              name={categoryIcons[item.category]}
+              size={18}
+              color={colors.title}
+            />
+            <AppText style={styles.chipText}>
+              {t(`wardrobe.category.${item.category}`)}
+            </AppText>
+          </View>
         </View>
 
         {item.styles.length > 0 && (
@@ -193,25 +241,46 @@ function Details({
           </View>
         )}
 
-        <View style={styles.card}>
-          <Ionicons name="repeat-outline" size={22} color={colors.primary} />
-          <View style={styles.flex}>
-            <AppText variant="label">
-              {item.wearCount > 0
-                ? t('wardrobe.detail.worn', { count: item.wearCount })
-                : t('wardrobe.detail.neverWorn')}
-            </AppText>
-            {item.lastWornAt && (
-              <AppText variant="hint">
-                {t('wardrobe.detail.lastWorn', {
-                  date: new Date(item.lastWornAt).toLocaleDateString(
-                    i18n.language,
-                  ),
-                })}
-              </AppText>
-            )}
+        {infoCards.length > 0 && (
+          <View style={styles.infoCards}>
+            {infoCards.map(([icon, label, value]) => (
+              <View key={label} style={styles.infoCard}>
+                <View style={styles.infoIcon}>
+                  <MaterialCommunityIcons
+                    name={icon}
+                    size={20}
+                    color={colors.primary}
+                  />
+                </View>
+                <AppText variant="hint">{label}</AppText>
+                <AppText style={styles.infoValue}>{value}</AppText>
+              </View>
+            ))}
           </View>
-        </View>
+        )}
+
+        {/* Wear history comes with Sprint 8: shown once a piece was worn. */}
+        {item.wearCount > 0 && (
+          <View style={styles.card}>
+            <Ionicons name="repeat-outline" size={22} color={colors.primary} />
+            <View style={styles.flex}>
+              <AppText variant="label">
+                {item.wearCount > 0
+                  ? t('wardrobe.detail.worn', { count: item.wearCount })
+                  : t('wardrobe.detail.neverWorn')}
+              </AppText>
+              {item.lastWornAt && (
+                <AppText variant="hint">
+                  {t('wardrobe.detail.lastWorn', {
+                    date: new Date(item.lastWornAt).toLocaleDateString(
+                      i18n.language,
+                    ),
+                  })}
+                </AppText>
+              )}
+            </View>
+          </View>
+        )}
 
         <View style={styles.section}>
           <AppText variant="heading">
@@ -221,10 +290,12 @@ function Details({
             {t('wardrobe.detail.availabilityHint')}
           </AppText>
           <ChipGroup
+            tone="soft"
             testIDPrefix="status"
             options={WARDROBE_STATUSES.map((value) => ({
               value,
               label: t(`wardrobe.statuses.${value}`),
+              icon: statusIcons[value],
             }))}
             value={update.variables?.status ?? item.status}
             onChange={changeStatus}
@@ -240,8 +311,13 @@ function Details({
 
         <View style={styles.section}>
           <AppText variant="heading">{t('wardrobe.detail.details')}</AppText>
-          {rows.map(([label, value]) => (
+          {rows.map(([icon, label, value]) => (
             <View key={label} style={styles.detailRow}>
+              <MaterialCommunityIcons
+                name={icon}
+                size={20}
+                color={colors.title}
+              />
               <AppText variant="hint" style={styles.detailLabel}>
                 {label}
               </AppText>
@@ -299,7 +375,6 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingBottom: spacing.xxxl,
   },
-  titleBlock: { gap: spacing.sm },
   colors: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   colorChip: {
     flexDirection: 'row',
@@ -309,6 +384,31 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs + 2,
     borderRadius: radii.pill,
     backgroundColor: colors.input,
+  },
+  chipText: { fontFamily: fonts.serif, fontSize: 16, color: colors.title },
+  infoCards: { flexDirection: 'row', gap: spacing.sm },
+  infoCard: {
+    flex: 1,
+    gap: spacing.xs,
+    padding: spacing.md,
+    borderRadius: radii.input,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  infoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.input,
+  },
+  infoValue: {
+    fontFamily: fonts.serif,
+    fontSize: 16,
+    lineHeight: 20,
+    color: colors.title,
   },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   tag: {
@@ -330,12 +430,13 @@ const styles = StyleSheet.create({
   section: { gap: spacing.md },
   detailRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  detailLabel: { width: 120, paddingTop: 3 },
+  detailLabel: { width: 110 },
   actions: { flexDirection: 'row', gap: spacing.md },
   flex: { flex: 1 },
 });

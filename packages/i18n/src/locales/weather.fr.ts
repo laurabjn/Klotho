@@ -1,0 +1,73 @@
+// Weather: home card, location choice, settings (tutoiement).
+export const weatherFr = {
+  open: 'Météo',
+  tile: {
+    open: 'Voir la météo du jour',
+    manual: 'Saisie',
+    unconfigured: 'À configurer',
+    unavailable: 'Indisponible',
+    settings: 'Réglages météo',
+  },
+  card: {
+    overline: 'La météo du jour',
+    feelsLike: 'Ressenti {{value}}',
+    rain: '{{value}} mm de pluie',
+    noRain: 'Pas de pluie',
+    wind: 'Vent {{value}} km/h',
+    manual: 'Température que tu as saisie',
+    useWeather: 'Revenir à la météo',
+    setTemperature: 'Saisir la température',
+    unconfiguredTitle: 'Active la météo',
+    unconfiguredBody: 'Pour des tenues adaptées au temps qu’il fait.',
+    configure: 'Configurer',
+    unavailable: 'La météo est indisponible pour le moment.',
+    positionUnavailable:
+      'Ta position n’est pas disponible. Autorise la localisation ou choisis une ville.',
+    retry: 'Réessayer',
+    loading: 'Chargement de la météo',
+  },
+  conditions: {
+    clear: 'Ensoleillé',
+    cloudy: 'Nuageux',
+    fog: 'Brouillard',
+    rain: 'Pluie',
+    snow: 'Neige',
+    storm: 'Orage',
+  },
+  manual: {
+    title: 'Température du jour',
+    hint: 'Elle remplace la météo pour aujourd’hui.',
+    decrease: 'Baisser d’un degré',
+    increase: 'Monter d’un degré',
+    apply: 'Valider',
+  },
+  location: {
+    useDevice: 'Utiliser ma position',
+    useDeviceHint:
+      'Elle sert uniquement à connaître la météo et n’est jamais enregistrée.',
+    deviceActive: 'Ta position sera utilisée pour la météo.',
+    denied: 'Pas de souci : choisis plutôt une ville.',
+    blocked:
+      'La localisation est désactivée pour Klotho. Tu peux l’activer dans les réglages du téléphone, ou choisir une ville.',
+    openSettings: 'Ouvrir les réglages',
+    chooseCity: 'Choisir une ville',
+    searchCity: 'Rechercher une ville',
+    searching: 'Recherche…',
+    noCity: 'Aucune ville trouvée.',
+    selectedCity: 'Ville choisie : {{city}}',
+    changeCity: 'Changer de ville',
+    fallbackCity: 'Ville de secours si ta position n’est pas disponible',
+  },
+  settings: {
+    title: 'Météo',
+    overline: 'Localisation et unité',
+    location: 'Localisation',
+    unit: 'Unité de température',
+    save: 'Enregistrer',
+    loadError: 'Impossible de charger tes réglages météo.',
+  },
+  units: {
+    celsius: 'Celsius (°C)',
+    fahrenheit: 'Fahrenheit (°F)',
+  },
+} as const;

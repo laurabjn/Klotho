@@ -29,6 +29,10 @@ import {
   WardrobeItemNotFoundError,
   WardrobePhotoNotFoundError,
 } from '../../../domain/wardrobe/errors';
+import {
+  WeatherLocationMissingError,
+  WeatherUnavailableError,
+} from '../../../domain/weather/errors';
 
 const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [EmailAlreadyUsedError, HttpStatus.CONFLICT],
@@ -43,6 +47,8 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [PhotoLimitReachedError, HttpStatus.CONFLICT],
   [InvalidImageError, HttpStatus.UNSUPPORTED_MEDIA_TYPE],
   [UploadNotFoundError, HttpStatus.BAD_REQUEST],
+  [WeatherUnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
+  [WeatherLocationMissingError, HttpStatus.UNPROCESSABLE_ENTITY],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {

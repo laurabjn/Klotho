@@ -10,6 +10,8 @@ interface LevelPickerProps {
   onChange: (value: number | null) => void;
   /** Label of each level, 1 to 5. */
   describe: (level: number) => string;
+  /** "overline": spaced capitals, as the other sections of the onboarding. */
+  labelVariant?: 'label' | 'overline';
 }
 
 const LEVELS = [1, 2, 3, 4, 5];
@@ -20,12 +22,20 @@ export function LevelPicker({
   value,
   onChange,
   describe,
+  labelVariant = 'label',
 }: LevelPickerProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <AppText variant="label">{label}</AppText>
-        {value != null && <AppText variant="hint">{describe(value)}</AppText>}
+        <AppText variant={labelVariant}>{label}</AppText>
+        {value != null && (
+          <AppText
+            variant="hint"
+            style={labelVariant === 'overline' && styles.describeRose}
+          >
+            {describe(value)}
+          </AppText>
+        )}
       </View>
       <View
         style={styles.track}
@@ -56,6 +66,11 @@ export function LevelPicker({
 
 const styles = StyleSheet.create({
   container: { gap: spacing.sm },
+  describeRose: {
+    fontFamily: fonts.serifRegular,
+    fontSize: 14,
+    color: colors.link,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

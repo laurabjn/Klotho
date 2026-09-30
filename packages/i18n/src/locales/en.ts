@@ -1,6 +1,7 @@
 import type { TranslationResource } from './fr';
 import { onboardingEn, preferencesEn } from './preferences.en';
 import { wardrobeEn } from './wardrobe.en';
+import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
   common: {
@@ -11,6 +12,7 @@ export const en: TranslationResource = {
     cancel: 'Cancel',
     or: 'or',
     back: 'Back',
+    close: 'Close',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
   },
@@ -38,6 +40,7 @@ export const en: TranslationResource = {
     },
     forgotPassword: {
       title: 'Forgot password',
+      overline: 'Get back into your wardrobe',
       body: "Enter your email address and we'll send you a link to reset your password.",
       hint: "We'll send a reset link to this address. Remember to check your spam folder.",
       submit: 'Send the link',
@@ -84,9 +87,62 @@ export const en: TranslationResource = {
   wardrobe: wardrobeEn,
   onboarding: onboardingEn,
   preferences: preferencesEn,
+  weather: weatherEn,
+  profile: {
+    title: 'My profile',
+    open: 'Open my profile',
+    overline: 'My fashion world, my preferences',
+    pieces_one: 'piece',
+    pieces_other: 'pieces',
+    favorites_one: 'favourite outfit',
+    favorites_other: 'favourite outfits',
+    edit: 'Edit',
+    editPhoto: 'Change my photo',
+    notifications: 'Notifications',
+    notificationsOverline: 'Stay informed and inspired',
+    tips: 'Personalised tips and inspiration',
+    reminders: 'Outfit reminders and suggestions',
+    privacy: 'Privacy',
+    help: 'Help',
+    ok: 'OK',
+    dominantStyle: 'Main style',
+    noDominantStyle: 'Add pieces to find out',
+    styles: 'My favourite styles',
+    stylesOverline: 'Select the styles that feel like you',
+    colors: 'My favourite colours',
+    colorsOverline: 'The colours that light up your wardrobe',
+    metal: 'My favourite metal',
+    metalOverline: 'The detail that makes the difference',
+    units: 'Units',
+    unitsOverline: 'Choose your preferences',
+    seeAll: 'See all',
+    add: 'Add',
+    empty: 'Nothing chosen yet.',
+  },
   home: {
     greeting: 'Hello {{firstName}}',
     overline: 'Ready to write a new story today?',
+    generate: 'Create my outfit',
+    soonTitle: 'Coming soon',
+    soonBody:
+      'Klotho will soon put your outfits together from your pieces, the weather and your style of the day.',
+    ok: 'OK',
+    dailyStyle: 'My style of the day',
+    seeAll: 'See all',
+    seeLess: 'See less',
+    outfit: {
+      title: 'Outfit of the day',
+      overline: 'Soon, an outfit designed for your day',
+      soon: 'Coming soon',
+    },
+    rediscover: {
+      overline: 'Too often forgotten',
+      title: 'Rediscover this piece',
+      never: '“{{name}}” has not been worn yet. What if today was its day?',
+      since:
+        '“{{name}}” has not been worn since {{date}}. What if today was its day?',
+      open: 'See the piece',
+    },
     title: 'Welcome to your wardrobe',
     subtitle: 'Outfits built from the pieces you actually own.',
   },
@@ -112,6 +168,13 @@ export const en: TranslationResource = {
       bottoms: 'Unknown choice',
       length: 'Unknown length',
       colorConflict: 'A colour cannot be both a favourite and to avoid',
+    },
+    weather: {
+      coordinates: 'Invalid location',
+      locationMode: 'Unknown location choice',
+      unit: 'Unknown unit',
+      cityRequired: 'Choose a city',
+      query: 'Type at least 2 letters',
     },
     wardrobe: {
       category: 'Choose a category',
@@ -148,6 +211,10 @@ export const en: TranslationResource = {
       photoNotFound: 'This photo no longer exists.',
       notFound: 'This piece no longer exists.',
       invalidTemperatureRange: 'The maximum must be above the minimum.',
+    },
+    weather: {
+      unavailable: 'The weather is unavailable right now. Try again later.',
+      locationMissing: 'Choose a city or allow location to see the weather.',
     },
     validation: { failed: 'Some fields are invalid.' },
     request: { tooMany: 'Too many attempts. Try again in a few minutes.' },

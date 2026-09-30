@@ -39,13 +39,12 @@ const level = z
   .nullable()
   .optional();
 
-const temperature = z
+const degrees = z
   .number({ error: 'errors.wardrobe.temperature' })
   .int()
   .min(TEMPERATURE_MIN, { error: 'errors.wardrobe.temperature' })
-  .max(TEMPERATURE_MAX, { error: 'errors.wardrobe.temperature' })
-  .nullable()
-  .optional();
+  .max(TEMPERATURE_MAX, { error: 'errors.wardrobe.temperature' });
+const temperature = degrees.nullable().optional();
 
 export const categorySchema = z.enum(WARDROBE_CATEGORIES, {
   error: 'errors.wardrobe.category',
@@ -152,6 +151,8 @@ export const listWardrobeQuerySchema = z.object({
   style: csv(styleSchema),
   status: csv(statusSchema),
   q: z.string().trim().max(60).optional(),
+  /** Pieces wearable at this temperature (°C); pieces without a range match. */
+  temperature: z.coerce.number().pipe(degrees).optional(),
   sort: z.enum(WARDROBE_SORTS).default('recent'),
 });
 

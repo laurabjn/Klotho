@@ -10,6 +10,17 @@ interface AppTextProps extends TextProps {
   center?: boolean;
 }
 
+/** How much each style may grow with the system text size. */
+const MAX_SCALE: Record<Variant, number> = {
+  hero: 1.2,
+  title: 1.2,
+  heading: 1.25,
+  overline: 1.3,
+  body: 1.5,
+  hint: 1.4,
+  label: 1.4,
+};
+
 export function AppText({
   variant = 'body',
   center,
@@ -21,7 +32,7 @@ export function AppText({
   return (
     <Text
       accessibilityRole={isHeading ? 'header' : undefined}
-      maxFontSizeMultiplier={variant === 'hero' ? 1.3 : 1.6}
+      maxFontSizeMultiplier={MAX_SCALE[variant]}
       style={[styles[variant], center && styles.center, style]}
       {...props}
     />
@@ -31,20 +42,20 @@ export function AppText({
 const styles = StyleSheet.create({
   hero: {
     fontFamily: fonts.serif,
-    fontSize: 36,
-    lineHeight: 40,
+    fontSize: 44,
+    lineHeight: 48,
     color: colors.title,
   },
   title: {
     fontFamily: fonts.serif,
-    fontSize: 32,
-    lineHeight: 36,
+    fontSize: 36,
+    lineHeight: 40,
     color: colors.title,
   },
   heading: {
     fontFamily: fonts.serif,
-    fontSize: 22,
-    lineHeight: 28,
+    fontSize: 24,
+    lineHeight: 30,
     color: colors.title,
   },
   overline: {

@@ -18,6 +18,8 @@ import { TextField } from '@/components/ui/TextField';
 import { errorMessageKey } from '@/lib/api/errors';
 
 import { authApi } from '../api/auth.api';
+import { photos } from '@/theme/photos';
+
 import { AuthLayout } from '../components/AuthLayout';
 import { useFieldError } from '../hooks/useFieldError';
 import { signIn } from '../store/auth.store';
@@ -46,6 +48,9 @@ export function RegisterScreen() {
   return (
     <AuthLayout
       showBack
+      photo={photos.register.source}
+      photoRatio={photos.register.ratio}
+      photoPlacement="side"
       header={
         <>
           <AppText variant="hero">{t('auth.register.title')}</AppText>

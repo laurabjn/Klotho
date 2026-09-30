@@ -12,6 +12,8 @@ import { TextField } from '@/components/ui/TextField';
 import { errorMessageKey } from '@/lib/api/errors';
 
 import { authApi } from '../api/auth.api';
+import { photos } from '@/theme/photos';
+
 import { AuthLayout } from '../components/AuthLayout';
 import { useFieldError } from '../hooks/useFieldError';
 
@@ -33,12 +35,14 @@ export function ForgotPasswordScreen() {
     return (
       <AuthLayout
         showBack
+        photo={photos.forgotPassword.source}
+        photoRatio={photos.forgotPassword.ratio}
         header={
           <>
-            <AppText variant="title">
+            <AppText variant="title" center>
               {t('auth.forgotPassword.sentTitle')}
             </AppText>
-            <AppText>
+            <AppText center>
               {t('auth.forgotPassword.sentBody', { email: getValues('email') })}
             </AppText>
           </>
@@ -60,10 +64,17 @@ export function ForgotPasswordScreen() {
   return (
     <AuthLayout
       showBack
+      photo={photos.forgotPassword.source}
+      photoRatio={photos.forgotPassword.ratio}
       header={
         <>
-          <AppText variant="title">{t('auth.forgotPassword.title')}</AppText>
-          <AppText>{t('auth.forgotPassword.body')}</AppText>
+          <AppText variant="title" center>
+            {t('auth.forgotPassword.title')}
+          </AppText>
+          <AppText variant="overline" center>
+            {t('auth.forgotPassword.overline')}
+          </AppText>
+          <AppText center>{t('auth.forgotPassword.body')}</AppText>
         </>
       }
     >

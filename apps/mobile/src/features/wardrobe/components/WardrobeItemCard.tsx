@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { ColorDot } from '@/components/ui/ColorDot';
-import { colors, radii, spacing } from '@/theme/tokens';
+import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
 import { itemTitle } from '../labels';
 import { ItemVisual } from './ItemVisual';
@@ -41,28 +41,30 @@ export function WardrobeItemCard({
         />
         {unavailable && (
           <View style={styles.badge}>
-            <AppText variant="hint" style={styles.badgeText}>
+            <AppText variant="hint" style={styles.badgeText} numberOfLines={1}>
               {unavailable}
             </AppText>
           </View>
         )}
       </View>
-      <AppText variant="label" numberOfLines={1}>
-        {title}
-      </AppText>
-      <View style={styles.row}>
-        <ColorDot color={item.primaryColor} size={10} />
-        <AppText variant="hint" numberOfLines={1} style={styles.flex}>
-          {colorName}
+      <View style={styles.body}>
+        <AppText numberOfLines={1} style={styles.name}>
+          {title}
         </AppText>
-      </View>
-      {style && (
-        <View style={styles.tag}>
-          <AppText variant="hint" numberOfLines={1}>
-            {style}
+        <View style={styles.row}>
+          <ColorDot color={item.primaryColor} size={12} />
+          <AppText variant="hint" numberOfLines={1} style={styles.flex}>
+            {colorName}
           </AppText>
+          {style && (
+            <View style={styles.tag}>
+              <AppText variant="hint" numberOfLines={1} style={styles.tagText}>
+                {style}
+              </AppText>
+            </View>
+          )}
         </View>
-      )}
+      </View>
     </Pressable>
   );
 }
@@ -70,36 +72,45 @@ export function WardrobeItemCard({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    gap: spacing.xs + 2,
-    padding: spacing.sm,
-    borderRadius: radii.card,
+    overflow: 'hidden',
+    borderRadius: radii.input,
     backgroundColor: colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     shadowColor: colors.shadow,
     shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
     elevation: 2,
   },
   pressed: { opacity: 0.8 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 2 },
+  body: { gap: spacing.xs, padding: spacing.sm },
+  name: {
+    fontFamily: fonts.serif,
+    fontSize: 16,
+    lineHeight: 20,
+    color: colors.title,
+  },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   flex: { flex: 1 },
   tag: {
-    alignSelf: 'flex-start',
+    maxWidth: '55%',
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: 1,
     borderRadius: radii.pill,
-    backgroundColor: '#E9DCD3',
+    backgroundColor: colors.input,
   },
+  tagText: { fontSize: 11, lineHeight: 15 },
   badge: {
     position: 'absolute',
-    top: spacing.sm,
-    left: spacing.sm,
+    top: spacing.xs,
+    left: spacing.xs,
+    right: spacing.xs,
+    alignSelf: 'flex-start',
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: radii.pill,
     backgroundColor: 'rgba(255, 249, 245, 0.92)',
   },
-  badgeText: { color: colors.title },
+  badgeText: { color: colors.title, fontSize: 11 },
 });

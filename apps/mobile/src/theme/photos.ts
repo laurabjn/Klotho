@@ -1,0 +1,62 @@
+import type { Style } from '@klotho/shared';
+
+// Editorial photos of the mockups. Provisional crops of the mockup boards:
+// replace the files (same names) with the HD versions, then update the ratios.
+
+interface Photo {
+  source: number;
+  /** Width / height. */
+  ratio: number;
+}
+
+export const photos = {
+  login: { source: require('../../assets/photos/login.jpg'), ratio: 735 / 507 },
+  register: {
+    source: require('../../assets/photos/register.jpg'),
+    ratio: 369 / 553,
+  },
+  forgotPassword: {
+    source: require('../../assets/photos/forgot-password.jpg'),
+    ratio: 735 / 608,
+  },
+  passwordChanged: {
+    source: require('../../assets/photos/password-changed.jpg'),
+    ratio: 735 / 690,
+  },
+  welcome: {
+    source: require('../../assets/photos/welcome.jpg'),
+    ratio: 735 / 524,
+  },
+  weather: {
+    source: require('../../assets/photos/weather.jpg'),
+    ratio: 735 / 650,
+  },
+  colorsFooter: {
+    source: require('../../assets/photos/colors-footer.jpg'),
+    ratio: 735 / 120,
+  },
+  outfitOfTheDay: {
+    source: require('../../assets/photos/outfit-of-the-day.jpg'),
+    ratio: 360 / 428,
+  },
+} satisfies Record<string, Photo>;
+
+/** Square-ish thumbnails of the style cards; styles without one show an icon. */
+export const stylePhotos: Partial<Record<Style, number>> = {
+  romantic: require('../../assets/styles/romantic.jpg'),
+  casual: require('../../assets/styles/casual.jpg'),
+  chic: require('../../assets/styles/chic.jpg'),
+  minimalist: require('../../assets/styles/minimalist.jpg'),
+  classic: require('../../assets/styles/classic.jpg'),
+  boho: require('../../assets/styles/boho.jpg'),
+  vintage: require('../../assets/styles/vintage.jpg'),
+  business: require('../../assets/styles/business.jpg'),
+  y2k: require('../../assets/styles/y2k.jpg'),
+  parisian: require('../../assets/styles/parisian.jpg'),
+  preppy: require('../../assets/styles/preppy.jpg'),
+  oldMoney: require('../../assets/styles/oldMoney.jpg'),
+  evening: require('../../assets/styles/evening.jpg'),
+  sporty: require('../../assets/styles/sporty.jpg'),
+  cottagecore: require('../../assets/styles/cottagecore.jpg'),
+  artsy: require('../../assets/styles/artsy.jpg'),
+};

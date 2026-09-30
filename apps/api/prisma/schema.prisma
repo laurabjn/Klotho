@@ -21,6 +21,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   wardrobeItems       WardrobeItem[]
   styleProfile        StyleProfile?
+  weatherSettings     WeatherSettings?
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -140,6 +141,22 @@ model StyleProfile {
   avoidsDeepNeckline  Boolean?
   onboardedAt         DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Location mode, saved city (its own coordinates) and unit. The device position is never stored.
+model WeatherSettings {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  locationMode    String?
+  cityName        String?
+  cityCountry     String?
+  cityRegion      String?
+  cityLatitude    Float?
+  cityLongitude   Float?
+  temperatureUnit String   @default("celsius")
+  updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

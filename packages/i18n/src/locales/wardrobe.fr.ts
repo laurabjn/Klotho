@@ -10,6 +10,14 @@ export const wardrobeFr = {
   filters: {
     open: 'Filtres',
     title: 'Filtres',
+    overline: 'Affine ta sélection',
+    categories: 'Catégories',
+    colors: 'Couleurs',
+    styles: 'Styles',
+    seasons: 'Saisons',
+    temperature: 'Température',
+    anyTemperature: 'Toutes',
+    otherColors: 'Autres',
     reset: 'Réinitialiser',
     apply: 'Appliquer',
     sort: 'Trier par',
@@ -187,7 +195,7 @@ export const wardrobeFr = {
     oldMoney: 'Old Money',
     evening: 'Soirée',
     streetwear: 'Streetwear',
-    sporty: 'Sportswear',
+    sporty: 'Sporty',
     rock: 'Rock',
     glamour: 'Glamour',
     coquette: 'Coquette',
@@ -272,7 +280,9 @@ export const wardrobeFr = {
   },
   form: {
     addTitle: 'Ajouter une pièce',
-    editTitle: 'Modifier la pièce',
+    addOverline: 'Ajoute un vêtement à ta garde-robe',
+    editTitle: 'Modifier une pièce',
+    editOverline: 'Mets à jour les détails de ta garde-robe',
     step: 'Étape {{current}}/{{total}}',
     steps: {
       photo: 'Photo',
@@ -311,6 +321,7 @@ export const wardrobeFr = {
     saved: 'Pièce enregistrée',
   },
   detail: {
+    title: 'Détail de la pièce',
     edit: 'Modifier',
     delete: 'Supprimer',
     deleteTitle: 'Supprimer cette pièce ?',

@@ -16,7 +16,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "blockedPermissions": ["android.permission.ACCESS_FINE_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -43,6 +44,12 @@
           "photosPermission": "Klotho a besoin de tes photos pour ajouter tes pièces à ta garde-robe.",
           "cameraPermission": "Klotho a besoin de l’appareil photo pour photographier tes pièces.",
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Klotho utilise ta position uniquement pour connaître la météo locale. Elle n’est jamais enregistrée."
         }
       ]
     ],

@@ -1,8 +1,10 @@
-import type {
-  CreateWardrobeItemInput,
-  ListWardrobeQueryInput,
-  UpdateWardrobeItemInput,
-  WardrobeItem,
+import {
+  WARDROBE_PAGE_SIZE_MAX,
+  type CreateWardrobeItemInput,
+  type ListWardrobeQueryInput,
+  type Style,
+  type UpdateWardrobeItemInput,
+  type WardrobeItem,
 } from '@klotho/shared';
 import {
   useInfiniteQuery,
@@ -37,6 +39,24 @@ export function useWardrobeList(filters: WardrobeListFilters) {
       wardrobeApi.list({ ...filters, page: pageParam, pageSize: PAGE_SIZE }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.hasMore ? last.page + 1 : undefined),
+  });
+}
+
+/** How many pieces, and the style found on most of them (profile card). */
+export function useWardrobeStats() {
+  return useQuery({
+    queryKey: [...wardrobeKeys.all, 'stats'],
+    queryFn: async () => {
+      // One page of the maximum size: enough for the dominant style.
+      const page = await wardrobeApi.list({ pageSize: WARDROBE_PAGE_SIZE_MAX });
+      const counts = new Map<Style, number>();
+      for (const item of page.items)
+        for (const style of item.styles)
+          counts.set(style, (counts.get(style) ?? 0) + 1);
+      const dominantStyle =
+        [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+      return { total: page.total, dominantStyle };
+    },
   });
 }
 
