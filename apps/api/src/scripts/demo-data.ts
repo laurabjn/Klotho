@@ -2,12 +2,16 @@
 import type {
   City,
   ColorKey,
+  DislikeReason,
+  Occasion,
+  OutfitRating,
   Pattern,
   Season,
   Style,
   StyleProfileInput,
   WardrobeCategory,
   WardrobeStatus,
+  WeatherCondition,
 } from '@klotho/shared';
 
 export const DEMO_ACCOUNT = {
@@ -56,6 +60,8 @@ export interface DemoItem {
   status?: WardrobeStatus;
   /** Times worn, and days since the last time (none = never worn). */
   worn?: { count: number; daysAgo: number };
+  /** "Mes pièces favorites". */
+  favorite?: boolean;
 }
 
 const ALL_YEAR: Season[] = ['spring', 'summer', 'autumn', 'winter'];
@@ -67,6 +73,7 @@ export const DEMO_WARDROBE: DemoItem[] = [
   // Hauts
   {
     name: 'Blouse romantique',
+    favorite: true,
     category: 'TOP',
     subcategory: 'blouse',
     primaryColor: 'white',
@@ -173,6 +180,7 @@ export const DEMO_WARDROBE: DemoItem[] = [
   },
   {
     name: 'Jupe midi satinée',
+    favorite: true,
     category: 'BOTTOM',
     subcategory: 'midiSkirt',
     primaryColor: 'nudePink',
@@ -231,6 +239,7 @@ export const DEMO_WARDROBE: DemoItem[] = [
   // Robes
   {
     name: 'Robe fleurie',
+    favorite: true,
     category: 'DRESS',
     subcategory: 'midiDress',
     primaryColor: 'powderPink',
@@ -279,6 +288,7 @@ export const DEMO_WARDROBE: DemoItem[] = [
   },
   {
     name: 'Trench camel',
+    favorite: true,
     category: 'LAYER',
     subcategory: 'trench',
     primaryColor: 'camel',
@@ -334,6 +344,7 @@ export const DEMO_WARDROBE: DemoItem[] = [
   },
   {
     name: 'Ballerines nude',
+    favorite: true,
     category: 'SHOES',
     subcategory: 'flats',
     primaryColor: 'nudePink',
@@ -413,6 +424,7 @@ export const DEMO_WARDROBE: DemoItem[] = [
   // Bijoux et accessoires
   {
     name: 'Créoles dorées',
+    favorite: true,
     category: 'JEWELRY',
     subcategory: 'earrings',
     primaryColor: 'gold',
@@ -450,5 +462,134 @@ export const DEMO_WARDROBE: DemoItem[] = [
     category: 'UNDERWEAR',
     subcategory: 'tights',
     primaryColor: 'black',
+  },
+];
+
+export interface DemoLook {
+  /** Names of pieces of DEMO_WARDROBE. */
+  pieces: string[];
+  style: Style | null;
+  occasion: Occasion | null;
+  temperature: number;
+  condition: WeatherCondition;
+  /** Days before today it was proposed. */
+  daysAgo: number;
+  favorite?: boolean;
+  feedback?: { rating: OutfitRating; reasons?: DislikeReason[]; note?: string };
+  /** Days before today it was worn (0 = today). */
+  wornDaysAgo?: number[];
+}
+
+/**
+ * Looks already proposed, with favourites, opinions and about 8 days worn
+ * over the last 5 weeks (calendar, history, "Mes tenues").
+ */
+export const DEMO_LOOKS: DemoLook[] = [
+  {
+    pieces: [
+      'Robe fleurie',
+      'Trench camel',
+      'Ballerines nude',
+      'Sac à main taupe',
+      'Créoles dorées',
+    ],
+    style: 'romantic',
+    occasion: 'everyday',
+    temperature: 16,
+    condition: 'clear',
+    daysAgo: 25,
+    favorite: true,
+    feedback: { rating: 'like' },
+    wornDaysAgo: [25, 0],
+  },
+  {
+    pieces: [
+      'Blouse romantique',
+      'Jupe midi satinée',
+      'Trench camel',
+      'Bottines camel',
+      'Pochette dorée',
+    ],
+    style: 'romantic',
+    occasion: 'date',
+    temperature: 14,
+    condition: 'cloudy',
+    daysAgo: 33,
+    favorite: true,
+    wornDaysAgo: [33, 3],
+  },
+  {
+    pieces: [
+      'Chemise rayée',
+      'Pantalon tailleur',
+      'Blazer beige',
+      'Mocassins',
+      'Sac à main taupe',
+    ],
+    style: 'chic',
+    occasion: 'work',
+    temperature: 15,
+    condition: 'cloudy',
+    daysAgo: 18,
+    feedback: { rating: 'like' },
+    wornDaysAgo: [18, 1],
+  },
+  {
+    pieces: [
+      'Pull en maille',
+      'Jean droit',
+      'Baskets blanches',
+      'Cabas en toile',
+    ],
+    style: 'casual',
+    occasion: 'walk',
+    temperature: 12,
+    condition: 'cloudy',
+    daysAgo: 7,
+    wornDaysAgo: [7],
+  },
+  {
+    pieces: [
+      'Col roulé noir',
+      'Jupe plissée longue',
+      'Manteau en laine',
+      'Bottines camel',
+    ],
+    style: 'chic',
+    occasion: 'work',
+    temperature: 8,
+    condition: 'rain',
+    daysAgo: 12,
+    favorite: true,
+    wornDaysAgo: [12],
+  },
+  {
+    pieces: ['Petite robe noire', 'Escarpins noirs', 'Pochette dorée'],
+    style: 'chic',
+    occasion: 'evening',
+    temperature: 18,
+    condition: 'clear',
+    daysAgo: 2,
+    feedback: {
+      rating: 'dislike',
+      reasons: ['tooDressy', 'shoes'],
+      note: 'Trop habillé pour un dîner entre amis.',
+    },
+  },
+  {
+    pieces: ['Robe pull', 'Bottines camel', 'Foulard en soie'],
+    style: 'casual',
+    occasion: 'everyday',
+    temperature: 10,
+    condition: 'fog',
+    daysAgo: 1,
+  },
+  {
+    pieces: ['T-shirt blanc', 'Pantalon large en lin', 'Sandales dorées'],
+    style: 'casual',
+    occasion: 'walk',
+    temperature: 24,
+    condition: 'clear',
+    daysAgo: 0,
   },
 ];

@@ -40,6 +40,7 @@ import { wardrobeApi } from '../api/wardrobe.api';
 
 import {
   useDeleteWardrobeItem,
+  useToggleItemFavorite,
   useUpdateWardrobeItem,
   useWardrobeItem,
   wardrobeKeys,
@@ -85,11 +86,11 @@ function Details({
   item: WardrobeItem;
   photosFailed: number;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const update = useUpdateWardrobeItem(item.id);
   const remove = useDeleteWardrobeItem(item.id);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [soon, setSoon] = useState(false);
+  const favorite = useToggleItemFavorite(item.id);
   const compact = useCompactLayout();
   const { width } = useWindowDimensions();
   // The photo beside the details, as on the mockup (stacked when narrow).
@@ -221,11 +222,20 @@ function Details({
           right={
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('wardrobe.detail.favorite')}
-              onPress={() => setSoon(true)}
-              style={styles.round}
+              accessibilityLabel={
+                item.isFavorite
+                  ? t('wardrobe.favorites.remove')
+                  : t('wardrobe.favorites.add')
+              }
+              accessibilityState={{ selected: item.isFavorite }}
+              onPress={() => favorite.mutate(!item.isFavorite)}
+              style={[styles.round, item.isFavorite && styles.roundOn]}
             >
-              <Ionicons name="heart-outline" size={22} color={colors.primary} />
+              <Ionicons
+                name={item.isFavorite ? 'heart' : 'heart-outline'}
+                size={22}
+                color={item.isFavorite ? colors.onPrimary : colors.primary}
+              />
             </Pressable>
           }
         />
@@ -339,15 +349,6 @@ function Details({
           onPress={createOutfit}
         />
       </View>
-      <ConfirmDialog
-        visible={soon}
-        icon="sparkles-outline"
-        title={t('outfits.soon.title')}
-        message={t('outfits.soon.body')}
-        confirmLabel={t('outfits.soon.ok')}
-        onConfirm={() => setSoon(false)}
-        onCancel={() => setSoon(false)}
-      />
       <ConfirmDialog
         visible={confirmDelete}
         icon="trash-outline"
@@ -561,6 +562,7 @@ function Matches({ item }: { item: WardrobeItem }) {
             key={other.id}
             item={other}
             width={MATCH_WIDTH}
+            favorite
             onPress={() => router.push(`/piece/${other.id}`)}
           />
         ))}
@@ -577,6 +579,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingBottom: spacing.xxl,
   },
+  roundOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   round: {
     width: touchTarget,
     height: touchTarget,

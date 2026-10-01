@@ -2,7 +2,6 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Outfit } from '@klotho/shared';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -17,18 +16,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FormError } from '@/components/ui/FormError';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { errorMessageKey } from '@/lib/api/errors';
+import { today } from '@/lib/days';
 import { occasionIcons, styleIcons, type IconName } from '@/theme/icons';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
 import { OutfitCollage } from '../components/OutfitCollage';
 import { OutfitItemTile } from '../components/OutfitItemTile';
 import { itemTitle } from '@/features/wardrobe/labels';
-import { useOutfit } from '../hooks/useOutfits';
-import { outfitTitle } from '../lib/outfit-labels';
+import { OutfitFeedbackBar } from '../components/OutfitFeedbackBar';
+import {
+  useMarkWorn,
+  useOutfit,
+  useToggleOutfitFavorite,
+} from '../hooks/useOutfits';
+import {
+  outfitSummary,
+  outfitTitle,
+  weatherChoiceOf,
+} from '../lib/outfit-labels';
 
 /** "Détail de la tenue". */
 export function OutfitDetailsScreen() {
@@ -60,13 +69,10 @@ export function OutfitDetailsScreen() {
 
 function Details({ outfit }: { outfit: Outfit }) {
   const { t } = useTranslation();
-  const [soon, setSoon] = useState(false);
-  const conditionKey =
-    outfit.condition === 'storm'
-      ? 'rain'
-      : outfit.condition === 'fog'
-        ? 'cloudy'
-        : outfit.condition;
+  const favorite = useToggleOutfitFavorite(outfit.id);
+  const wear = useMarkWorn(outfit.id);
+  const conditionKey = weatherChoiceOf(outfit.condition);
+  const wornToday = outfit.lastWornOn === today();
 
   return (
     <>
@@ -79,14 +85,19 @@ function Details({ outfit }: { outfit: Outfit }) {
             <View style={styles.headerActions}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={t('outfits.details.favorite')}
-                onPress={() => setSoon(true)}
-                style={styles.round}
+                accessibilityLabel={
+                  outfit.isFavorite
+                    ? t('outfits.details.unfavorite')
+                    : t('outfits.details.favorite')
+                }
+                accessibilityState={{ selected: outfit.isFavorite }}
+                onPress={() => favorite.mutate(!outfit.isFavorite)}
+                style={[styles.round, outfit.isFavorite && styles.roundOn]}
               >
                 <Ionicons
-                  name="heart-outline"
+                  name={outfit.isFavorite ? 'heart' : 'heart-outline'}
                   size={22}
-                  color={colors.primary}
+                  color={outfit.isFavorite ? colors.onPrimary : colors.primary}
                 />
               </Pressable>
               <Pressable
@@ -108,7 +119,7 @@ function Details({ outfit }: { outfit: Outfit }) {
                 {outfitTitle(t, outfit)}
               </AppText>
               <AppText style={styles.summary}>
-                {outfitSummary(t, outfit, conditionKey)}
+                {outfitSummary(t, outfit)}
               </AppText>
             </View>
             <View style={styles.heroCollage}>
@@ -180,6 +191,8 @@ function Details({ outfit }: { outfit: Outfit }) {
           </View>
         )}
 
+        <OutfitFeedbackBar outfit={outfit} />
+
         {/* Stacked, so the labels keep their full size. */}
         <View style={styles.actions}>
           <Button
@@ -197,57 +210,34 @@ function Details({ outfit }: { outfit: Outfit }) {
         </View>
       </ScrollView>
       <View style={styles.footer}>
-        <Button
-          label={t('outfits.details.wear')}
-          onPress={() => setSoon(true)}
+        <FormError
+          message={
+            wear.error
+              ? t(errorMessageKey(wear.error) as 'apiErrors.unknown')
+              : null
+          }
         />
+        {wornToday ? (
+          <Button
+            variant="secondary"
+            icon="checkmark-circle-outline"
+            label={t('outfits.details.wornToday')}
+            onPress={() => router.navigate('/calendar')}
+          />
+        ) : (
+          <Button
+            label={t('outfits.details.wear')}
+            loading={wear.isPending}
+            onPress={() => wear.mutate(today())}
+          />
+        )}
       </View>
-      <ConfirmDialog
-        visible={soon}
-        icon="sparkles-outline"
-        title={t('outfits.soon.title')}
-        message={t('outfits.soon.body')}
-        confirmLabel={t('outfits.soon.ok')}
-        onConfirm={() => setSoon(false)}
-        onCancel={() => setSoon(false)}
-      />
     </>
   );
 }
 
 /** Width of a piece tile: about five on a line, as on the mockup. */
 const PIECE_WIDTH = 72;
-
-type ConditionKey = 'cloudy' | 'clear' | 'rain' | 'snow';
-
-/** "Une tenue romantique pour le quotidien, parfaite pour une journée nuageuse à 17 °C." */
-function outfitSummary(
-  t: TFunction,
-  outfit: Outfit,
-  condition: ConditionKey | null,
-) {
-  const start = outfit.style
-    ? t('outfits.details.summary.style', {
-        style: t(`wardrobe.styles.${outfit.style}`).toLowerCase(),
-      })
-    : t('outfits.details.summary.plain');
-  const occasion = outfit.occasion
-    ? t('outfits.details.summary.occasion', {
-        occasion: t(`outfits.details.forOccasion.${outfit.occasion}`),
-      })
-    : '';
-  const weather = !condition
-    ? t('outfits.details.summary.end')
-    : outfit.temperature !== null
-      ? t('outfits.details.summary.weather', {
-          weather: t(`outfits.details.weatherPhrase.${condition}`),
-          temperature: outfit.temperature,
-        })
-      : t('outfits.details.summary.weatherOnly', {
-          weather: t(`outfits.details.weatherPhrase.${condition}`),
-        });
-  return start + occasion + weather;
-}
 
 /** Shares the look as text (title and pieces) with the system sheet. */
 async function share(t: TFunction, outfit: Outfit) {
@@ -289,6 +279,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
   },
+  roundOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   round: {
     width: touchTarget,
     height: touchTarget,
@@ -348,6 +339,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, gap: spacing.xs },
   actions: { gap: spacing.sm },
   footer: {
+    gap: spacing.sm,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,

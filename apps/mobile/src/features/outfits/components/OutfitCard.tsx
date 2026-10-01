@@ -9,6 +9,7 @@ import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
 import { outfitTitle } from '../lib/outfit-labels';
 import { OutfitCollage } from './OutfitCollage';
+import { OutfitHeart } from './OutfitHeart';
 
 /** One proposal in the results: title, conditions, why, and its pieces. */
 export function OutfitCard({
@@ -61,6 +62,7 @@ export function OutfitCard({
       </View>
       <View style={styles.collage}>
         <OutfitCollage pieces={outfit.pieces} />
+        <OutfitHeart outfit={outfit} />
       </View>
     </Pressable>
   );

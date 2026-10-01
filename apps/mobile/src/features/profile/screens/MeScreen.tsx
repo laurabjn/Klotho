@@ -34,6 +34,7 @@ import {
   useSaveStyleProfile,
   useStyleProfile,
 } from '@/features/preferences/hooks/useStyleProfile';
+import { useFavoriteOutfitCount } from '@/features/outfits/hooks/useOutfits';
 import { MetalPicker } from '@/features/preferences/components/MetalPicker';
 import { useWardrobeStats } from '@/features/wardrobe/hooks/useWardrobe';
 import {
@@ -54,6 +55,7 @@ export function MeScreen() {
   const profile = useStyleProfile();
   const saveProfile = useSaveStyleProfile();
   const stats = useWardrobeStats();
+  const favoriteCount = useFavoriteOutfitCount();
   const weather = useWeatherSettings();
   const saveWeather = useSaveWeatherSettings();
   const [dialog, setDialog] = useState<'logout' | 'soon' | null>(null);
@@ -112,11 +114,12 @@ export function MeScreen() {
         label={t('profile.pieces', { count: stats.data?.total ?? 0 })}
       />
       <View style={styles.statDivider} />
-      {/* Favourite outfits arrive with Sprint 8: none yet. */}
       <Stat
         icon="heart-outline"
-        value="0"
-        label={t('profile.favorites', { count: 0 })}
+        value={
+          favoriteCount.data === undefined ? '…' : String(favoriteCount.data)
+        }
+        label={t('profile.favorites', { count: favoriteCount.data ?? 0 })}
       />
       <View style={styles.statDivider} />
       <Stat
@@ -318,6 +321,26 @@ export function MeScreen() {
             icon="hanger"
             label={t('profile.reminders')}
             onPress={soon}
+          />
+        </Card>
+
+        <Card style={styles.menu}>
+          <MenuRow
+            icon="heart-outline"
+            label={t('profile.favoriteOutfits')}
+            onPress={() => router.push('/my-outfits')}
+          />
+          <View style={styles.separator} />
+          <MenuRow
+            icon="hanger"
+            label={t('profile.favoritePieces')}
+            onPress={() => router.push('/favorite-pieces')}
+          />
+          <View style={styles.separator} />
+          <MenuRow
+            icon="history"
+            label={t('profile.history')}
+            onPress={() => router.push('/history')}
           />
         </Card>
 

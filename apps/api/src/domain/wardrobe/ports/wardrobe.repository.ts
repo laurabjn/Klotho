@@ -24,6 +24,12 @@ export interface WardrobeRepository {
     id: string,
     changes: WardrobeItemChanges,
   ): Promise<WardrobeItem | null>;
+  /** Returns null when the item does not exist or belongs to someone else. */
+  setFavorite(
+    userId: string,
+    id: string,
+    favorite: boolean,
+  ): Promise<WardrobeItem | null>;
   /** Returns false when the item does not exist or belongs to someone else. */
   deleteOwned(userId: string, id: string): Promise<boolean>;
 }

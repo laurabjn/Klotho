@@ -17,6 +17,11 @@ export class OutfitNotFoundError extends DomainError {
   readonly code = 'outfits.notFound';
 }
 
+/** Also raised for another user's wear. */
+export class OutfitWearNotFoundError extends DomainError {
+  readonly code = 'outfits.wearNotFound';
+}
+
 /** Not enough suitable pieces to build a look (e.g. only sandals at 4 °C). */
 export class NoOutfitPossibleError extends DomainError {
   readonly code = 'outfits.noOutfitPossible';

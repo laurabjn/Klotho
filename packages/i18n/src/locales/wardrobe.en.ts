@@ -374,4 +374,15 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
     createOutfit: 'Create an outfit with this piece',
     temperatureUpTo: 'Up to {{max}} °C',
   },
+  favorites: {
+    title: 'My favourite pieces',
+    overline: 'Your favourite essentials',
+    search: 'Search a piece, a brand…',
+    all: 'All',
+    emptyTitle: 'No favourite piece yet',
+    emptyBody: 'Tap the heart of a piece to find it here.',
+    noResult: 'No favourite piece matches.',
+    add: 'Add to favourites',
+    remove: 'Remove from favourites',
+  },
 };

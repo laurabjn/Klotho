@@ -27,6 +27,7 @@ import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
 import { ItemVisual } from '@/features/wardrobe/components/ItemVisual';
 import { wardrobeKeys } from '@/features/wardrobe/hooks/useWardrobe';
 import { OutfitCollage } from '@/features/outfits/components/OutfitCollage';
+import { OutfitHeart } from '@/features/outfits/components/OutfitHeart';
 import {
   useGenerateOutfits,
   useRecentOutfits,
@@ -214,6 +215,7 @@ function OutfitOfTheDay({
           />
         </>
       )}
+      {today && <OutfitHeart outfit={today} />}
       <View style={styles.outfitText}>
         <AppText variant="title">{t('home.outfit.title')}</AppText>
         <AppText variant="overline">

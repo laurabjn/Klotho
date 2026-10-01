@@ -7,11 +7,15 @@ import { EMPTY_STYLE_PROFILE } from '@/features/preferences/hooks/useStyleProfil
 import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
 import { weatherApi } from '@/features/weather/api/weather.api';
 import { ApiError } from '@/lib/api/errors';
+import { today } from '@/lib/days';
 import { renderWithProviders } from '@/testing/render';
 
 import { outfitsApi } from '../api/outfits.api';
 import { useGenerationDraftStore } from '../store/generation-draft.store';
+import { MyOutfitsScreen } from './MyOutfitsScreen';
 import { OutfitDetailsScreen } from './OutfitDetailsScreen';
+import { OutfitFeedbackScreen } from './OutfitFeedbackScreen';
+import { OutfitHistoryScreen } from './OutfitHistoryScreen';
 import { OutfitGeneratorScreen } from './OutfitGeneratorScreen';
 import { OutfitReplaceItemScreen } from './OutfitReplaceItemScreen';
 import { OutfitResultsScreen } from './OutfitResultsScreen';
@@ -67,6 +71,9 @@ const outfit = (id: string, overrides: Partial<Outfit> = {}): Outfit => ({
   highlights: ['weather', 'style'],
   variantOf: null,
   createdAt: '2026-10-01T08:00:00.000Z',
+  isFavorite: false,
+  feedback: null,
+  lastWornOn: null,
   ...overrides,
 });
 
@@ -209,8 +216,166 @@ describe('OutfitDetailsScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/outfits/o1/replace');
     await press('Créer une variante');
     expect(router.push).toHaveBeenCalledWith('/outfits/o1/variant');
+  });
+
+  it('marks the look as worn today', async () => {
+    mockParams = { id: 'o1' };
+    // Worn once marked: what the API then sends back.
+    api.get
+      .mockResolvedValueOnce(outfit('o1'))
+      .mockResolvedValue(outfit('o1', { lastWornOn: today() }));
+    api.wear.mockResolvedValue({
+      id: 'w1',
+      wornOn: today(),
+      outfit: outfit('o1', { lastWornOn: today() }),
+    });
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    await screen.findByRole('button', { name: 'Marquer comme portée' });
     await press('Marquer comme portée');
-    expect(screen.getByText('Bientôt disponible')).toBeOnTheScreen();
+
+    await waitFor(() => expect(api.wear).toHaveBeenCalledWith('o1', today()));
+    expect(await screen.findByText('Portée aujourd’hui')).toBeOnTheScreen();
+  });
+
+  it('adds the look to the favourites', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    api.favorite.mockResolvedValue(outfit('o1', { isFavorite: true }));
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    await screen.findByRole('button', { name: 'Ajouter aux favoris' });
+    await press('Ajouter aux favoris');
+
+    await waitFor(() => expect(api.favorite).toHaveBeenCalledWith('o1', true));
+    expect(
+      await screen.findByRole('button', { name: 'Retirer des favoris' }),
+    ).toBeOnTheScreen();
+  });
+
+  it('saves a like at once, and asks why for a dislike', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    api.feedback.mockResolvedValue(
+      outfit('o1', {
+        feedback: {
+          rating: 'like',
+          reasons: [],
+          note: null,
+          updatedAt: '2026-10-01T09:00:00.000Z',
+        },
+      }),
+    );
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    await fireEvent.press(await screen.findByRole('radio', { name: 'J’aime' }));
+    await waitFor(() =>
+      expect(api.feedback).toHaveBeenCalledWith('o1', { rating: 'like' }),
+    );
+    expect(await screen.findByText('Tu aimes cette tenue')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('radio', { name: 'Je n’aime pas' }));
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/outfits/[id]/feedback',
+      params: { id: 'o1', rating: 'dislike' },
+    });
+  });
+});
+
+describe('OutfitFeedbackScreen', () => {
+  it('sends a dislike with its reasons and a note', async () => {
+    mockParams = { id: 'o1', rating: 'dislike' };
+    api.get.mockResolvedValue(outfit('o1'));
+    api.feedback.mockResolvedValue(outfit('o1'));
+    await renderWithProviders(<OutfitFeedbackScreen />);
+
+    await fireEvent.press(
+      await screen.findByRole('checkbox', { name: 'Trop chaude' }),
+    );
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Chaussures' }));
+    await fireEvent.changeText(
+      screen.getByLabelText('Un petit mot ? (facultatif)'),
+      'Trop de couches',
+    );
+    await press('Envoyer mon avis');
+
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(api.feedback).toHaveBeenCalledWith('o1', {
+      rating: 'dislike',
+      reasons: ['tooWarm', 'shoes'],
+      note: 'Trop de couches',
+    });
+  });
+
+  it('drops the reasons of a like', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    api.feedback.mockResolvedValue(outfit('o1'));
+    await renderWithProviders(<OutfitFeedbackScreen />);
+
+    await fireEvent.press(await screen.findByRole('radio', { name: 'J’aime' }));
+    expect(screen.queryByText('Trop chaude')).not.toBeOnTheScreen();
+    await press('Envoyer mon avis');
+
+    await waitFor(() =>
+      expect(api.feedback).toHaveBeenCalledWith('o1', {
+        rating: 'like',
+        reasons: [],
+        note: null,
+      }),
+    );
+  });
+});
+
+describe('MyOutfitsScreen', () => {
+  it('lists the favourites by default, the worn looks on demand', async () => {
+    api.list.mockImplementation(({ filter }) =>
+      Promise.resolve({
+        items:
+          filter === 'favorites'
+            ? [outfit('o1', { isFavorite: true })]
+            : [outfit('o2', { occasion: 'date' })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+        hasMore: false,
+      }),
+    );
+    await renderWithProviders(<MyOutfitsScreen />);
+    expect(await screen.findByText('Assurance au bureau')).toBeOnTheScreen();
+    expect(screen.getByText('Mes favoris')).toBeOnTheScreen();
+
+    mockParams = { filter: 'worn' };
+    await renderWithProviders(<MyOutfitsScreen />);
+    expect(await screen.findByText('Rendez-vous charmant')).toBeOnTheScreen();
+    expect(api.list).toHaveBeenLastCalledWith({
+      filter: 'worn',
+      page: 1,
+      pageSize: 20,
+    });
+  });
+});
+
+describe('OutfitHistoryScreen', () => {
+  it('groups the worn looks by period', async () => {
+    api.history.mockResolvedValue({
+      items: [
+        { id: 'w1', wornOn: today(), outfit: outfit('o1') },
+        { id: 'w2', wornOn: '2020-01-15', outfit: outfit('o2') },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 20,
+      hasMore: false,
+    });
+    await renderWithProviders(<OutfitHistoryScreen />);
+
+    expect(await screen.findByText('Aujourd’hui')).toBeOnTheScreen();
+    expect(screen.getByText('Plus tôt')).toBeOnTheScreen();
+    expect(screen.getAllByText('Portée')).toHaveLength(2);
+
+    await fireEvent.press(screen.getByText('Plus tôt'));
+    expect(screen.getAllByText('Portée')).toHaveLength(1);
   });
 });
 

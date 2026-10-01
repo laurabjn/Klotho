@@ -1,6 +1,11 @@
 import type { BottomPreference, Metal } from '@klotho/shared';
 
-import type { Outfit, OutfitContext } from '../entities/outfit-candidate';
+import {
+  mainPieces,
+  type Outfit,
+  type OutfitContext,
+  type OutfitFeedbackSignals,
+} from '../entities/outfit-candidate';
 
 const METAL_COLORS: Partial<Record<string, Metal>> = {
   gold: 'gold',
@@ -8,6 +13,65 @@ const METAL_COLORS: Partial<Record<string, Metal>> = {
 };
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
+
+/** Per pair of main pieces worn together in a liked look. */
+export const LIKED_PAIR_BONUS = 0.05;
+/** Per pair found in a disliked look: a dislike weighs more than a like. */
+export const DISLIKED_PAIR_PENALTY = 0.1;
+/** Per favourite piece in the look. */
+export const FAVORITE_PIECE_BONUS = 0.05;
+
+const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
+function pairsOf(ids: string[]): string[] {
+  const pairs: string[] = [];
+  for (let i = 0; i < ids.length; i += 1)
+    for (let j = i + 1; j < ids.length; j += 1)
+      pairs.push(pairKey(ids[i]!, ids[j]!));
+  return pairs;
+}
+
+interface FeedbackIndex {
+  liked: Set<string>;
+  disliked: Set<string>;
+  favorites: Set<string>;
+}
+
+// Built once per generation (thousands of looks share the same signals).
+const indexes = new WeakMap<OutfitFeedbackSignals, FeedbackIndex>();
+
+function indexOf(feedback: OutfitFeedbackSignals): FeedbackIndex {
+  let index = indexes.get(feedback);
+  if (!index) {
+    index = {
+      liked: new Set(feedback.liked.flatMap(pairsOf)),
+      disliked: new Set(feedback.disliked.flatMap(pairsOf)),
+      favorites: new Set(feedback.favoriteItemIds),
+    };
+    indexes.set(feedback, index);
+  }
+  return index;
+}
+
+/**
+ * US8.1: pieces already liked together pull a look up, pieces disliked
+ * together push it down, favourite pieces give a small bonus.
+ */
+function feedbackAdjustment(
+  outfit: Outfit,
+  feedback: OutfitFeedbackSignals | undefined,
+): number {
+  if (!feedback) return 0;
+  const index = indexOf(feedback);
+  let adjustment = 0;
+  for (const pair of pairsOf(mainPieces(outfit).map((p) => p.item.id))) {
+    if (index.liked.has(pair)) adjustment += LIKED_PAIR_BONUS;
+    if (index.disliked.has(pair)) adjustment -= DISLIKED_PAIR_PENALTY;
+  }
+  for (const { item } of outfit.pieces)
+    if (index.favorites.has(item.id)) adjustment += FAVORITE_PIECE_BONUS;
+  return adjustment;
+}
 
 /** Which of "skirts / dresses / trousers" the look's base is. */
 function baseKind(outfit: Outfit): BottomPreference | null {
@@ -20,7 +84,8 @@ function baseKind(outfit: Outfit): BottomPreference | null {
 /**
  * The user's explicit tastes (style profile): favourite and avoided
  * colours, colours near the face, heels, skirts / dresses / trousers,
- * jewellery metal. Starts neutral at 0.5.
+ * jewellery metal; then her opinions of past looks and favourite pieces.
+ * Starts neutral at 0.5.
  */
 export function scorePreference(
   outfit: Outfit,
@@ -51,5 +116,5 @@ export function scorePreference(
   if (kind && profile.preferredBottoms.length > 0)
     score += profile.preferredBottoms.includes(kind) ? 0.15 : -0.1;
 
-  return clamp(score);
+  return clamp(score + feedbackAdjustment(outfit, context.feedback));
 }

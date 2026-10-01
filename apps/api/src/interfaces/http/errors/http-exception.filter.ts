@@ -35,6 +35,7 @@ import {
   InvalidReplacementError,
   NoOutfitPossibleError,
   OutfitNotFoundError,
+  OutfitWearNotFoundError,
 } from '../../../domain/outfits/errors';
 import {
   WeatherLocationMissingError,
@@ -57,6 +58,7 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [WeatherUnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
   [WeatherLocationMissingError, HttpStatus.UNPROCESSABLE_ENTITY],
   [OutfitNotFoundError, HttpStatus.NOT_FOUND],
+  [OutfitWearNotFoundError, HttpStatus.NOT_FOUND],
   [NoOutfitPossibleError, HttpStatus.UNPROCESSABLE_ENTITY],
   [InvalidReplacementError, HttpStatus.BAD_REQUEST],
   [ImposedItemNotFoundError, HttpStatus.BAD_REQUEST],

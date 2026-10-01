@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { ColorDot } from '@/components/ui/ColorDot';
 import { ItemVisual } from '@/features/wardrobe/components/ItemVisual';
+import { PieceHeart } from '@/features/wardrobe/components/PieceHeart';
 import { itemTitle } from '@/features/wardrobe/labels';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
@@ -15,6 +16,7 @@ export function OutfitItemTile({
   selected = false,
   width,
   small = false,
+  favorite = false,
 }: {
   item: WardrobeItem;
   onPress?: () => void;
@@ -23,6 +25,8 @@ export function OutfitItemTile({
   width?: number;
   /** Tiny tile (a whole look on one line): one-line name, smaller text. */
   small?: boolean;
+  /** Shows the piece's heart on its photo. */
+  favorite?: boolean;
 }) {
   const { t } = useTranslation();
   const title = itemTitle(t, item);
@@ -40,11 +44,14 @@ export function OutfitItemTile({
         pressed && styles.pressed,
       ]}
     >
-      <ItemVisual
-        category={item.category}
-        color={item.primaryColor}
-        photo={item.photos[0]}
-      />
+      <View>
+        <ItemVisual
+          category={item.category}
+          color={item.primaryColor}
+          photo={item.photos[0]}
+        />
+        {favorite && <PieceHeart item={item} size={28} />}
+      </View>
       <View style={[styles.text, small && styles.textSmall]}>
         <AppText
           numberOfLines={small ? 1 : 2}

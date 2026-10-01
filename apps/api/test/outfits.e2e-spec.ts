@@ -3,6 +3,8 @@ import type {
   AuthSession,
   Outfit,
   OutfitAlternative,
+  OutfitWear,
+  Page,
   WardrobeItem,
 } from '@klotho/shared';
 import request from 'supertest';
@@ -80,9 +82,18 @@ describe('Outfits (e2e)', () => {
     await t.app.close();
   });
 
-  it('requires authentication', async () => {
-    await http().post('/outfits/generate').send({}).expect(401);
-    await http().get('/outfits').expect(401);
+  it.each([
+    ['POST', '/outfits/generate'],
+    ['GET', '/outfits'],
+    ['GET', '/outfits/history'],
+    ['DELETE', '/outfits/history/x'],
+    ['POST', '/outfits/x/feedback'],
+    ['DELETE', '/outfits/x/feedback'],
+    ['POST', '/outfits/x/favorite'],
+    ['DELETE', '/outfits/x/favorite'],
+    ['POST', '/outfits/x/wear'],
+  ])('%s %s requires authentication', async (method, path) => {
+    await http()[method.toLowerCase() as 'get'](path).expect(401);
   });
 
   describe('POST /outfits/generate', () => {
@@ -172,21 +183,358 @@ describe('Outfits (e2e)', () => {
     });
   });
 
-  describe('reading', () => {
-    it('lists the latest looks and keeps them private', async () => {
+  async function list(token: string, query = ''): Promise<Page<Outfit>> {
+    const res = await http().get(`/outfits${query}`).set(as(token)).expect(200);
+    return res.body as Page<Outfit>;
+  }
+
+  async function history(token: string, query = ''): Promise<Page<OutfitWear>> {
+    const res = await http()
+      .get(`/outfits/history${query}`)
+      .set(as(token))
+      .expect(200);
+    return res.body as Page<OutfitWear>;
+  }
+
+  async function wear(token: string, id: string, wornOn: string) {
+    const res = await http()
+      .post(`/outfits/${id}/wear`)
+      .set(as(token))
+      .send({ wornOn })
+      .expect(200);
+    return res.body as OutfitWear;
+  }
+
+  async function item(token: string, id: string): Promise<WardrobeItem> {
+    const res = await http().get(`/wardrobe/${id}`).set(as(token)).expect(200);
+    return res.body as WardrobeItem;
+  }
+
+  describe('GET /outfits', () => {
+    it('lists the latest looks by page and keeps them private', async () => {
       await wardrobe(laura);
       const outfits = await generate(laura);
 
-      const recent = await http()
-        .get('/outfits?limit=2')
-        .set(as(laura))
-        .expect(200);
-      expect(recent.body).toHaveLength(2);
-      expect((recent.body as Outfit[])[0]!.id).toBe(outfits[0]!.id);
+      const first = await list(laura, '?pageSize=2');
+      expect(first).toMatchObject({
+        total: 5,
+        page: 1,
+        pageSize: 2,
+        hasMore: true,
+      });
+      expect(first.items.map((o) => o.id)).toEqual(
+        outfits.slice(0, 2).map((o) => o.id),
+      );
+      expect(first.items[0]).toMatchObject({
+        isFavorite: false,
+        feedback: null,
+        lastWornOn: null,
+      });
+      const last = await list(laura, '?filter=generated&page=3&pageSize=2');
+      expect(last.items.map((o) => o.id)).toEqual([outfits[4]!.id]);
+      expect(last.hasMore).toBe(false);
 
       await http().get(`/outfits/${outfits[0]!.id}`).set(as(other)).expect(404);
-      const theirs = await http().get('/outfits').set(as(other)).expect(200);
-      expect(theirs.body).toEqual([]);
+      expect(await list(other)).toMatchObject({ items: [], total: 0 });
+    });
+
+    it('lists the favourites (last favourited first) and the worn looks', async () => {
+      await wardrobe(laura);
+      const [a, b, c] = await generate(laura);
+      for (const outfit of [b, a])
+        await http()
+          .post(`/outfits/${outfit!.id}/favorite`)
+          .set(as(laura))
+          .expect(200);
+      await wear(laura, c!.id, '2026-09-20');
+      await wear(laura, a!.id, '2026-09-25');
+
+      const favorites = await list(laura, '?filter=favorites');
+      expect(favorites.items.map((o) => o.id)).toEqual([a!.id, b!.id]);
+      expect(favorites.total).toBe(2);
+
+      const worn = await list(laura, '?filter=worn');
+      expect(worn.items.map((o) => [o.id, o.lastWornOn])).toEqual([
+        [a!.id, '2026-09-25'],
+        [c!.id, '2026-09-20'],
+      ]);
+      expect(worn.total).toBe(2);
+      expect(await list(other, '?filter=worn')).toMatchObject({ total: 0 });
+    });
+
+    it('validates the query', async () => {
+      for (const query of ['?filter=mine', '?page=0', '?pageSize=51'])
+        await http().get(`/outfits${query}`).set(as(laura)).expect(400);
+    });
+  });
+
+  describe('favourites', () => {
+    it('POST / DELETE /outfits/:id/favorite, idempotent', async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+
+      for (let i = 0; i < 2; i += 1) {
+        const res = await http()
+          .post(`/outfits/${outfit!.id}/favorite`)
+          .set(as(laura))
+          .expect(200);
+        expect((res.body as Outfit).isFavorite).toBe(true);
+      }
+      for (let i = 0; i < 2; i += 1) {
+        const res = await http()
+          .delete(`/outfits/${outfit!.id}/favorite`)
+          .set(as(laura))
+          .expect(200);
+        expect((res.body as Outfit).isFavorite).toBe(false);
+      }
+    });
+
+    it("404 for another user's look", async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+
+      const res = await http()
+        .post(`/outfits/${outfit!.id}/favorite`)
+        .set(as(other))
+        .expect(404);
+      expect((res.body as ApiErrorBody).code).toBe('outfits.notFound');
+      await http()
+        .delete(`/outfits/${outfit!.id}/favorite`)
+        .set(as(other))
+        .expect(404);
+      expect((await list(laura, '?filter=favorites')).total).toBe(0);
+    });
+  });
+
+  describe('feedback (US8.1)', () => {
+    it('saves one opinion per look; a like drops the reasons', async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+
+      const disliked = await http()
+        .post(`/outfits/${outfit!.id}/feedback`)
+        .set(as(laura))
+        .send({ rating: 'dislike', reasons: ['shoes', 'colors'], note: 'Bof' })
+        .expect(200);
+      expect((disliked.body as Outfit).feedback).toEqual({
+        rating: 'dislike',
+        reasons: ['shoes', 'colors'],
+        note: 'Bof',
+        updatedAt: expect.any(String),
+      });
+
+      const liked = await http()
+        .post(`/outfits/${outfit!.id}/feedback`)
+        .set(as(laura))
+        .send({ rating: 'like', reasons: ['shoes'] })
+        .expect(200);
+      expect((liked.body as Outfit).feedback).toMatchObject({
+        rating: 'like',
+        reasons: [],
+        note: null,
+      });
+      expect(await t.prisma.outfitFeedback.count()).toBe(1);
+
+      const read = await http()
+        .get(`/outfits/${outfit!.id}`)
+        .set(as(laura))
+        .expect(200);
+      expect((read.body as Outfit).feedback?.rating).toBe('like');
+
+      for (let i = 0; i < 2; i += 1) {
+        const res = await http()
+          .delete(`/outfits/${outfit!.id}/feedback`)
+          .set(as(laura))
+          .expect(200);
+        expect((res.body as Outfit).feedback).toBeNull();
+      }
+    });
+
+    it('validates the opinion', async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+
+      for (const body of [
+        {},
+        { rating: 'meh' },
+        { rating: 'dislike', reasons: ['ugly'] },
+        { rating: 'like', note: 'x'.repeat(251) },
+      ]) {
+        const res = await http()
+          .post(`/outfits/${outfit!.id}/feedback`)
+          .set(as(laura))
+          .send(body)
+          .expect(400);
+        expect((res.body as ApiErrorBody).code).toBe('validation.failed');
+      }
+    });
+
+    it("404 for another user's look", async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+
+      await http()
+        .post(`/outfits/${outfit!.id}/feedback`)
+        .set(as(other))
+        .send({ rating: 'like' })
+        .expect(404);
+      await http()
+        .delete(`/outfits/${outfit!.id}/feedback`)
+        .set(as(other))
+        .expect(404);
+      expect(await t.prisma.outfitFeedback.count()).toBe(0);
+    });
+
+    it('never proposes a disliked look again', async () => {
+      await wardrobe(laura);
+      const signature = (o: Outfit) =>
+        o.pieces
+          .filter((p) => !['bag', 'jewelry', 'accessory'].includes(p.role))
+          .map((p) => p.item.id)
+          .sort()
+          .join();
+      const [disliked] = await generate(laura);
+      await http()
+        .post(`/outfits/${disliked!.id}/feedback`)
+        .set(as(laura))
+        .send({ rating: 'dislike', reasons: ['association'] })
+        .expect(200);
+
+      const again = await generate(laura);
+      expect(again.map(signature)).not.toContain(signature(disliked!));
+
+      const variant = await http()
+        .post(`/outfits/${again[0]!.id}/variant`)
+        .send({})
+        .set(as(laura))
+        .expect(201);
+      expect(signature(variant.body as Outfit)).not.toBe(signature(disliked!));
+    });
+  });
+
+  describe('wear history', () => {
+    it('marks a look worn once per day and counts the wear of every piece', async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+      const pieceIds = itemIds(outfit!);
+
+      const first = await wear(laura, outfit!.id, '2026-09-30');
+      expect(first).toMatchObject({
+        id: expect.any(String),
+        wornOn: '2026-09-30',
+        outfit: { id: outfit!.id, lastWornOn: '2026-09-30' },
+      });
+      const again = await wear(laura, outfit!.id, '2026-09-30');
+      expect(again.id).toBe(first.id);
+
+      for (const id of pieceIds)
+        expect(await item(laura, id)).toMatchObject({
+          wearCount: 1,
+          lastWornAt: '2026-09-30T12:00:00.000Z',
+        });
+
+      // An earlier day counts, without moving the last day back.
+      await wear(laura, outfit!.id, '2026-09-01');
+      for (const id of pieceIds)
+        expect(await item(laura, id)).toMatchObject({
+          wearCount: 2,
+          lastWornAt: '2026-09-30T12:00:00.000Z',
+        });
+    });
+
+    it('validates the day', async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+
+      for (const wornOn of [undefined, '30/09/2026', '2026-02-31']) {
+        const res = await http()
+          .post(`/outfits/${outfit!.id}/wear`)
+          .set(as(laura))
+          .send({ wornOn })
+          .expect(400);
+        expect((res.body as ApiErrorBody).code).toBe('validation.failed');
+      }
+    });
+
+    it('lists the history, last worn first, filtered by period', async () => {
+      await wardrobe(laura);
+      const [a, b] = await generate(laura);
+      await wear(laura, a!.id, '2026-09-01');
+      await wear(laura, b!.id, '2026-09-15');
+      await wear(laura, a!.id, '2026-09-30');
+
+      const all = await history(laura, '?pageSize=2');
+      expect(all.items.map((w) => [w.wornOn, w.outfit.id])).toEqual([
+        ['2026-09-30', a!.id],
+        ['2026-09-15', b!.id],
+      ]);
+      expect(all).toMatchObject({ total: 3, hasMore: true });
+
+      const september = await history(laura, '?from=2026-09-01&to=2026-09-15');
+      expect(september.items.map((w) => w.wornOn)).toEqual([
+        '2026-09-15',
+        '2026-09-01',
+      ]);
+      expect(await history(other)).toMatchObject({ items: [], total: 0 });
+
+      for (const query of ['?from=2026-09-30&to=2026-09-01', '?from=yesterday'])
+        await http().get(`/outfits/history${query}`).set(as(laura)).expect(400);
+    });
+
+    it('undoes a wear and the usage it added', async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+      const pieceIds = itemIds(outfit!);
+      await wear(laura, outfit!.id, '2026-09-10');
+      const last = await wear(laura, outfit!.id, '2026-09-30');
+
+      await http()
+        .delete(`/outfits/history/${last.id}`)
+        .set(as(laura))
+        .expect(204);
+      for (const id of pieceIds)
+        expect(await item(laura, id)).toMatchObject({
+          wearCount: 1,
+          lastWornAt: '2026-09-10T12:00:00.000Z',
+        });
+
+      const [only] = (await history(laura)).items;
+      await http()
+        .delete(`/outfits/history/${only!.id}`)
+        .set(as(laura))
+        .expect(204);
+      for (const id of pieceIds)
+        expect(await item(laura, id)).toMatchObject({
+          wearCount: 0,
+          lastWornAt: null,
+        });
+
+      const res = await http()
+        .delete(`/outfits/history/${only!.id}`)
+        .set(as(laura))
+        .expect(404);
+      expect((res.body as ApiErrorBody).code).toBe('outfits.wearNotFound');
+    });
+
+    it("cannot mark, read or undo another user's wears", async () => {
+      await wardrobe(laura);
+      const [outfit] = await generate(laura);
+      const mine = await wear(laura, outfit!.id, '2026-09-30');
+
+      const marked = await http()
+        .post(`/outfits/${outfit!.id}/wear`)
+        .set(as(other))
+        .send({ wornOn: '2026-09-29' })
+        .expect(404);
+      expect((marked.body as ApiErrorBody).code).toBe('outfits.notFound');
+      const undone = await http()
+        .delete(`/outfits/history/${mine.id}`)
+        .set(as(other))
+        .expect(404);
+      expect((undone.body as ApiErrorBody).code).toBe('outfits.wearNotFound');
+
+      expect((await history(laura)).total).toBe(1);
+      expect(await t.prisma.outfitWear.count()).toBe(1);
     });
   });
 

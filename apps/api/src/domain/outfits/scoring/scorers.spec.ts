@@ -163,6 +163,85 @@ describe('PreferenceScorer', () => {
       0.5 - 0.3 + 0.1 + 0.15,
     );
   });
+
+  describe('feedback (US8.1)', () => {
+    const t = top();
+    const b = bottom();
+    const s = shoes();
+    const otherShoes = shoes();
+    const outfit = look(t, b, s);
+    const signals = (o = {}) => ({
+      liked: [],
+      disliked: [],
+      favoriteItemIds: [],
+      ...o,
+    });
+
+    it('is neutral without any feedback', () => {
+      expect(scorePreference(outfit, context())).toBeCloseTo(0.5);
+      expect(
+        scorePreference(outfit, context({ feedback: signals() })),
+      ).toBeCloseTo(0.5);
+    });
+
+    it('rewards pieces liked together, per pair', () => {
+      const liked = signals({ liked: [[t.id, b.id, otherShoes.id]] });
+
+      expect(scorePreference(outfit, context({ feedback: liked }))).toBeCloseTo(
+        0.55,
+      );
+    });
+
+    it('penalises pieces disliked together more than it rewards a like', () => {
+      const disliked = signals({ disliked: [[t.id, b.id, otherShoes.id]] });
+      const both = signals({
+        liked: [[t.id, b.id]],
+        disliked: [[t.id, b.id]],
+      });
+
+      expect(
+        scorePreference(outfit, context({ feedback: disliked })),
+      ).toBeCloseTo(0.4);
+      expect(scorePreference(outfit, context({ feedback: both }))).toBeLessThan(
+        0.5,
+      );
+    });
+
+    it('gives a small bonus to favourite pieces', () => {
+      const favorites = signals({ favoriteItemIds: [t.id, s.id] });
+
+      expect(
+        scorePreference(outfit, context({ feedback: favorites })),
+      ).toBeCloseTo(0.6);
+    });
+
+    it('stays between 0 and 1', () => {
+      const ids = [t.id, b.id, s.id];
+      const loved = signals({
+        liked: Array.from({ length: 20 }, (_, i) => [...ids, `x${i}`]),
+        favoriteItemIds: ids,
+      });
+
+      expect(
+        scorePreference(
+          outfit,
+          context({
+            feedback: loved,
+            profile: profile({ preferredColors: ['ecru'] }),
+          }),
+        ),
+      ).toBe(1);
+      expect(
+        scorePreference(
+          outfit,
+          context({
+            feedback: signals({ disliked: [ids] }),
+            profile: profile({ avoidedColors: ['ecru'] }),
+          }),
+        ),
+      ).toBe(0);
+    });
+  });
 });
 
 describe('UsageScorer', () => {

@@ -154,6 +154,8 @@ export const listWardrobeQuerySchema = z.object({
   /** Pieces wearable at this temperature (°C); pieces without a range match. */
   temperature: z.coerce.number().pipe(degrees).optional(),
   sort: z.enum(WARDROBE_SORTS).default('recent'),
+  /** ?favorite=true: "Mes pièces favorites" only. */
+  favorite: z.stringbool().optional(),
 });
 
 export const attachPhotoSchema = z.object({

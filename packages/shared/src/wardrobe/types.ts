@@ -39,6 +39,7 @@ export interface WardrobeItem {
   photos: WardrobePhoto[];
   wearCount: number;
   lastWornAt: string | null;
+  isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
 }

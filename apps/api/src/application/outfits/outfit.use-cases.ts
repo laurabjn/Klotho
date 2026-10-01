@@ -4,12 +4,17 @@ import {
   type Outfit as OutfitDto,
   type OutfitAlternative,
   type OutfitRole,
+  type OutfitWear as OutfitWearDto,
 } from '@klotho/shared';
 
-import type {
-  Outfit,
-  OutfitCandidate,
-  OutfitContext,
+import {
+  keyOfMainPieces,
+  MAIN_ROLES,
+  outfitKey,
+  type Outfit,
+  type OutfitCandidate,
+  type OutfitContext,
+  type OutfitFeedbackSignals,
 } from '../../domain/outfits/entities/outfit-candidate';
 import {
   InvalidReplacementError,
@@ -18,14 +23,15 @@ import {
 } from '../../domain/outfits/errors';
 import type {
   OutfitConditions,
+  OutfitPieceRef,
   OutfitRepository,
+  OutfitWearRecord,
   StoredOutfit,
 } from '../../domain/outfits/ports/outfit.repository';
 import { highlightsOf } from '../../domain/outfits/scoring/highlights';
 import { scoreOutfit } from '../../domain/outfits/scoring/outfit-score';
 import { filterCandidates } from '../../domain/outfits/services/outfit-candidate-filter';
 import { ROLE_OF } from '../../domain/outfits/services/outfit-combination-builder';
-import { outfitKey } from '../../domain/outfits/entities/outfit-candidate';
 import type { StyleProfileRepository } from '../../domain/preferences/ports/style-profile.repository';
 import type { Clock } from '../../domain/shared/ports/clock';
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
@@ -39,6 +45,11 @@ import type {
 
 /** A replacement keeps the look "compatible" if it loses at most this (out of 100). */
 const COMPATIBLE_WITHIN = 8;
+
+const mainIdsOf = (pieces: OutfitPieceRef[]) =>
+  pieces
+    .filter((piece) => MAIN_ROLES.includes(piece.role))
+    .map((piece) => piece.itemId);
 
 /**
  * What the outfit use cases share: loading the wardrobe and the profile,
@@ -54,12 +65,17 @@ export class OutfitWorkshop {
     private readonly clock: Clock,
   ) {}
 
+  /** The day's conditions, the user's tastes and her opinions (US8.1). */
   async context(
     userId: string,
     conditions: OutfitConditions,
+    items: WardrobeItem[],
   ): Promise<OutfitContext> {
-    const profile =
-      (await this.profiles.findByUser(userId)) ?? styleProfileSchema.parse({});
+    const [stored, feedback] = await Promise.all([
+      this.profiles.findByUser(userId),
+      this.feedbackSignals(userId, items),
+    ]);
+    const profile = stored ?? styleProfileSchema.parse({});
     const wet =
       conditions.condition === 'rain' || conditions.condition === 'storm';
     return {
@@ -68,6 +84,25 @@ export class OutfitWorkshop {
       windSpeed: 0,
       profile,
       today: this.clock.now(),
+      feedback,
+    };
+  }
+
+  private async feedbackSignals(
+    userId: string,
+    items: WardrobeItem[],
+  ): Promise<OutfitFeedbackSignals> {
+    const rated = await this.outfits.listRated(userId);
+    const of = (rating: string) =>
+      rated
+        .filter((look) => look.rating === rating)
+        .map((look) => mainIdsOf(look.pieces));
+    return {
+      liked: of('like'),
+      disliked: of('dislike'),
+      favoriteItemIds: items
+        .filter((item) => item.isFavorite)
+        .map((item) => item.id),
     };
   }
 
@@ -107,6 +142,14 @@ export class OutfitWorkshop {
         highlights: highlightsOf(outfit.breakdown),
         variantOf: outfit.variantOf,
         createdAt: outfit.createdAt.toISOString(),
+        isFavorite: outfit.isFavorite,
+        feedback: outfit.feedback && {
+          rating: outfit.feedback.rating,
+          reasons: outfit.feedback.reasons,
+          note: outfit.feedback.note,
+          updatedAt: outfit.feedback.updatedAt.toISOString(),
+        },
+        lastWornOn: outfit.lastWornOn,
         pieces: await Promise.all(
           outfit.pieces.flatMap(({ role, itemId }) => {
             const item = byId.get(itemId);
@@ -142,11 +185,47 @@ export class OutfitWorkshop {
     );
   }
 
-  /** Keys of looks already seen, so that they are not proposed again. */
-  async seenKeys(userId: string, outfitIds: string[]): Promise<string[]> {
-    const seen = await this.outfits.findManyOwned(userId, outfitIds);
-    const items = seen.length ? await this.wardrobe.findAllOwned(userId) : [];
-    return seen.map((outfit) => outfitKey(this.lookOf(outfit, items)));
+  /** One look, ready for the app. */
+  async presentOne(userId: string, outfit: StoredOutfit): Promise<OutfitDto> {
+    const items = await this.wardrobe.findAllOwned(userId);
+    const [dto] = await this.present([outfit], items);
+    return dto!;
+  }
+
+  /** Wears with their looks, in the given order. */
+  async presentWears(
+    userId: string,
+    wears: OutfitWearRecord[],
+  ): Promise<OutfitWearDto[]> {
+    if (wears.length === 0) return [];
+    const ids = [...new Set(wears.map((wear) => wear.outfitId))];
+    const [outfits, items] = await Promise.all([
+      this.outfits.findManyOwned(userId, ids),
+      this.wardrobe.findAllOwned(userId),
+    ]);
+    const presented = await this.present(outfits, items);
+    const byId = new Map(presented.map((dto) => [dto.id, dto]));
+    return wears.flatMap((wear) => {
+      const outfit = byId.get(wear.outfitId);
+      return outfit ? [{ id: wear.id, wornOn: wear.wornOn, outfit }] : [];
+    });
+  }
+
+  /**
+   * Keys of the looks not to propose again: those already seen, and every
+   * look the user disliked.
+   */
+  async excludedKeys(
+    userId: string,
+    seenOutfitIds: string[],
+    items: WardrobeItem[],
+    context: OutfitContext,
+  ): Promise<string[]> {
+    const seen = await this.outfits.findManyOwned(userId, seenOutfitIds);
+    return [
+      ...seen.map((outfit) => outfitKey(this.lookOf(outfit, items))),
+      ...(context.feedback?.disliked ?? []).map(keyOfMainPieces),
+    ];
   }
 }
 
@@ -164,11 +243,14 @@ export class CreateOutfitsUseCase {
       temperature: request.temperature,
       condition: request.condition,
     };
-    const [items, context, excludedOutfitKeys] = await Promise.all([
-      this.workshop.wardrobe.findAllOwned(userId),
-      this.workshop.context(userId, conditions),
-      this.workshop.seenKeys(userId, request.excludeOutfitIds),
-    ]);
+    const items = await this.workshop.wardrobe.findAllOwned(userId);
+    const context = await this.workshop.context(userId, conditions, items);
+    const excludedOutfitKeys = await this.workshop.excludedKeys(
+      userId,
+      request.excludeOutfitIds,
+      items,
+      context,
+    );
     const generated = this.workshop.generator.generate(items, {
       context,
       imposedItemIds: request.mandatoryItemId ? [request.mandatoryItemId] : [],
@@ -186,22 +268,7 @@ export class GetOutfitUseCase {
 
   async execute(userId: string, id: string): Promise<OutfitDto> {
     const outfit = await this.workshop.ownedOutfit(userId, id);
-    const items = await this.workshop.wardrobe.findAllOwned(userId);
-    const [dto] = await this.workshop.present([outfit], items);
-    return dto!;
-  }
-}
-
-/** The latest looks (the home "Tenue du jour" shows the first one). */
-export class ListRecentOutfitsUseCase {
-  constructor(private readonly workshop: OutfitWorkshop) {}
-
-  async execute(userId: string, limit: number): Promise<OutfitDto[]> {
-    const [outfits, items] = await Promise.all([
-      this.workshop.outfits.listRecent(userId, limit),
-      this.workshop.wardrobe.findAllOwned(userId),
-    ]);
-    return this.workshop.present(outfits, items);
+    return this.workshop.presentOne(userId, outfit);
   }
 }
 
@@ -218,10 +285,8 @@ export class ListOutfitAlternativesUseCase {
     role: OutfitRole,
   ): Promise<OutfitAlternative[]> {
     const outfit = await this.workshop.ownedOutfit(userId, id);
-    const [items, context] = await Promise.all([
-      this.workshop.wardrobe.findAllOwned(userId),
-      this.workshop.context(userId, outfit),
-    ]);
+    const items = await this.workshop.wardrobe.findAllOwned(userId);
+    const context = await this.workshop.context(userId, outfit, items);
     const look = this.workshop.lookOf(outfit, items);
     const current = look.pieces.find((piece) => piece.role === role)?.item;
     const reference = current
@@ -260,10 +325,8 @@ export class ReplaceOutfitItemUseCase {
     replacementItemId: string,
   ): Promise<OutfitDto> {
     const outfit = await this.workshop.ownedOutfit(userId, id);
-    const [items, context] = await Promise.all([
-      this.workshop.wardrobe.findAllOwned(userId),
-      this.workshop.context(userId, outfit),
-    ]);
+    const items = await this.workshop.wardrobe.findAllOwned(userId);
+    const context = await this.workshop.context(userId, outfit, items);
     const replacement = items.find((item) => item.id === replacementItemId);
     if (
       !replacement ||
@@ -310,11 +373,14 @@ export class CreateOutfitVariantUseCase {
     const inLook = new Set(outfit.pieces.map((piece) => piece.itemId));
     const locked = lockedItemIds.filter((itemId) => inLook.has(itemId));
 
-    const [items, context, excludedOutfitKeys] = await Promise.all([
-      this.workshop.wardrobe.findAllOwned(userId),
-      this.workshop.context(userId, outfit),
-      this.workshop.seenKeys(userId, [id, ...excludeOutfitIds]),
-    ]);
+    const items = await this.workshop.wardrobe.findAllOwned(userId);
+    const context = await this.workshop.context(userId, outfit, items);
+    const excludedOutfitKeys = await this.workshop.excludedKeys(
+      userId,
+      [id, ...excludeOutfitIds],
+      items,
+      context,
+    );
     const [variant] = this.workshop.generator.generate(items, {
       context,
       imposedItemIds: locked,

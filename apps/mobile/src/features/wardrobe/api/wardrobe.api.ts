@@ -38,6 +38,11 @@ export const wardrobeApi = {
       body,
       auth: true,
     }),
+  favorite: (id: string, favorite: boolean) =>
+    request<WardrobeItem>(`/wardrobe/${id}/favorite`, {
+      method: favorite ? 'PUT' : 'DELETE',
+      auth: true,
+    }),
   remove: (id: string) =>
     request<void>(`/wardrobe/${id}`, { method: 'DELETE', auth: true }),
 };

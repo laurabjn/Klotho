@@ -108,6 +108,9 @@ export const fr = {
     reminders: 'Rappels de tenues et suggestions',
     privacy: 'Confidentialité',
     help: 'Aide',
+    favoriteOutfits: 'Mes tenues favorites',
+    favoritePieces: 'Mes pièces favorites',
+    history: 'Historique de mes tenues',
     ok: 'D’accord',
     dominantStyle: 'Style dominant',
     noDominantStyle: 'Ajoute des pièces pour le découvrir',
@@ -175,6 +178,12 @@ export const fr = {
       occasion: 'Occasion inconnue',
       condition: 'Météo inconnue',
       role: 'Place inconnue dans la tenue',
+      filter: 'Filtre inconnu',
+      rating: 'Choisis « J’aime » ou « Je n’aime pas »',
+      reason: 'Raison inconnue',
+      note: '250 caractères maximum',
+      day: 'Date invalide',
+      period: 'La date de fin doit suivre la date de début',
     },
     weather: {
       coordinates: 'Position invalide',
@@ -229,6 +238,7 @@ export const fr = {
       imposedItemNotFound: 'Cette pièce n’est plus dans ta garde-robe.',
       imposedItemUnavailable:
         'Cette pièce n’est pas disponible aujourd’hui (au lavage, prêtée…).',
+      wearNotFound: 'Cette tenue n’est déjà plus dans ton historique.',
     },
     weather: {
       unavailable:

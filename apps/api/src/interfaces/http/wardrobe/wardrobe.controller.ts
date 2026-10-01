@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -30,6 +31,7 @@ import { ListWardrobeItemsUseCase } from '../../../application/wardrobe/list-war
 import { AddWardrobePhotoUseCase } from '../../../application/wardrobe/photos/add-wardrobe-photo.use-case';
 import { DeleteWardrobePhotoUseCase } from '../../../application/wardrobe/photos/delete-wardrobe-photo.use-case';
 import { SetMainWardrobePhotoUseCase } from '../../../application/wardrobe/photos/set-main-wardrobe-photo.use-case';
+import { SetWardrobeFavoriteUseCase } from '../../../application/wardrobe/toggle-wardrobe-favorite.use-case';
 import { UpdateWardrobeItemUseCase } from '../../../application/wardrobe/update-wardrobe-item.use-case';
 import { CurrentUserId } from '../auth/current-user.decorator';
 import { ZodValidationPipe } from '../validation/zod-validation.pipe';
@@ -45,6 +47,7 @@ export class WardrobeController {
     private readonly addPhoto: AddWardrobePhotoUseCase,
     private readonly deletePhoto: DeleteWardrobePhotoUseCase,
     private readonly setMainPhoto: SetMainWardrobePhotoUseCase,
+    private readonly setFavorite: SetWardrobeFavoriteUseCase,
   ) {}
 
   /** Attaches a picture sent to POST /uploads/wardrobe; returns the updated item. */
@@ -73,6 +76,23 @@ export class WardrobeController {
     @Param('photoId') photoId: string,
   ): Promise<WardrobeItem> {
     return this.setMainPhoto.execute(userId, id, photoId);
+  }
+
+  /** "Mes pièces favorites"; idempotent. */
+  @Put(':id/favorite')
+  addFavorite(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<WardrobeItem> {
+    return this.setFavorite.execute(userId, id, true);
+  }
+
+  @Delete(':id/favorite')
+  removeFavorite(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<WardrobeItem> {
+    return this.setFavorite.execute(userId, id, false);
   }
 
   @Get()
