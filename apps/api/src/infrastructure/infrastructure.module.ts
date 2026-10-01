@@ -22,6 +22,7 @@ import { IMAGE_PROCESSOR } from '../domain/storage/ports/image-processor';
 import { USER_REPOSITORY } from '../domain/users/ports/user.repository';
 import { WARDROBE_PHOTO_REPOSITORY } from '../domain/wardrobe/ports/wardrobe-photo.repository';
 import { WARDROBE_REPOSITORY } from '../domain/wardrobe/ports/wardrobe.repository';
+import { OUTFIT_REPOSITORY } from '../domain/outfits/ports/outfit.repository';
 import { CITY_GEOCODER } from '../domain/weather/ports/city-geocoder';
 import { WEATHER_PROVIDER } from '../domain/weather/ports/weather-provider';
 import { WEATHER_SETTINGS_REPOSITORY } from '../domain/weather/ports/weather-settings.repository';
@@ -33,6 +34,7 @@ import { JwtAccessTokenService } from './auth/jwt-access-token.service';
 import { ConsoleMailer } from './mail/console-mailer';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
+import { PrismaOutfitRepository } from './prisma/repositories/prisma-outfit.repository';
 import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token.repository';
 import { PrismaStyleProfileRepository } from './prisma/repositories/prisma-style-profile.repository';
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository';
@@ -93,6 +95,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
         }),
     },
     { provide: CITY_GEOCODER, useExisting: OPENWEATHERMAP_CLIENT },
+    { provide: OUTFIT_REPOSITORY, useClass: PrismaOutfitRepository },
     { provide: IMAGE_PROCESSOR, useClass: SharpImageProcessor },
     {
       provide: FILE_STORAGE,
@@ -170,6 +173,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     WARDROBE_REPOSITORY,
     STYLE_PROFILE_REPOSITORY,
     WARDROBE_PHOTO_REPOSITORY,
+    OUTFIT_REPOSITORY,
     WEATHER_SETTINGS_REPOSITORY,
     WEATHER_PROVIDER,
     CITY_GEOCODER,

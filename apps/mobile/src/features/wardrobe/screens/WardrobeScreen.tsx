@@ -1,5 +1,9 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { WARDROBE_CATEGORIES, type WardrobeCategory } from '@klotho/shared';
+import {
+  WARDROBE_CATEGORIES,
+  type WardrobeCategory,
+  type WardrobeItem,
+} from '@klotho/shared';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +23,7 @@ import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ScrollToTopButton, useScrollToTop } from '@/components/ui/ScrollToTop';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
 import { categoryIcons } from '@/theme/icons';
 import { useCompactLayout } from '@/theme/useCompactLayout';
@@ -42,6 +47,8 @@ export function WardrobeScreen() {
   const [sheetFilters, setSheetFilters] =
     useState<SheetFilters>(EMPTY_SHEET_FILTERS);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const { scrollRef, onScroll, showTop, scrollToTop } =
+    useScrollToTop<FlatList<WardrobeItem>>();
   const q = useDebouncedValue(search.trim());
   const columns = useCompactLayout() ? 2 : 3;
 
@@ -205,6 +212,9 @@ export function WardrobeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <FlatList
+        ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={100}
         data={items}
         keyExtractor={(item) => item.id}
         // FlatList needs a new instance when the number of columns changes.
@@ -252,6 +262,13 @@ export function WardrobeScreen() {
           <Ionicons name="add" size={30} color={colors.onPrimary} />
         </Pressable>
       )}
+      <ScrollToTopButton
+        visible={showTop}
+        onPress={scrollToTop}
+        // Above the "add" button, centred on it.
+        bottom={spacing.xl + 60 + spacing.md}
+        right={spacing.xl + 6}
+      />
       <FiltersSheet
         key={sheetVisible ? 'open' : 'closed'}
         visible={sheetVisible}

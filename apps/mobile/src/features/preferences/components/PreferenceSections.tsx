@@ -93,7 +93,8 @@ export function ColorsSection({
   value,
   onChange,
   large = false,
-}: SectionProps & { large?: boolean }) {
+  row = false,
+}: SectionProps & { large?: boolean; row?: boolean }) {
   const { t } = useTranslation();
   const without = (list: ColorKey[], removed: ColorKey[]) =>
     list.filter((color) => !removed.includes(color));
@@ -107,6 +108,7 @@ export function ColorsSection({
         <ColorPicker
           multiple
           large={large}
+          row={row}
           value={value.preferredColors}
           onChange={(preferredColors) =>
             onChange({
@@ -126,6 +128,7 @@ export function ColorsSection({
         <ColorPicker
           multiple
           large={large}
+          row={row}
           value={value.avoidedColors}
           onChange={(avoidedColors) =>
             onChange({
@@ -158,7 +161,6 @@ export function PracticalSection({ value, onChange }: SectionProps) {
       </Section>
       <Section title={t('preferences.heels')} aside={t('preferences.optional')}>
         <ChipGroup<'yes' | 'no' | 'none'>
-          scroll
           tone="soft"
           testIDPrefix="heels"
           options={[
@@ -190,7 +192,6 @@ export function PracticalSection({ value, onChange }: SectionProps) {
       >
         <ChipGroup<BottomPreference>
           multiple
-          scroll
           tone="soft"
           options={BOTTOM_PREFERENCES.map((bottom) => ({
             value: bottom,
@@ -231,6 +232,7 @@ export function AdvancedSection({ value, onChange }: SectionProps) {
       >
         <ColorPicker
           multiple
+          row
           value={value.facePreferredColors}
           onChange={(facePreferredColors) =>
             onChange({ ...value, facePreferredColors })

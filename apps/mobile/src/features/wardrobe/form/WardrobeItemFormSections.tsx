@@ -339,7 +339,6 @@ function StyleSection({ form }: { form: WardrobeForm }) {
             <ChipGroup
               tone="soft"
               multiple
-              collapsedCount={9}
               options={STYLES.map((value) => ({
                 value,
                 label: t(`wardrobe.styles.${value}`),

@@ -1,28 +1,42 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { STYLES, type Style } from '@klotho/shared';
+import { STYLES, type Outfit, type Style } from '@klotho/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { GoldRule } from '@/components/ui/GoldRule';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useStyleProfile } from '@/features/preferences/hooks/useStyleProfile';
 import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
 import { ItemVisual } from '@/features/wardrobe/components/ItemVisual';
 import { wardrobeKeys } from '@/features/wardrobe/hooks/useWardrobe';
+import { OutfitCollage } from '@/features/outfits/components/OutfitCollage';
+import {
+  useGenerateOutfits,
+  useRecentOutfits,
+} from '@/features/outfits/hooks/useOutfits';
+import { outfitTitle } from '@/features/outfits/lib/outfit-labels';
 import { itemTitle } from '@/features/wardrobe/labels';
 import { WeatherTile } from '@/features/weather/components/WeatherTile';
+import { useCurrentWeather } from '@/features/weather/hooks/useCurrentWeather';
+import { useManualTemperature } from '@/features/weather/store/manual-temperature.store';
+import { errorMessageKey } from '@/lib/api/errors';
 import { styleIcons } from '@/theme/icons';
 import { photos } from '@/theme/photos';
 import { useCompactLayout } from '@/theme/useCompactLayout';
@@ -39,13 +53,13 @@ const CLEAR = 'rgba(252, 248, 243, 0)';
 export function HomeScreen() {
   const { t } = useTranslation();
   const firstName = useAuthStore((state) => state.user?.firstName ?? '');
-  const [soonVisible, setSoonVisible] = useState(false);
-  const soon = () => setSoonVisible(true);
+  const openGenerator = () => router.navigate('/inspirations');
   const compact = useCompactLayout();
+  const outfitOfTheDay = useOutfitOfTheDay();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollPage contentContainerStyle={styles.content}>
         <AppHeader />
         <View style={[styles.hello, compact && styles.stacked]}>
           <View style={styles.helloText}>
@@ -60,29 +74,70 @@ export function HomeScreen() {
           </View>
         </View>
 
-        <Button label={t('home.generate')} onPress={soon} />
+        <Button label={t('home.generate')} onPress={openGenerator} />
 
-        <DailyStyle />
+        <DailyStyle onChoose={outfitOfTheDay.prepare} />
 
-        <OutfitOfTheDay onPress={soon} />
+        <OutfitOfTheDay {...outfitOfTheDay} onGenerate={openGenerator} />
 
         <Rediscover />
-      </ScrollView>
-      <ConfirmDialog
-        visible={soonVisible}
-        icon="sparkles-outline"
-        title={t('home.soonTitle')}
-        message={t('home.soonBody')}
-        confirmLabel={t('home.ok')}
-        onConfirm={() => setSoonVisible(false)}
-        onCancel={() => setSoonVisible(false)}
-      />
+      </ScrollPage>
     </SafeAreaView>
   );
 }
 
+/** Looks generated today, newest first. */
+function isToday(outfit: Outfit) {
+  return (
+    new Date(outfit.createdAt).toDateString() === new Date().toDateString()
+  );
+}
+
+/**
+ * Today's look in the style of the day: the latest one generated today in
+ * that style, else one generated on the spot (everyday, today's weather).
+ */
+function useOutfitOfTheDay() {
+  const daily = useDailyStyle();
+  const recent = useRecentOutfits(RECENT_LOOKS);
+  const generate = useGenerateOutfits();
+  const weather = useCurrentWeather();
+  const manual = useManualTemperature();
+  const current = weather.status === 'ready' ? weather.weather : null;
+
+  const today = (recent.data ?? []).filter(isToday);
+  const lookIn = (style: Style | null) =>
+    style ? today.find((outfit) => outfit.style === style) : today[0];
+  const outfit = lookIn(daily) ?? null;
+
+  /** Called when a style is picked: prepares a look if there is none yet. */
+  const prepare = (style: Style | null) => {
+    if (!style || lookIn(style) || generate.isPending) return;
+    const temperature = manual ?? current?.temperature ?? null;
+    generate.mutate({
+      style,
+      occasion: 'everyday',
+      temperature: temperature === null ? null : Math.round(temperature),
+      condition: current?.condition ?? null,
+      mandatoryItemId: null,
+      exclusions: { categories: [], subcategories: [], colors: [] },
+      excludeOutfitIds: [],
+    });
+  };
+
+  return {
+    outfit,
+    prepare,
+    pending: generate.isPending,
+    error: generate.error,
+  };
+}
+
+/** How many recent looks are searched for today's one. */
+const RECENT_LOOKS = 20;
+
 /** Favourite styles first; the choice holds for the day. */
-function DailyStyle() {
+function DailyStyle({ onChoose }: { onChoose: (style: Style | null) => void }) {
   const { t } = useTranslation();
   const preferred = useStyleProfile().data?.preferredStyles ?? [];
   const daily = useDailyStyle();
@@ -110,7 +165,11 @@ function DailyStyle() {
             icon={styleIcons[style]}
             label={t(`wardrobe.styles.${style}`)}
             selected={daily === style}
-            onPress={() => choose(daily === style ? null : style)}
+            onPress={() => {
+              const next = daily === style ? null : style;
+              choose(next);
+              onChoose(next);
+            }}
           />
         ))}
       </ScrollView>
@@ -118,36 +177,80 @@ function DailyStyle() {
   );
 }
 
-function OutfitOfTheDay({ onPress }: { onPress: () => void }) {
+/**
+ * Today's look in the style of the day, else an invitation to generate one
+ * (with the photo of the mockup).
+ */
+function OutfitOfTheDay({
+  outfit: today,
+  pending,
+  error,
+  onGenerate,
+}: ReturnType<typeof useOutfitOfTheDay> & { onGenerate: () => void }) {
   const { t } = useTranslation();
+
   return (
     <View style={styles.outfit}>
-      <Image
-        source={photos.outfitOfTheDay.source}
-        style={styles.outfitPhoto}
-        contentFit="cover"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      />
-      {/* The text side stays readable over the photo. */}
-      <LinearGradient
-        colors={[colors.surface, colors.surface, CLEAR]}
-        locations={[0, 0.42, 0.62]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={StyleSheet.absoluteFill}
-      />
+      {today ? (
+        <View style={styles.outfitCollage}>
+          <OutfitCollage pieces={today.pieces} />
+        </View>
+      ) : (
+        <>
+          <Image
+            source={photos.outfitOfTheDay.source}
+            style={styles.outfitPhoto}
+            contentFit="cover"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+          {/* The text side stays readable over the photo. */}
+          <LinearGradient
+            colors={[colors.surface, colors.surface, CLEAR]}
+            locations={[0, 0.42, 0.62]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </>
+      )}
       <View style={styles.outfitText}>
         <AppText variant="title">{t('home.outfit.title')}</AppText>
-        <AppText variant="overline">{t('home.outfit.overline')}</AppText>
+        <AppText variant="overline">
+          {today
+            ? [
+                today.style && t(`wardrobe.styles.${today.style}`),
+                outfitTitle(t, today),
+              ]
+                .filter(Boolean)
+                .join(' · ')
+            : t('home.outfit.overline')}
+        </AppText>
+        {pending ? (
+          <View style={styles.pending}>
+            <ActivityIndicator color={colors.primary} />
+            <AppText variant="hint">{t('home.outfit.generating')}</AppText>
+          </View>
+        ) : (
+          error &&
+          !today && (
+            <AppText variant="hint">
+              {t(errorMessageKey(error) as 'apiErrors.unknown')}
+            </AppText>
+          )
+        )}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('home.outfit.soon')}
-          onPress={onPress}
+          accessibilityLabel={today ? t('home.outfit.see') : t('home.generate')}
+          onPress={() =>
+            today ? router.push(`/outfits/${today.id}`) : onGenerate()
+          }
           style={({ pressed }) => [styles.soon, pressed && styles.pressed]}
         >
-          <AppText style={styles.soonText}>{t('home.outfit.soon')}</AppText>
-          <Ionicons name="sparkles" size={16} color={colors.onPrimary} />
+          <AppText style={styles.soonText}>
+            {today ? t('home.outfit.see') : t('home.generate')}
+          </AppText>
+          <Ionicons name="arrow-forward" size={16} color={colors.onPrimary} />
         </Pressable>
       </View>
     </View>
@@ -244,6 +347,14 @@ const styles = StyleSheet.create({
   bleed: { marginHorizontal: -spacing.xl },
   chips: { gap: spacing.sm, paddingHorizontal: spacing.xl },
   outfit: { ...card, minHeight: 260 },
+  outfitCollage: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    bottom: spacing.md,
+    width: '44%',
+    justifyContent: 'center',
+  },
   outfitPhoto: {
     position: 'absolute',
     top: 0,
@@ -268,6 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: colors.primary,
   },
+  pending: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   soonText: { color: colors.onPrimary, fontSize: 16 },
   pressed: { opacity: 0.8 },
   rediscover: {

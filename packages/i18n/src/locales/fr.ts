@@ -1,5 +1,6 @@
 import { onboardingFr, preferencesFr } from './preferences.fr';
 import { wardrobeFr } from './wardrobe.fr';
+import { outfitsFr } from './outfits.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -10,6 +11,7 @@ export const fr = {
     loading: 'Chargement…',
     error: 'Une erreur est survenue.',
     retry: 'Réessayer',
+    backToTop: 'Revenir en haut',
     cancel: 'Annuler',
     or: 'ou',
     back: 'Retour',
@@ -89,6 +91,7 @@ export const fr = {
   onboarding: onboardingFr,
   preferences: preferencesFr,
   weather: weatherFr,
+  outfits: outfitsFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',
@@ -124,17 +127,13 @@ export const fr = {
     greeting: 'Bonjour {{firstName}}',
     overline: 'Prête à écrire une nouvelle histoire aujourd’hui ?',
     generate: 'Générer ma tenue',
-    soonTitle: 'Bientôt disponible',
-    soonBody:
-      'Klotho composera bientôt tes tenues à partir de tes pièces, de la météo et de ton style du jour.',
-    ok: 'D’accord',
     dailyStyle: 'Mon style du jour',
-    seeAll: 'Voir tout',
-    seeLess: 'Voir moins',
     outfit: {
       title: 'Tenue du jour',
-      overline: 'Bientôt, une tenue pensée pour ta journée',
+      overline: 'Une tenue pensée pour ta journée',
       soon: 'Bientôt disponible',
+      generating: 'Je prépare ta tenue…',
+      see: 'Voir la tenue',
     },
     rediscover: {
       overline: 'On l’oublie trop souvent',
@@ -171,6 +170,11 @@ export const fr = {
       length: 'Longueur inconnue',
       colorConflict:
         'Une couleur ne peut pas être à la fois favorite et à éviter',
+    },
+    outfits: {
+      occasion: 'Occasion inconnue',
+      condition: 'Météo inconnue',
+      role: 'Place inconnue dans la tenue',
     },
     weather: {
       coordinates: 'Position invalide',
@@ -216,6 +220,15 @@ export const fr = {
       photoNotFound: 'Cette photo n’existe plus.',
       notFound: "Cette pièce n'existe plus.",
       invalidTemperatureRange: 'Le maximum doit être supérieur au minimum.',
+    },
+    outfits: {
+      notFound: 'Cette tenue n’existe plus.',
+      noOutfitPossible:
+        'Pas assez de pièces adaptées pour composer une tenue avec ces choix. Essaie d’autres critères ou ajoute des pièces.',
+      invalidReplacement: 'Cette pièce ne peut pas prendre cette place.',
+      imposedItemNotFound: 'Cette pièce n’est plus dans ta garde-robe.',
+      imposedItemUnavailable:
+        'Cette pièce n’est pas disponible aujourd’hui (au lavage, prêtée…).',
     },
     weather: {
       unavailable:

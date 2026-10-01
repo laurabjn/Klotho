@@ -1,0 +1,86 @@
+import { Logger, Module } from '@nestjs/common';
+
+import {
+  DEFAULT_ENGINE_SETTINGS,
+  OutfitGeneratorService,
+} from '../../../application/outfits/outfit-generator.service';
+import {
+  CreateOutfitsUseCase,
+  CreateOutfitVariantUseCase,
+  GetOutfitUseCase,
+  ListOutfitAlternativesUseCase,
+  ListRecentOutfitsUseCase,
+  OutfitWorkshop,
+  ReplaceOutfitItemUseCase,
+} from '../../../application/outfits/outfit.use-cases';
+import {
+  OUTFIT_REPOSITORY,
+  type OutfitRepository,
+} from '../../../domain/outfits/ports/outfit.repository';
+import {
+  STYLE_PROFILE_REPOSITORY,
+  type StyleProfileRepository,
+} from '../../../domain/preferences/ports/style-profile.repository';
+import { CLOCK, type Clock } from '../../../domain/shared/ports/clock';
+import {
+  FILE_STORAGE,
+  type FileStorage,
+} from '../../../domain/storage/ports/file-storage';
+import {
+  WARDROBE_REPOSITORY,
+  type WardrobeRepository,
+} from '../../../domain/wardrobe/ports/wardrobe.repository';
+import { OutfitsController } from './outfits.controller';
+
+const logger = new Logger('OutfitEngine');
+
+const useCases = [
+  CreateOutfitsUseCase,
+  GetOutfitUseCase,
+  ListRecentOutfitsUseCase,
+  ListOutfitAlternativesUseCase,
+  ReplaceOutfitItemUseCase,
+  CreateOutfitVariantUseCase,
+];
+
+@Module({
+  controllers: [OutfitsController],
+  providers: [
+    {
+      provide: OutfitWorkshop,
+      inject: [
+        WARDROBE_REPOSITORY,
+        OUTFIT_REPOSITORY,
+        STYLE_PROFILE_REPOSITORY,
+        FILE_STORAGE,
+        CLOCK,
+      ],
+      useFactory: (
+        wardrobe: WardrobeRepository,
+        outfits: OutfitRepository,
+        profiles: StyleProfileRepository,
+        storage: FileStorage,
+        clock: Clock,
+      ) =>
+        new OutfitWorkshop(
+          wardrobe,
+          outfits,
+          profiles,
+          // The detailed score of each look, in debug logs only.
+          new OutfitGeneratorService(DEFAULT_ENGINE_SETTINGS, (outfit) =>
+            logger.debug(
+              `${outfit.key} ${outfit.score} ${JSON.stringify(outfit.breakdown)}`,
+            ),
+          ),
+          storage,
+          clock,
+        ),
+    },
+    ...useCases.map((UseCase) => ({
+      provide: UseCase,
+      inject: [OutfitWorkshop],
+      useFactory: (workshop: OutfitWorkshop) => new UseCase(workshop),
+    })),
+  ],
+})
+export class OutfitsModule {}

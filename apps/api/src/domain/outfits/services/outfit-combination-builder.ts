@@ -48,27 +48,32 @@ export function groupByRole(
 /**
  * US6.2: structurally valid silhouettes only —
  * TOP + BOTTOM + SHOES or DRESS + SHOES, each with or without one LAYER.
- * One piece per role: never two tops or two pairs of shoes. An imposed piece
- * takes its role in every silhouette (an imposed bag, jewel or accessory is
- * added to all of them).
+ * One piece per role: never two tops or two pairs of shoes. Imposed pieces
+ * take their role in every silhouette (an imposed bag, jewel or accessory is
+ * added to all of them); a second imposed piece of the same role is ignored.
  */
 export function buildCombinations(
   candidates: OutfitCandidate[],
-  imposed: OutfitCandidate | null,
+  imposed: OutfitCandidate[],
   options: CombinationOptions,
 ): Outfit[] {
   const byRole = groupByRole(candidates);
-  const imposedRole = imposed ? ROLE_OF[imposed.category] : null;
+  const imposedByRole = new Map<OutfitRole, OutfitCandidate>();
+  for (const item of imposed) {
+    const role = ROLE_OF[item.category];
+    if (role && !imposedByRole.has(role)) imposedByRole.set(role, item);
+  }
 
   const pool = (role: OutfitRole): OutfitCandidate[] => {
-    if (imposed && imposedRole === role) return [imposed];
+    const forced = imposedByRole.get(role);
+    if (forced) return [forced];
     return [...(byRole.get(role) ?? [])]
       .sort((a, b) => options.rank(b) - options.rank(a))
       .slice(0, options.maxPerRole);
   };
 
   const bases: OutfitPiece[][] = [];
-  if (imposedRole !== 'dress') {
+  if (!imposedByRole.has('dress')) {
     for (const top of pool('top'))
       for (const bottom of pool('bottom'))
         bases.push([
@@ -76,17 +81,19 @@ export function buildCombinations(
           { role: 'bottom', item: bottom },
         ]);
   }
-  if (imposedRole !== 'top' && imposedRole !== 'bottom') {
+  if (!imposedByRole.has('top') && !imposedByRole.has('bottom')) {
     for (const dress of pool('dress'))
       bases.push([{ role: 'dress', item: dress }]);
   }
 
-  const layers: (OutfitCandidate | null)[] =
-    imposedRole === 'layer' ? [imposed] : [null, ...pool('layer')];
-  const finishing =
-    imposed && imposedRole && FINISHING_ROLES.includes(imposedRole)
-      ? [{ role: imposedRole, item: imposed }]
-      : [];
+  const imposedLayer = imposedByRole.get('layer');
+  const layers: (OutfitCandidate | null)[] = imposedLayer
+    ? [imposedLayer]
+    : [null, ...pool('layer')];
+  const finishing: OutfitPiece[] = FINISHING_ROLES.flatMap((role) => {
+    const item = imposedByRole.get(role);
+    return item ? [{ role, item }] : [];
+  });
 
   const outfits: Outfit[] = [];
   for (const base of bases)

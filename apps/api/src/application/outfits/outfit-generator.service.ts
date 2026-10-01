@@ -50,7 +50,8 @@ const FINISHING_TOLERANCE = 0.5;
 
 export interface OutfitGenerationRequest {
   context: OutfitContext;
-  imposedItemId?: string | null;
+  /** The "pièce imposée", or the pieces kept for a variant. */
+  imposedItemIds?: string[];
   exclusions?: OutfitExclusions;
   /** Keys of looks already proposed, not proposed again. */
   excludedOutfitKeys?: string[];
@@ -90,7 +91,7 @@ export class OutfitGeneratorService {
       wardrobe,
       context,
       request.exclusions ?? NO_EXCLUSIONS,
-      request.imposedItemId ?? null,
+      request.imposedItemIds ?? [],
     );
 
     const combinations = buildCombinations(candidates, imposed, {

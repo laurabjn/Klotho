@@ -70,6 +70,7 @@ export function Button({
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.75}
+            maxFontSizeMultiplier={1.15}
             style={[
               styles.label,
               variant === 'link' && styles.linkLabel,
@@ -126,6 +127,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  label: { flexShrink: 1, fontFamily: fonts.serif, fontSize: 22 },
+  label: { flexShrink: 1, fontFamily: fonts.serif, fontSize: 19 },
   linkLabel: { fontSize: 17, textDecorationLine: 'underline' },
 });

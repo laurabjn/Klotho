@@ -30,7 +30,8 @@ export function ItemVisual({
   category: WardrobeCategory;
   color: ColorKey;
   photo?: WardrobePhoto;
-  size?: 'card' | 'hero';
+  /** card: square; hero: wide (full width); portrait: 3:4 beside the details. */
+  size?: 'card' | 'hero' | 'portrait';
 }) {
   const hex = COLORS[color];
   if (photo) {
@@ -45,6 +46,7 @@ export function ItemVisual({
         style={[
           styles.box,
           size === 'hero' && styles.hero,
+          size === 'portrait' && styles.portrait,
           { backgroundColor: hex },
         ]}
         accessibilityElementsHidden
@@ -57,6 +59,7 @@ export function ItemVisual({
       style={[
         styles.box,
         size === 'hero' && styles.hero,
+        size === 'portrait' && styles.portrait,
         { backgroundColor: hex },
       ]}
       accessibilityElementsHidden
@@ -64,7 +67,7 @@ export function ItemVisual({
     >
       <MaterialCommunityIcons
         name={categoryIcons[category]}
-        size={size === 'hero' ? 96 : 40}
+        size={size === 'card' ? 40 : 96}
         color={
           isLight(hex) ? 'rgba(62, 35, 28, 0.45)' : 'rgba(255, 255, 255, 0.75)'
         }
@@ -81,4 +84,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   hero: { aspectRatio: 4 / 3, borderRadius: radii.card },
+  portrait: { aspectRatio: 3 / 4, borderRadius: radii.card },
 });

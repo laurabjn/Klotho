@@ -1,6 +1,7 @@
 import type { TranslationResource } from './fr';
 import { onboardingEn, preferencesEn } from './preferences.en';
 import { wardrobeEn } from './wardrobe.en';
+import { outfitsEn } from './outfits.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -9,6 +10,7 @@ export const en: TranslationResource = {
     loading: 'Loading…',
     error: 'Something went wrong.',
     retry: 'Retry',
+    backToTop: 'Back to top',
     cancel: 'Cancel',
     or: 'or',
     back: 'Back',
@@ -88,6 +90,7 @@ export const en: TranslationResource = {
   onboarding: onboardingEn,
   preferences: preferencesEn,
   weather: weatherEn,
+  outfits: outfitsEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',
@@ -123,17 +126,13 @@ export const en: TranslationResource = {
     greeting: 'Hello {{firstName}}',
     overline: 'Ready to write a new story today?',
     generate: 'Create my outfit',
-    soonTitle: 'Coming soon',
-    soonBody:
-      'Klotho will soon put your outfits together from your pieces, the weather and your style of the day.',
-    ok: 'OK',
     dailyStyle: 'My style of the day',
-    seeAll: 'See all',
-    seeLess: 'See less',
     outfit: {
       title: 'Outfit of the day',
-      overline: 'Soon, an outfit designed for your day',
+      overline: 'An outfit designed for your day',
       soon: 'Coming soon',
+      generating: 'Preparing your outfit…',
+      see: 'See the outfit',
     },
     rediscover: {
       overline: 'Too often forgotten',
@@ -168,6 +167,11 @@ export const en: TranslationResource = {
       bottoms: 'Unknown choice',
       length: 'Unknown length',
       colorConflict: 'A colour cannot be both a favourite and to avoid',
+    },
+    outfits: {
+      occasion: 'Unknown occasion',
+      condition: 'Unknown weather',
+      role: 'Unknown place in the outfit',
     },
     weather: {
       coordinates: 'Invalid location',
@@ -211,6 +215,15 @@ export const en: TranslationResource = {
       photoNotFound: 'This photo no longer exists.',
       notFound: 'This piece no longer exists.',
       invalidTemperatureRange: 'The maximum must be above the minimum.',
+    },
+    outfits: {
+      notFound: 'This outfit no longer exists.',
+      noOutfitPossible:
+        'Not enough suitable pieces to put an outfit together with these choices. Try other criteria or add pieces.',
+      invalidReplacement: 'This piece cannot take this place.',
+      imposedItemNotFound: 'This piece is no longer in your wardrobe.',
+      imposedItemUnavailable:
+        'This piece is not available today (in the wash, lent…).',
     },
     weather: {
       unavailable: 'The weather is unavailable right now. Try again later.',
