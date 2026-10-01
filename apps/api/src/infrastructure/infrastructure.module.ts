@@ -9,6 +9,7 @@ import {
   PHOTO_SETTINGS,
   type PhotoSettings,
 } from '../application/wardrobe/photos/photo-settings';
+import { KPI_SOURCE } from '../domain/analytics/ports/kpi-source';
 import { ACCESS_TOKEN_SERVICE } from '../domain/auth/ports/access-token.service';
 import { PASSWORD_HASHER } from '../domain/auth/ports/password-hasher';
 import { PASSWORD_RESET_TOKEN_REPOSITORY } from '../domain/auth/ports/password-reset-token.repository';
@@ -31,8 +32,10 @@ import type { Env } from '../config/env';
 import { BcryptPasswordHasher } from './auth/bcrypt-password-hasher';
 import { CryptoSecureTokenGenerator } from './auth/crypto-secure-token.generator';
 import { JwtAccessTokenService } from './auth/jwt-access-token.service';
+import { BrevoMailer } from './mail/brevo-mailer';
 import { ConsoleMailer } from './mail/console-mailer';
 import { PrismaService } from './prisma/prisma.service';
+import { PrismaKpiSource } from './prisma/repositories/prisma-kpi.source';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
 import { PrismaOutfitRepository } from './prisma/repositories/prisma-outfit.repository';
 import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token.repository';
@@ -96,6 +99,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     },
     { provide: CITY_GEOCODER, useExisting: OPENWEATHERMAP_CLIENT },
     { provide: OUTFIT_REPOSITORY, useClass: PrismaOutfitRepository },
+    { provide: KPI_SOURCE, useClass: PrismaKpiSource },
     { provide: IMAGE_PROCESSOR, useClass: SharpImageProcessor },
     {
       provide: FILE_STORAGE,
@@ -137,7 +141,18 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     },
     { provide: SECURE_TOKEN_GENERATOR, useClass: CryptoSecureTokenGenerator },
     { provide: CLOCK, useClass: SystemClock },
-    { provide: MAILER, useClass: ConsoleMailer },
+    {
+      provide: MAILER,
+      inject: [ConfigService],
+      useFactory: (config: Config) =>
+        config.get('MAIL_DRIVER', { infer: true }) === 'brevo'
+          ? new BrevoMailer({
+              apiKey: config.get('BREVO_API_KEY', { infer: true }),
+              from: config.get('MAIL_FROM', { infer: true }),
+              fromName: config.get('MAIL_FROM_NAME', { infer: true }),
+            })
+          : new ConsoleMailer(),
+    },
     {
       provide: PASSWORD_HASHER,
       inject: [ConfigService],
@@ -174,6 +189,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     STYLE_PROFILE_REPOSITORY,
     WARDROBE_PHOTO_REPOSITORY,
     OUTFIT_REPOSITORY,
+    KPI_SOURCE,
     WEATHER_SETTINGS_REPOSITORY,
     WEATHER_PROVIDER,
     CITY_GEOCODER,

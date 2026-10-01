@@ -10,3 +10,6 @@ process.env.STORAGE_BUCKET ??= 'klotho-test';
 process.env.STORAGE_ACCESS_KEY_ID ??= 'test';
 process.env.STORAGE_SECRET_ACCESS_KEY ??= 'test';
 process.env.STORAGE_CREATE_BUCKET = 'false';
+// Limits are tested by rate-limit.e2e-spec.ts with its own settings.
+process.env.RATE_LIMIT_ENABLED = 'false';
+process.env.LOG_HTTP_REQUESTS = 'false';

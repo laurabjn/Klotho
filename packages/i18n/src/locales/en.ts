@@ -2,6 +2,7 @@ import type { TranslationResource } from './fr';
 import { onboardingEn, preferencesEn } from './preferences.en';
 import { wardrobeEn } from './wardrobe.en';
 import { outfitsEn } from './outfits.en';
+import { privacyEn } from './privacy.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -39,6 +40,8 @@ export const en: TranslationResource = {
       body: 'Join Klotho for a personal, inspiring and stylish experience.',
       submit: 'Create my account',
       haveAccount: 'I already have an account',
+      consent: 'By creating your account, you accept our privacy policy.',
+      privacy: 'Read the privacy policy',
     },
     forgotPassword: {
       title: 'Forgot password',
@@ -91,6 +94,7 @@ export const en: TranslationResource = {
   preferences: preferencesEn,
   weather: weatherEn,
   outfits: outfitsEn,
+  privacy: privacyEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',
@@ -240,7 +244,11 @@ export const en: TranslationResource = {
       locationMissing: 'Choose a city or allow location to see the weather.',
     },
     validation: { failed: 'Some fields are invalid.' },
-    request: { tooMany: 'Too many attempts. Try again in a few minutes.' },
+    request: {
+      tooMany: 'Too many attempts. Try again in a few minutes.',
+      rateLimited: 'Too many attempts. Try again in a few minutes.',
+    },
+    users: { invalidPassword: 'Wrong password.' },
     network:
       'Cannot reach the server. Check your internet connection and try again.',
     unknown: 'Something went wrong. Try again in a moment.',

@@ -70,6 +70,11 @@ export async function signOut(): Promise<void> {
   await endSession();
 }
 
+/** After the account was deleted: nothing left to revoke on the server. */
+export function forgetDeletedAccount(): Promise<void> {
+  return endSession();
+}
+
 /** At startup: turns a stored refresh token back into a signed-in session. */
 export async function restoreSession(): Promise<void> {
   const accessToken = await refreshSession();

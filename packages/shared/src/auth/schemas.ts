@@ -88,6 +88,11 @@ export const updateProfileSchema = z.object({
     .optional(),
 });
 
+/** DELETE /users/me: the current password confirms the deletion of the account. */
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, { error: 'errors.password.required' }),
+});
+
 // Form variants: the confirmation field only exists client-side.
 
 const confirmationMatches = {
@@ -117,3 +122,4 @@ export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;

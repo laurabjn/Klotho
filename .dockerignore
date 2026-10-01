@@ -1,0 +1,14 @@
+# Docker build context of the API image (apps/api/Dockerfile).
+**/node_modules
+**/dist
+**/.scripts
+**/.turbo
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example
+.git
+Klotho_maquette
+# The mobile app: only its manifest (npm workspaces need it).
+apps/mobile/*
+!apps/mobile/package.json

@@ -1,4 +1,4 @@
-import { validateEnv } from './env';
+import { logFormat, validateEnv } from './env';
 
 const validEnv = {
   DATABASE_URL: 'postgresql://klotho:klotho@localhost:5432/klotho',
@@ -21,6 +21,7 @@ describe('validateEnv', () => {
       RESET_PASSWORD_URL: 'klotho://reset-password',
       BCRYPT_COST: 12,
       MAIL_DRIVER: 'console',
+      MAIL_FROM_NAME: 'Klotho',
       STORAGE_REGION: 'auto',
       STORAGE_CREATE_BUCKET: false,
       PHOTO_URL_TTL_SECONDS: 3600,
@@ -28,7 +29,32 @@ describe('validateEnv', () => {
       UPLOAD_MAX_BYTES: 10 * 1024 * 1024,
       WEATHER_TIMEOUT_MS: 5000,
       WEATHER_CACHE_TTL_SECONDS: 600,
+      TRUST_PROXY: 0,
+      LOG_HTTP_REQUESTS: true,
+      RATE_LIMIT_ENABLED: true,
+      RATE_LIMIT_LOGIN: { limit: 10, ttlSeconds: 60 },
+      RATE_LIMIT_REGISTER: { limit: 5, ttlSeconds: 60 },
+      RATE_LIMIT_FORGOT_PASSWORD: { limit: 5, ttlSeconds: 900 },
+      RATE_LIMIT_RESET_PASSWORD: { limit: 10, ttlSeconds: 900 },
+      RATE_LIMIT_REFRESH: { limit: 30, ttlSeconds: 60 },
+      RATE_LIMIT_UPLOADS: { limit: 30, ttlSeconds: 60 },
     });
+  });
+
+  it('parses rate limits as <requests>/<seconds>', () => {
+    const env = validateEnv({ ...validEnv, RATE_LIMIT_LOGIN: '3/300' });
+    expect(env.RATE_LIMIT_LOGIN).toEqual({ limit: 3, ttlSeconds: 300 });
+    expect(() =>
+      validateEnv({ ...validEnv, RATE_LIMIT_LOGIN: '10 per minute' }),
+    ).toThrow(/RATE_LIMIT_LOGIN/);
+  });
+
+  it('logs JSON in production, readable text elsewhere, unless told', () => {
+    expect(logFormat({ NODE_ENV: 'production' })).toBe('json');
+    expect(logFormat({ NODE_ENV: 'development' })).toBe('pretty');
+    expect(logFormat({ NODE_ENV: 'production', LOG_FORMAT: 'pretty' })).toBe(
+      'pretty',
+    );
   });
 
   it('coerces numbers and booleans from strings', () => {
@@ -80,6 +106,20 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ ...validEnv, NODE_ENV: 'production' })).toThrow(
       /OPENWEATHER_API_KEY/,
     );
+  });
+
+  it('needs the Brevo key and a sender for Brevo', () => {
+    expect(() => validateEnv({ ...validEnv, MAIL_DRIVER: 'brevo' })).toThrow(
+      /MAIL_DRIVER/,
+    );
+    expect(
+      validateEnv({
+        ...validEnv,
+        MAIL_DRIVER: 'brevo',
+        BREVO_API_KEY: 'key',
+        MAIL_FROM: 'contact@klotho.test',
+      }).MAIL_DRIVER,
+    ).toBe('brevo');
   });
 
   it('refuses the console mailer in production', () => {

@@ -111,6 +111,8 @@ model WardrobeItem {
   @@index([userId, category, status])
   @@index([userId, createdAt])
   @@index([userId, lastWornAt])
+  /// "Most / least worn" sorts of the wardrobe list.
+  @@index([userId, wearCount])
 }
 
 /// Only the storage key is kept; the app receives short-lived signed URLs.

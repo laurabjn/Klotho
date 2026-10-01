@@ -40,7 +40,9 @@ export function groupByRole(
   for (const item of candidates) {
     const role = ROLE_OF[item.category];
     if (!role) continue;
-    byRole.set(role, [...(byRole.get(role) ?? []), item]);
+    const items = byRole.get(role);
+    if (items) items.push(item);
+    else byRole.set(role, [item]);
   }
   return byRole;
 }
@@ -64,12 +66,25 @@ export function buildCombinations(
     if (role && !imposedByRole.has(role)) imposedByRole.set(role, item);
   }
 
+  // Each pool is ranked once (pools are read inside the nested loops).
+  const pools = new Map<OutfitRole, OutfitCandidate[]>();
   const pool = (role: OutfitRole): OutfitCandidate[] => {
+    const cached = pools.get(role);
+    if (cached) return cached;
     const forced = imposedByRole.get(role);
-    if (forced) return [forced];
-    return [...(byRole.get(role) ?? [])]
-      .sort((a, b) => options.rank(b) - options.rank(a))
-      .slice(0, options.maxPerRole);
+    let result: OutfitCandidate[];
+    if (forced) {
+      result = [forced];
+    } else {
+      const ranks = new Map(
+        (byRole.get(role) ?? []).map((item) => [item, options.rank(item)]),
+      );
+      result = [...ranks.keys()]
+        .sort((a, b) => ranks.get(b)! - ranks.get(a)!)
+        .slice(0, options.maxPerRole);
+    }
+    pools.set(role, result);
+    return result;
   };
 
   const bases: OutfitPiece[][] = [];

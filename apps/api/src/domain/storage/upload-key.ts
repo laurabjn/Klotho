@@ -6,12 +6,17 @@
 const PATTERN =
   /^users\/([^/]+)\/photos\/[0-9a-f-]{36}_(\d{1,5})x(\d{1,5})\.jpg$/;
 
+/** Every file of a user lives under this prefix (account deletion). */
+export function userStoragePrefix(userId: string): string {
+  return `users/${userId}/`;
+}
+
 export function buildUploadKey(
   userId: string,
   id: string,
   size: { width: number; height: number },
 ): string {
-  return `users/${userId}/photos/${id}_${size.width}x${size.height}.jpg`;
+  return `${userStoragePrefix(userId)}photos/${id}_${size.width}x${size.height}.jpg`;
 }
 
 /** Returns null when the key is malformed or belongs to another user. */

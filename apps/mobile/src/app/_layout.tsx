@@ -6,13 +6,15 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
 import { restoreSession, useAuthStore } from '@/features/auth/store/auth.store';
+import { initMonitoring, wrapRoot } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
 import { useAppFonts } from '@/theme/fonts';
 import { colors } from '@/theme/tokens';
 
 void SplashScreen.preventAutoHideAsync();
+initMonitoring();
 
-export default function RootLayout() {
+function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   const fontsReady = useAppFonts();
   const status = useAuthStore((state) => state.status);
@@ -47,8 +49,12 @@ export default function RootLayout() {
         {/* Reachable in both states: opened from the reset email. */}
         <Stack.Screen name="reset-password" />
         <Stack.Screen name="password-changed" />
+        <Stack.Screen name="privacy" />
       </Stack>
       <StatusBar style="dark" />
     </QueryClientProvider>
   );
 }
+
+// Crash reporting around the whole app.
+export default wrapRoot(RootLayout);

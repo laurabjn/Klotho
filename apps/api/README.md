@@ -47,6 +47,7 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | POST   | `/auth/reset-password`                       | yes    | 204 · 400 invalid or expired token                                                                                      |
 | GET    | `/users/me`                                  | no     | `UserProfile`                                                                                                           |
 | PATCH  | `/users/me`                                  | no     | `UserProfile` (only `firstName`, `avatarUrl`)                                                                           |
+| DELETE | `/users/me`                                  | no     | 204: `{ password }`, deletes the account, its data and its photos · 403 `users.invalidPassword`                         |
 | GET    | `/preferences/me`                            | no     | `StyleProfile` (empty + `onboardingCompleted: false` for a new account)                                                 |
 | PUT    | `/preferences/me`                            | no     | `StyleProfile` (replaces it; completes the onboarding)                                                                  |
 | GET    | `/weather/current?latitude=&longitude=`      | no     | `CurrentWeather` (position rounded to ~1 km, never stored; without it: saved city, else 422)                            |
@@ -58,7 +59,7 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | GET    | `/outfits/history?from=&to=&page=&pageSize=` | no     | `Page<OutfitWear>`, last worn first; `from` / `to` are inclusive days (YYYY-MM-DD)                                      |
 | DELETE | `/outfits/history/:wearId`                   | no     | 204: undoes a wear and the usage it added to the pieces · 404 `outfits.wearNotFound`                                    |
 | GET    | `/outfits/:id`                               | no     | `Outfit` (pieces with photos, highlights, `isFavorite`, `feedback`, `lastWornOn`; never the raw score)                  |
-| GET    | `/outfits/:id/alternatives?role=`            | no     | `OutfitAlternative[]`: pieces for that role, best first, `compatible`                                                   |
+| GET    | `/outfits/:id/alternatives?role=`            | no     | `OutfitAlternative[]`: pieces for that role, best first (30 max), `compatible`                                          |
 | POST   | `/outfits/:id/replace-item`                  | no     | `Outfit` with the piece swapped and scored again (saved)                                                                |
 | POST   | `/outfits/:id/variant`                       | no     | new `Outfit` keeping `lockedItemIds`, never a look already seen or disliked                                             |
 | POST   | `/outfits/:id/feedback`                      | no     | 200 `Outfit`: `{ rating: like\|dislike, reasons?, note? }`, one per look (the last wins; a like keeps no reason)        |
@@ -129,6 +130,91 @@ Local storage: `npm run db:up` also starts RustFS on port 9010
   stored. Replaying a used token revokes the whole session (theft detection).
 - Password reset: single-use token valid 1 hour; a reset signs out every device.
 - Login and forgot-password never reveal whether an account exists.
+- Every route requires a token unless listed as public above; a token of a
+  deleted account is refused (401). `test/routes-auth.e2e-spec.ts` walks
+  every registered route and checks it.
+
+### Account deletion (RGPD)
+
+`DELETE /users/me` with `{ password }` (403 `users.invalidPassword` when
+wrong; 401 is kept for expired sessions). The database cascade removes the
+sessions, reset tokens, pieces, photo rows, style profile, weather settings,
+looks, opinions and wears. Then every file of the user is removed from the
+storage: the photos of her pieces and her uploads never attached
+(`users/<id>/` prefix). The storage step is best effort: a failure is logged
+(error name only, no key or URL) and never keeps the data in the database.
+
+### Rate limiting
+
+Per client IP, in memory (one API instance; several would need a shared
+store such as Redis). Beyond the limit: 429
+`{ statusCode: 429, code: 'request.rateLimited' }` and a `Retry-After`
+header (seconds).
+
+| Route(s)                                          | Variable                     | Default             |
+| ------------------------------------------------- | ---------------------------- | ------------------- |
+| `POST /auth/login`, `DELETE /users/me`            | `RATE_LIMIT_LOGIN`           | `10/60` (10 a min.) |
+| `POST /auth/register`                             | `RATE_LIMIT_REGISTER`        | `5/60`              |
+| `POST /auth/forgot-password`                      | `RATE_LIMIT_FORGOT_PASSWORD` | `5/900` (15 min.)   |
+| `POST /auth/reset-password`                       | `RATE_LIMIT_RESET_PASSWORD`  | `10/900`            |
+| `POST /auth/refresh`                              | `RATE_LIMIT_REFRESH`         | `30/60`             |
+| `POST /uploads/wardrobe` (per IP and per account) | `RATE_LIMIT_UPLOADS`         | `30/60`             |
+
+Values are `<requests>/<seconds>`. `RATE_LIMIT_ENABLED=false` turns it off
+(e2e tests do, except `rate-limit.e2e-spec.ts`). Behind a reverse proxy, set
+`TRUST_PROXY` to the number of proxies so that the client IP is read from
+`X-Forwarded-For`.
+
+### Logs
+
+- `LOG_FORMAT=json` (default in production): one JSON object per line
+  (`level`, `timestamp`, `context`, `message` and structured fields).
+  `pretty` (default elsewhere): Nest's readable output.
+- One line per HTTP request (`LOG_HTTP_REQUESTS`, on by default): method,
+  route pattern (`/outfits/:id`, never ids or query strings), status,
+  duration and a request id, also sent back as `X-Request-Id` (an incoming
+  well-formed `X-Request-Id` is kept). Headers, cookies and bodies are never
+  logged; unhandled errors are logged with the request id.
+- Every message, field and stack trace goes through a redaction
+  (`src/infrastructure/logging/redaction.ts`): passwords, tokens, secrets,
+  authorization, cookies, API keys, `Bearer` values, JWTs and signed URL
+  parameters become `[REDACTED]`.
+- Exception: the development `ConsoleMailer` prints reset links on stdout
+  (refused in production).
+
+### Pagination and bounds
+
+Lists are paginated: `/wardrobe` (100 max a page), `/outfits` (50),
+`/outfits/history` (100). Other answers are bounded: 5 looks a generation,
+30 alternatives, 5 cities. The engine reads the whole wardrobe and the
+user's opinions (indexed by user). Indexes cover every list query: wardrobe
+by user + category/status, creation date, last worn date and wear count;
+looks by user + creation date and favourites; wears by user + day; opinions
+by user.
+
+### Outfit engine performance
+
+`npm run profile:generation -w @klotho/api` times `OutfitGeneratorService`
+on deterministic synthetic wardrobes (with 60 past opinions). Measured on a
+development laptop (Node 24, 20 runs after warm-up):
+
+| Pieces | Median (plain day / styled, rain) | p95 (plain / styled) |
+| ------ | --------------------------------- | -------------------- |
+| 100    | 39 ms / 36 ms                     | 47 ms / 39 ms        |
+| 300    | 104 ms / 112 ms                   | 146 ms / 137 ms      |
+| 1000   | 112 ms / 112 ms                   | 122 ms / 128 ms      |
+
+The work is bounded by `maxPerRole` (10 best pieces per role before
+combining), so it barely grows past 300 pieces. Sprint 9 made it about 2.5×
+faster (before: 73 / 231 / 261 ms) by ranking each role once and computing
+the diversity distances incrementally; results are unchanged.
+
+### KPIs
+
+`npm run kpis -w @klotho/api [-- --json]` prints aggregates only (no email,
+name or id): users, users with a first look and the median time from
+sign-up to it, looks generated, like rate (likes / rated looks), looks worn
+(total, last 7 and 30 days), favourite looks and pieces.
 
 ### Password reset emails
 
@@ -139,17 +225,19 @@ in a development or store build the default `klotho://reset-password` works.
 
 ## Scripts
 
-| Script         | Purpose                                                                         |
-| -------------- | ------------------------------------------------------------------------------- |
-| `dev`          | Start in watch mode                                                             |
-| `test`         | Unit tests (`*.spec.ts`)                                                        |
-| `test:e2e`     | HTTP tests on a real database `klotho_test` (created if missing)                |
-| `db:generate`  | Generate the Prisma client                                                      |
-| `db:migrate`   | Create and apply a migration (development)                                      |
-| `db:deploy`    | Apply pending migrations (CI / production)                                      |
-| `db:studio`    | Browse the database                                                             |
-| `db:seed:demo` | (Re)create the demo account `demo@klotho.fr` / `Klotho2026!` (development only) |
-| `outfits:demo` | Run the outfit engine for an account and print the looks                        |
+| Script               | Purpose                                                                         |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `dev`                | Start in watch mode                                                             |
+| `test`               | Unit tests (`*.spec.ts`)                                                        |
+| `test:e2e`           | HTTP tests on a real database `klotho_test` (created if missing)                |
+| `db:generate`        | Generate the Prisma client                                                      |
+| `db:migrate`         | Create and apply a migration (development)                                      |
+| `db:deploy`          | Apply pending migrations (CI / production)                                      |
+| `db:studio`          | Browse the database                                                             |
+| `db:seed:demo`       | (Re)create the demo account `demo@klotho.fr` / `Klotho2026!` (development only) |
+| `outfits:demo`       | Run the outfit engine for an account and print the looks                        |
+| `profile:generation` | Time the outfit engine on 100, 300 and 1000 pieces (`--runs`, `--sizes`)        |
+| `kpis`               | Print the beta KPIs (aggregates only; `--json`)                                 |
 
 ### Demo data
 

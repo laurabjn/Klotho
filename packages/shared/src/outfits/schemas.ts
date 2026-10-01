@@ -232,6 +232,9 @@ export interface OutfitWear {
   outfit: Outfit;
 }
 
+/** GET /outfits/:id/alternatives returns at most this many pieces, best first. */
+export const OUTFIT_ALTERNATIVES_MAX = 30;
+
 /** A piece that could replace another one in a look. */
 export interface OutfitAlternative {
   item: WardrobeItem;

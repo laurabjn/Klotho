@@ -22,6 +22,7 @@ import { LogoutUseCase } from '../../../application/auth/logout.use-case';
 import { RefreshTokenUseCase } from '../../../application/auth/refresh-token.use-case';
 import { RegisterUseCase } from '../../../application/auth/register.use-case';
 import { ResetPasswordUseCase } from '../../../application/auth/reset-password.use-case';
+import { RateLimit } from '../rate-limit/rate-limit.decorator';
 import { ZodValidationPipe } from '../validation/zod-validation.pipe';
 import { Public } from './public.decorator';
 
@@ -38,6 +39,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @RateLimit('register')
   register(
     @Body(new ZodValidationPipe(registerSchema)) body: RegisterInput,
   ): Promise<AuthSession> {
@@ -45,6 +47,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @RateLimit('login')
   @HttpCode(HttpStatus.OK)
   login(
     @Body(new ZodValidationPipe(loginSchema)) body: LoginInput,
@@ -53,6 +56,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @RateLimit('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(
     @Body(new ZodValidationPipe(refreshTokenSchema)) body: RefreshTokenInput,
@@ -70,6 +74,7 @@ export class AuthController {
 
   /** Always 202, whether the email exists or not. */
   @Post('forgot-password')
+  @RateLimit('forgotPassword')
   @HttpCode(HttpStatus.ACCEPTED)
   forgotPassword(
     @Body(new ZodValidationPipe(forgotPasswordSchema))
@@ -79,6 +84,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @RateLimit('resetPassword')
   @HttpCode(HttpStatus.NO_CONTENT)
   resetPassword(
     @Body(new ZodValidationPipe(resetPasswordSchema)) body: ResetPasswordInput,

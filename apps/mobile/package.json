@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node ../../scripts/run-jest.cjs",
     "start:dev-client": "expo start --dev-client",
-    "build:dev:android": "npx eas-cli@latest build --profile development --platform android"
+    "build:dev:android": "npx eas-cli@latest build --profile development --platform android",
+    "build:preview:android": "npx eas-cli@latest build --profile preview --platform android"
   },
   "jest": {
     "preset": "jest-expo",
@@ -33,6 +34,7 @@
     "@klotho/i18n": "*",
     "@klotho/shared": "*",
     "@react-native-community/slider": "5.2.0",
+    "@sentry/react-native": "~7.11.0",
     "@tanstack/react-query": "^5.104.0",
     "expo": "~57.0.26",
     "expo-constants": "~57.0.20",

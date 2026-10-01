@@ -4,12 +4,16 @@ import {
   GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
+
+/** DeleteObjects accepts at most 1000 keys per call. */
+const DELETE_BATCH = 1000;
 
 export interface S3StorageConfig {
   endpoint: string;
@@ -74,13 +78,40 @@ export class S3FileStorage implements FileStorage {
   }
 
   async delete(keys: string[]): Promise<void> {
-    if (keys.length === 0) return;
-    await this.client.send(
-      new DeleteObjectsCommand({
-        Bucket: this.config.bucket,
-        Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
-      }),
-    );
+    for (let start = 0; start < keys.length; start += DELETE_BATCH) {
+      const batch = keys.slice(start, start + DELETE_BATCH);
+      const result = await this.client.send(
+        new DeleteObjectsCommand({
+          Bucket: this.config.bucket,
+          Delete: { Objects: batch.map((Key) => ({ Key })), Quiet: true },
+        }),
+      );
+      // Partial failures do not throw: report them (counts only, no key).
+      if (result.Errors?.length) {
+        throw new Error(
+          `${result.Errors.length} of ${batch.length} objects not deleted`,
+        );
+      }
+    }
+  }
+
+  async list(prefix: string): Promise<string[]> {
+    const keys: string[] = [];
+    let token: string | undefined;
+    do {
+      const page = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.config.bucket,
+          Prefix: prefix,
+          ContinuationToken: token,
+        }),
+      );
+      for (const object of page.Contents ?? []) {
+        if (object.Key) keys.push(object.Key);
+      }
+      token = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (token);
+    return keys;
   }
 
   signedUrl(key: string): Promise<string> {

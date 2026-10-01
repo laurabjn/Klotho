@@ -2,14 +2,16 @@
   "expo": {
     "name": "Klotho",
     "slug": "klotho",
-    "version": "0.0.1",
+    "version": "0.9.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.laurabjn.klotho"
     },
     "android": {
+      "package": "com.laurabjn.klotho",
       "adaptiveIcon": {
         "backgroundColor": "#FBF7F2",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -51,7 +53,8 @@
         {
           "locationWhenInUsePermission": "Klotho utilise ta position uniquement pour connaître la météo locale. Elle n’est jamais enregistrée."
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "scheme": "klotho"
   }

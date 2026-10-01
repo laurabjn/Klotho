@@ -86,6 +86,10 @@ export class InMemoryUserRepository implements UserRepository {
     return Promise.resolve(updated);
   }
 
+  delete(id: string): Promise<boolean> {
+    return Promise.resolve(this.users.delete(id));
+  }
+
   updatePasswordHash(id: string, passwordHash: string): Promise<void> {
     const user = this.users.get(id);
     if (!user) return Promise.reject(new UserNotFoundError());
