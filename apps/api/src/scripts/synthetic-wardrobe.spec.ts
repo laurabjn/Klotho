@@ -18,11 +18,9 @@ describe('syntheticWardrobe', () => {
 });
 
 describe('Outfit engine on a 1000-piece wardrobe', () => {
-  it('still proposes 5 distinct looks, well under a second', () => {
+  it('still proposes 5 distinct looks', () => {
     const wardrobe = syntheticWardrobe(1000);
     const engine = new OutfitGeneratorService();
-    const start = performance.now();
-
     const looks = engine.generate(wardrobe, {
       context: {
         temperature: 16,
@@ -37,8 +35,8 @@ describe('Outfit engine on a 1000-piece wardrobe', () => {
       },
     });
 
-    // Measured around 0.1 s (npm run profile:generation); generous bound for CI.
-    expect(performance.now() - start).toBeLessThan(2000);
+    // Speed is measured by `npm run profile:generation`, not here: a shared
+    // CI machine is too irregular for a time limit in a unit test.
     expect(looks).toHaveLength(5);
     expect(new Set(looks.map((look) => look.key)).size).toBe(5);
   });
