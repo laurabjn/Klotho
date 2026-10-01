@@ -4,7 +4,7 @@ import { InvalidCredentialsError } from '../../domain/auth/errors';
 import type { PasswordHasher } from '../../domain/auth/ports/password-hasher';
 import { normalizeEmail } from '../../domain/users/entities/user.entity';
 import type { UserRepository } from '../../domain/users/ports/user.repository';
-import { toUserProfile } from '../users/user-profile.mapper';
+import type { UserProfilePresenter } from '../users/user-profile.presenter';
 import type { SessionIssuer } from './session-issuer';
 
 export class LoginUseCase {
@@ -12,6 +12,7 @@ export class LoginUseCase {
     private readonly users: UserRepository,
     private readonly hasher: PasswordHasher,
     private readonly sessions: SessionIssuer,
+    private readonly profiles: UserProfilePresenter,
   ) {}
 
   async execute(input: LoginInput): Promise<AuthSession> {
@@ -26,7 +27,7 @@ export class LoginUseCase {
       throw new InvalidCredentialsError();
     }
     return {
-      user: toUserProfile(user),
+      user: await this.profiles.present(user),
       tokens: await this.sessions.issue(user.id),
     };
   }

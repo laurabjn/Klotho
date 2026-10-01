@@ -173,8 +173,9 @@ const styles = StyleSheet.create({
   container: { gap: spacing.md },
   families: { gap: spacing.sm, paddingVertical: 2 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: spacing.md },
-  cell: { width: '20%', alignItems: 'center', gap: spacing.xs },
-  cellLarge: { width: '25%' },
+  // Just under 1/5: rounded to the pixel, five 20 % cells may not fit a row.
+  cell: { width: '19.9%', alignItems: 'center', gap: spacing.xs },
+  cellLarge: { width: '24.9%' },
   line: { gap: spacing.xs, paddingVertical: 2 },
   cellRow: { width: 76 },
   swatchLarge: { width: 64, height: 64 },

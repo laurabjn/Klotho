@@ -76,6 +76,8 @@ const PUBLIC_ROUTES = [
   'POST /auth/logout',
   'POST /auth/forgot-password',
   'POST /auth/reset-password',
+  // The confirmation link may be opened while signed out.
+  'POST /auth/confirm-email',
 ].sort();
 
 const label = (route: Route) => `${route.method} ${route.path}`;

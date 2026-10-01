@@ -16,6 +16,7 @@ import type {
 } from '../domain/auth/ports/refresh-token.repository';
 import type { SecureTokenGenerator } from '../domain/auth/ports/secure-token.generator';
 import type {
+  EmailChangeConfirmationEmail,
   Mailer,
   PasswordResetEmail,
 } from '../domain/notifications/ports/mailer';
@@ -29,6 +30,11 @@ import {
   EmailAlreadyUsedError,
   UserNotFoundError,
 } from '../domain/users/errors';
+import type {
+  EmailChangeTokenRecord,
+  EmailChangeTokenRepository,
+  NewEmailChangeToken,
+} from '../domain/users/ports/email-change-token.repository';
 import type { UserRepository } from '../domain/users/ports/user.repository';
 
 export class FixedClock implements Clock {
@@ -70,7 +76,8 @@ export class InMemoryUserRepository implements UserRepository {
     const created: User = {
       ...user,
       id: `user-${++this.sequence}`,
-      avatarUrl: null,
+      bio: null,
+      avatarKey: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -82,6 +89,19 @@ export class InMemoryUserRepository implements UserRepository {
     const user = this.users.get(id);
     if (!user) return Promise.reject(new UserNotFoundError());
     const updated = { ...user, ...changes, updatedAt: this.clock.now() };
+    this.users.set(id, updated);
+    return Promise.resolve(updated);
+  }
+
+  updateEmail(id: string, email: string): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) return Promise.reject(new UserNotFoundError());
+    if (
+      [...this.users.values()].some((u) => u.email === email && u.id !== id)
+    ) {
+      return Promise.reject(new EmailAlreadyUsedError());
+    }
+    const updated = { ...user, email, updatedAt: this.clock.now() };
     this.users.set(id, updated);
     return Promise.resolve(updated);
   }
@@ -218,11 +238,57 @@ export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenR
   }
 }
 
+export class InMemoryEmailChangeTokenRepository implements EmailChangeTokenRepository {
+  tokens: EmailChangeTokenRecord[] = [];
+  private sequence = 0;
+
+  replaceForUser(token: NewEmailChangeToken): Promise<EmailChangeTokenRecord> {
+    this.tokens = this.tokens.filter((t) => t.userId !== token.userId);
+    const record = { ...token, id: `ect-${++this.sequence}` };
+    this.tokens.push(record);
+    return Promise.resolve({ ...record });
+  }
+
+  findByHash(tokenHash: string): Promise<EmailChangeTokenRecord | null> {
+    const found = this.tokens.find((t) => t.tokenHash === tokenHash);
+    return Promise.resolve(found ? { ...found } : null);
+  }
+
+  findPendingForUser(
+    userId: string,
+    now: Date,
+  ): Promise<EmailChangeTokenRecord | null> {
+    const found = this.tokens.find(
+      (t) => t.userId === userId && t.expiresAt > now,
+    );
+    return Promise.resolve(found ? { ...found } : null);
+  }
+
+  consume(id: string): Promise<boolean> {
+    const before = this.tokens.length;
+    this.tokens = this.tokens.filter((t) => t.id !== id);
+    return Promise.resolve(this.tokens.length < before);
+  }
+
+  deleteAllForUser(userId: string): Promise<void> {
+    this.tokens = this.tokens.filter((t) => t.userId !== userId);
+    return Promise.resolve();
+  }
+}
+
 export class SpyMailer implements Mailer {
   readonly passwordResets: PasswordResetEmail[] = [];
+  readonly emailChanges: EmailChangeConfirmationEmail[] = [];
 
   sendPasswordReset(email: PasswordResetEmail): Promise<void> {
     this.passwordResets.push(email);
+    return Promise.resolve();
+  }
+
+  sendEmailChangeConfirmation(
+    email: EmailChangeConfirmationEmail,
+  ): Promise<void> {
+    this.emailChanges.push(email);
     return Promise.resolve();
   }
 }

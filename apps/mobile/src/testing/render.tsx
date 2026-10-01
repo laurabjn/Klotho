@@ -24,7 +24,9 @@ export const session = {
     id: 'user-1',
     email: 'laura@example.com',
     firstName: 'Laura',
+    bio: null,
     avatarUrl: null,
+    pendingEmail: null,
     createdAt: '2026-10-01T08:00:00.000Z',
   },
   tokens: {

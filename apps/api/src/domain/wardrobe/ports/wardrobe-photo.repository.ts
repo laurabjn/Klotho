@@ -17,6 +17,8 @@ export interface WardrobePhotoRepository {
   /** Deletes the photo and, if it was the main one, promotes the next one. */
   remove(itemId: string, photoId: string): Promise<void>;
   setMain(itemId: string, photoId: string): Promise<void>;
+  /** Whether an upload is already the photo of a piece (of any user). */
+  isStorageKeyUsed(storageKey: string): Promise<boolean>;
 }
 
 export const WARDROBE_PHOTO_REPOSITORY = Symbol('WardrobePhotoRepository');

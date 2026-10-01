@@ -76,6 +76,9 @@ export function MeScreen() {
       saveWeather.mutate({ ...weather.data, temperatureUnit });
   };
   const openPreferences = () => router.push('/preferences');
+  const openStyles = () => router.push('/styles');
+  const openPalette = () => router.push('/palette');
+  const editProfile = () => router.push('/profile/edit');
 
   // The identity card follows the mockup when it really fits: measured on
   // the phone, with its own text size, instead of guessed from the screen.
@@ -99,7 +102,7 @@ export function MeScreen() {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={t('profile.edit')}
-      onPress={soon}
+      onPress={editProfile}
       style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
     >
       <Ionicons name="pencil-outline" size={15} color={colors.primary} />
@@ -157,7 +160,7 @@ export function MeScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('profile.editPhoto')}
-                onPress={soon}
+                onPress={editProfile}
                 hitSlop={6}
                 style={styles.pencil}
               >
@@ -179,7 +182,7 @@ export function MeScreen() {
                 </View>
               )}
               <AppText variant="overline" numberOfLines={2} style={styles.bio}>
-                {user?.email}
+                {user?.bio || user?.email}
               </AppText>
               {nameWraps && editButton}
               {statsBeside && statsRow}
@@ -193,7 +196,7 @@ export function MeScreen() {
             variant="heading"
             title={t('profile.styles')}
             aside={t('profile.seeAll')}
-            onAside={openPreferences}
+            onAside={openStyles}
           />
           <AppText variant="overline">{t('profile.stylesOverline')}</AppText>
           {/* A summary: editing happens in "Mes préférences", never by accident. */}
@@ -205,8 +208,8 @@ export function MeScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('profile.styles')}
-              accessibilityHint={t('preferences.open')}
-              onPress={openPreferences}
+              accessibilityHint={t('settings.allStyles.title')}
+              onPress={openStyles}
               style={styles.row}
             >
               {preferredStyles.length === 0 ? (
@@ -231,7 +234,7 @@ export function MeScreen() {
             variant="heading"
             title={t('profile.colors')}
             aside={t('profile.seeAll')}
-            onAside={openPreferences}
+            onAside={openPalette}
           />
           <AppText variant="overline">{t('profile.colorsOverline')}</AppText>
           <ScrollView
@@ -242,8 +245,8 @@ export function MeScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('profile.colors')}
-              accessibilityHint={t('preferences.open')}
-              onPress={openPreferences}
+              accessibilityHint={t('settings.palette.title')}
+              onPress={openPalette}
               style={styles.swatches}
             >
               {preferredColors.map((color) => (
@@ -346,7 +349,7 @@ export function MeScreen() {
 
         <Card style={styles.menu}>
           <MenuRow
-            icon="cog-outline"
+            icon="tune-variant"
             label={t('preferences.open')}
             onPress={openPreferences}
           />
@@ -358,6 +361,12 @@ export function MeScreen() {
           />
           <View style={styles.separator} />
           <MenuRow
+            icon="cog-outline"
+            label={t('settings.open')}
+            onPress={() => router.push('/settings')}
+          />
+          <View style={styles.separator} />
+          <MenuRow
             icon="shield-check-outline"
             label={t('profile.privacy')}
             onPress={() => router.push('/privacy')}
@@ -366,7 +375,7 @@ export function MeScreen() {
           <MenuRow
             icon="help-circle-outline"
             label={t('profile.help')}
-            onPress={soon}
+            onPress={() => router.push('/help')}
           />
         </Card>
 

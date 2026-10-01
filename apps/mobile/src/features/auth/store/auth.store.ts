@@ -70,6 +70,11 @@ export async function signOut(): Promise<void> {
   await endSession();
 }
 
+/** The profile changed (name, photo, e-mail…): every screen follows. */
+export function updateUser(user: UserProfile): void {
+  useAuthStore.setState({ user });
+}
+
 /** After the account was deleted: nothing left to revoke on the server. */
 export function forgetDeletedAccount(): Promise<void> {
   return endSession();

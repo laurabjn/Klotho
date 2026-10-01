@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { weatherApi } from '../api/weather.api';
 import { getDevicePosition } from '../lib/device-position';
+import { useWeatherSyncStore } from '../store/weather-sync.store';
 import {
   currentWeatherKey,
   devicePositionKey,
@@ -11,6 +12,7 @@ import {
 
 /** The weather of a place barely changes in 10 minutes (the API caches too). */
 const FRESH_MS = 10 * 60_000;
+const REFRESH_MS = 30 * 60_000;
 
 export type CurrentWeatherState =
   | { status: 'loading' }
@@ -30,6 +32,8 @@ export function useCurrentWeather(): CurrentWeatherState & {
   retry: () => void;
 } {
   const settings = useWeatherSettings();
+  // "Synchronisation météo": refreshed every half hour, or only on demand.
+  const sync = useWeatherSyncStore((state) => state.enabled);
   const mode = settings.data?.locationMode ?? null;
   const city = settings.data?.city ?? null;
 
@@ -48,7 +52,8 @@ export function useCurrentWeather(): CurrentWeatherState & {
     queryKey: [...currentWeatherKey, useCity ? city : coords],
     queryFn: () => weatherApi.current(useCity ? undefined : coords!),
     enabled: coords !== null || useCity,
-    staleTime: FRESH_MS,
+    staleTime: sync ? FRESH_MS : Infinity,
+    refetchInterval: sync ? REFRESH_MS : false,
   });
 
   const unit = settings.data?.temperatureUnit ?? 'celsius';

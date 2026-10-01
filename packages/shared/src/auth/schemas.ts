@@ -80,12 +80,49 @@ export const resetPasswordSchema = z.object({
   password: passwordSchema,
 });
 
+export const BIO_MAX = 200;
+
 export const updateProfileSchema = z.object({
   firstName: firstNameSchema.optional(),
+  /** "Bio" of "Modifier mon profil"; an empty text removes it. */
+  bio: z
+    .string()
+    .trim()
+    .max(BIO_MAX, { error: 'errors.bio.tooLong' })
+    .nullable()
+    .optional()
+    .transform((value) => (value === '' ? null : value)),
   avatarUrl: z
     .url({ protocol: /^https$/, error: 'errors.avatarUrl.invalid' })
     .nullable()
     .optional(),
+});
+
+/** PUT /users/me/avatar: a photo uploaded with POST /uploads/wardrobe. */
+export const setAvatarSchema = z.object({
+  key: z.string().min(1).max(200),
+});
+
+/**
+ * POST /users/me/password: the current password, then the new one. Every
+ * other session is signed out; the answer is a fresh session.
+ */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, { error: 'errors.password.required' }),
+  newPassword: passwordSchema,
+});
+
+/**
+ * POST /users/me/email: a confirmation link is sent to the new address; the
+ * address changes once the link is opened (POST /auth/confirm-email).
+ */
+export const changeEmailSchema = z.object({
+  newEmail: emailSchema,
+  password: z.string().min(1, { error: 'errors.password.required' }),
+});
+
+export const confirmEmailChangeSchema = z.object({
+  token: z.string().min(1),
 });
 
 /** DELETE /users/me: the current password confirms the deletion of the account. */
@@ -112,7 +149,15 @@ export const resetPasswordFormSchema = z
   .object({ password: passwordSchema, confirmPassword: z.string() })
   .refine(confirmationMatches.check, confirmationMatches.params);
 
+export const changePasswordFormSchema = changePasswordSchema
+  .extend({ confirmPassword: z.string() })
+  .refine((value) => value.newPassword === value.confirmPassword, {
+    path: ['confirmPassword'],
+    error: 'errors.password.mismatch',
+  });
+
 export type RegisterFormInput = z.infer<typeof registerFormSchema>;
+export type ChangePasswordFormInput = z.infer<typeof changePasswordFormSchema>;
 export type ResetPasswordFormInput = z.infer<typeof resetPasswordFormSchema>;
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -121,5 +166,9 @@ export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
-export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type UpdateProfileInput = z.input<typeof updateProfileSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
+export type SetAvatarInput = z.infer<typeof setAvatarSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type ChangeEmailInput = z.input<typeof changeEmailSchema>;
+export type ConfirmEmailChangeInput = z.infer<typeof confirmEmailChangeSchema>;

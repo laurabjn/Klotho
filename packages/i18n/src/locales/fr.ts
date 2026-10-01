@@ -2,6 +2,7 @@ import { onboardingFr, preferencesFr } from './preferences.fr';
 import { wardrobeFr } from './wardrobe.fr';
 import { outfitsFr } from './outfits.fr';
 import { privacyFr } from './privacy.fr';
+import { settingsFr } from './settings.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -42,8 +43,9 @@ export const fr = {
       submit: 'Créer mon compte',
       haveAccount: "J'ai déjà un compte",
       consent:
-        'En créant ton compte, tu acceptes notre politique de confidentialité.',
+        'En créant ton compte, tu acceptes nos conditions générales et notre politique de confidentialité.',
       privacy: 'Lire la politique de confidentialité',
+      terms: 'Lire les conditions générales',
     },
     forgotPassword: {
       title: 'Mot de passe oublié',
@@ -97,6 +99,7 @@ export const fr = {
   weather: weatherFr,
   outfits: outfitsFr,
   privacy: privacyFr,
+  settings: settingsFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',
@@ -172,6 +175,7 @@ export const fr = {
       mismatch: 'Les mots de passe ne correspondent pas',
     },
     avatarUrl: { invalid: 'Image invalide' },
+    bio: { tooLong: '200 caractères maximum' },
     preferences: {
       metal: 'Métal inconnu',
       bottoms: 'Choix inconnu',
@@ -222,6 +226,8 @@ export const fr = {
     },
     auth: {
       emailAlreadyUsed: 'Un compte existe déjà avec cet email.',
+      invalidEmailToken:
+        'Ce lien de confirmation n’est plus valide. Refais la demande depuis tes paramètres.',
       invalidCredentials: 'Email ou mot de passe incorrect.',
       invalidRefreshToken: 'Ta session a expiré. Reconnecte-toi.',
       invalidResetToken:
@@ -256,7 +262,12 @@ export const fr = {
       tooMany: 'Trop de tentatives. Réessaie dans quelques minutes.',
       rateLimited: 'Trop de tentatives. Réessaie dans quelques minutes.',
     },
-    users: { invalidPassword: 'Mot de passe incorrect.' },
+    users: {
+      invalidPassword: 'Mot de passe incorrect.',
+      invalidAvatar:
+        'Cette photo ne peut pas être utilisée. Choisis-en une autre.',
+      sameEmail: 'C’est déjà ton adresse actuelle.',
+    },
     network:
       'Impossible de joindre le serveur. Vérifie ta connexion internet et réessaie.',
     unknown: 'Une erreur est survenue. Réessaie dans un instant.',

@@ -3,7 +3,11 @@ export interface UserProfile {
   id: string;
   email: string;
   firstName: string;
+  bio: string | null;
+  /** Signed link to the profile photo (expires), or null. */
   avatarUrl: string | null;
+  /** New address waiting for its confirmation link, if any. */
+  pendingEmail: string | null;
   createdAt: string;
 }
 

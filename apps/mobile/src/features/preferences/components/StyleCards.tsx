@@ -59,7 +59,7 @@ export function StyleCards({ value, onChange }: StyleCardsProps) {
   );
 }
 
-function StyleCard({
+export function StyleCard({
   style,
   label,
   selected,
@@ -130,7 +130,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginHorizontal: -GAP / 2,
   },
-  cell: { width: '33.333%', padding: GAP / 2 },
+  // Just under 1/3, so that rounding never pushes a card to the next row.
+  cell: { width: '33.2%', padding: GAP / 2 },
   card: {
     padding: 4,
     borderRadius: radii.input,

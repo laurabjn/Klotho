@@ -7,6 +7,8 @@ export interface UserRepository {
   create(user: NewUser): Promise<User>;
   updateProfile(id: string, changes: ProfileChanges): Promise<User>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
+  /** @throws EmailAlreadyUsedError when another account took the address meanwhile. */
+  updateEmail(id: string, email: string): Promise<User>;
   /**
    * Deletes the account and, by cascade, everything it owns (sessions,
    * wardrobe, photo rows, profile, settings, looks, feedback, wears).

@@ -20,6 +20,7 @@ import { MAILER } from '../domain/notifications/ports/mailer';
 import { CLOCK } from '../domain/shared/ports/clock';
 import { FILE_STORAGE } from '../domain/storage/ports/file-storage';
 import { IMAGE_PROCESSOR } from '../domain/storage/ports/image-processor';
+import { EMAIL_CHANGE_TOKEN_REPOSITORY } from '../domain/users/ports/email-change-token.repository';
 import { USER_REPOSITORY } from '../domain/users/ports/user.repository';
 import { WARDROBE_PHOTO_REPOSITORY } from '../domain/wardrobe/ports/wardrobe-photo.repository';
 import { WARDROBE_REPOSITORY } from '../domain/wardrobe/ports/wardrobe.repository';
@@ -35,6 +36,7 @@ import { JwtAccessTokenService } from './auth/jwt-access-token.service';
 import { BrevoMailer } from './mail/brevo-mailer';
 import { ConsoleMailer } from './mail/console-mailer';
 import { PrismaService } from './prisma/prisma.service';
+import { PrismaEmailChangeTokenRepository } from './prisma/repositories/prisma-email-change-token.repository';
 import { PrismaKpiSource } from './prisma/repositories/prisma-kpi.source';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
 import { PrismaOutfitRepository } from './prisma/repositories/prisma-outfit.repository';
@@ -139,6 +141,10 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
       provide: PASSWORD_RESET_TOKEN_REPOSITORY,
       useClass: PrismaPasswordResetTokenRepository,
     },
+    {
+      provide: EMAIL_CHANGE_TOKEN_REPOSITORY,
+      useClass: PrismaEmailChangeTokenRepository,
+    },
     { provide: SECURE_TOKEN_GENERATOR, useClass: CryptoSecureTokenGenerator },
     { provide: CLOCK, useClass: SystemClock },
     {
@@ -179,6 +185,10 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
           infer: true,
         }),
         resetPasswordUrl: config.get('RESET_PASSWORD_URL', { infer: true }),
+        emailChangeTtlMinutes: config.get('EMAIL_CHANGE_TTL_MINUTES', {
+          infer: true,
+        }),
+        confirmEmailUrl: config.get('CONFIRM_EMAIL_URL', { infer: true }),
       }),
     },
   ],
@@ -198,6 +208,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     PHOTO_SETTINGS,
     REFRESH_TOKEN_REPOSITORY,
     PASSWORD_RESET_TOKEN_REPOSITORY,
+    EMAIL_CHANGE_TOKEN_REPOSITORY,
     SECURE_TOKEN_GENERATOR,
     CLOCK,
     MAILER,

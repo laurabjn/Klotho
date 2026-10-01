@@ -12,13 +12,16 @@ import type { Response } from 'express';
 import type { RequestWithId } from '../logging/request-logger.middleware';
 import {
   InvalidCredentialsError,
+  InvalidEmailTokenError,
   InvalidRefreshTokenError,
   InvalidResetTokenError,
 } from '../../../domain/auth/errors';
 import { DomainError } from '../../../domain/shared/domain-error';
 import {
   EmailAlreadyUsedError,
+  InvalidAvatarError,
   InvalidPasswordError,
+  SameEmailError,
   UserNotFoundError,
 } from '../../../domain/users/errors';
 import {
@@ -49,10 +52,13 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [InvalidCredentialsError, HttpStatus.UNAUTHORIZED],
   [InvalidRefreshTokenError, HttpStatus.UNAUTHORIZED],
   [InvalidResetTokenError, HttpStatus.BAD_REQUEST],
+  [InvalidEmailTokenError, HttpStatus.BAD_REQUEST],
   // Neutral 404: the user behind a valid token no longer exists.
   [UserNotFoundError, HttpStatus.NOT_FOUND],
   // 403, not 401: the app would take a 401 for an expired session.
   [InvalidPasswordError, HttpStatus.FORBIDDEN],
+  [SameEmailError, HttpStatus.BAD_REQUEST],
+  [InvalidAvatarError, HttpStatus.BAD_REQUEST],
   [WardrobeItemNotFoundError, HttpStatus.NOT_FOUND],
   [InvalidTemperatureRangeError, HttpStatus.BAD_REQUEST],
   [WardrobePhotoNotFoundError, HttpStatus.NOT_FOUND],

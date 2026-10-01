@@ -13,12 +13,15 @@ model User {
   email        String   @unique
   passwordHash String
   firstName    String
-  avatarUrl    String?
+  bio          String?
+  /// Storage key of the profile photo (an upload of the user, never a piece's photo).
+  avatarKey    String?  @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  emailChangeToken    EmailChangeToken?
   wardrobeItems       WardrobeItem[]
   styleProfile        StyleProfile?
   weatherSettings     WeatherSettings?
@@ -55,6 +58,19 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// Pending e-mail change: one per user (a new request replaces it), single-use,
+/// short-lived. Only the SHA-256 of the token is stored.
+model EmailChangeToken {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  newEmail  String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum WardrobeCategory {

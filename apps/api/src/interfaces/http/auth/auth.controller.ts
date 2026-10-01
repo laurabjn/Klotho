@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
+  confirmEmailChangeSchema,
   forgotPasswordSchema,
   loginSchema,
   logoutSchema,
@@ -8,6 +9,7 @@ import {
   resetPasswordSchema,
   type AuthSession,
   type AuthTokens,
+  type ConfirmEmailChangeInput,
   type ForgotPasswordInput,
   type LoginInput,
   type LogoutInput,
@@ -16,6 +18,7 @@ import {
   type ResetPasswordInput,
 } from '@klotho/shared';
 
+import { ConfirmEmailChangeUseCase } from '../../../application/auth/confirm-email-change.use-case';
 import { ForgotPasswordUseCase } from '../../../application/auth/forgot-password.use-case';
 import { LoginUseCase } from '../../../application/auth/login.use-case';
 import { LogoutUseCase } from '../../../application/auth/logout.use-case';
@@ -36,6 +39,7 @@ export class AuthController {
     private readonly logoutUseCase: LogoutUseCase,
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    private readonly confirmEmailChangeUseCase: ConfirmEmailChangeUseCase,
   ) {}
 
   @Post('register')
@@ -90,5 +94,16 @@ export class AuthController {
     @Body(new ZodValidationPipe(resetPasswordSchema)) body: ResetPasswordInput,
   ): Promise<void> {
     return this.resetPasswordUseCase.execute(body);
+  }
+
+  /** Opened from the link sent to the new address; works signed out. */
+  @Post('confirm-email')
+  @RateLimit('resetPassword')
+  @HttpCode(HttpStatus.OK)
+  confirmEmail(
+    @Body(new ZodValidationPipe(confirmEmailChangeSchema))
+    body: ConfirmEmailChangeInput,
+  ): Promise<{ email: string }> {
+    return this.confirmEmailChangeUseCase.execute(body);
   }
 }

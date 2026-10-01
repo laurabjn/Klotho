@@ -71,6 +71,7 @@ export async function createTestApp(
     async reset() {
       await prisma.$executeRawUnsafe('TRUNCATE TABLE "User" CASCADE');
       mailer.passwordResets.length = 0;
+      mailer.emailChanges.length = 0;
       storage.files.clear();
       storage.deleted.length = 0;
       storage.failing = false;

@@ -45,9 +45,14 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | POST   | `/auth/logout`                               | yes    | 204 (idempotent)                                                                                                        |
 | POST   | `/auth/forgot-password`                      | yes    | 202, whether or not the email exists                                                                                    |
 | POST   | `/auth/reset-password`                       | yes    | 204 · 400 invalid or expired token                                                                                      |
+| POST   | `/auth/confirm-email`                        | yes    | 200 `{ email }`: `{ token }` from the link · 400 `auth.invalidEmailToken` · 409 `auth.emailAlreadyUsed`                 |
 | GET    | `/users/me`                                  | no     | `UserProfile`                                                                                                           |
-| PATCH  | `/users/me`                                  | no     | `UserProfile` (only `firstName`, `avatarUrl`)                                                                           |
+| PATCH  | `/users/me`                                  | no     | `UserProfile` (only `firstName`, `bio`; `''` or `null` removes the bio)                                                 |
 | DELETE | `/users/me`                                  | no     | 204: `{ password }`, deletes the account, its data and its photos · 403 `users.invalidPassword`                         |
+| PUT    | `/users/me/avatar`                           | no     | `UserProfile`: `{ key }` of an upload of mine, the previous photo is deleted · 400 `users.invalidAvatar`                |
+| DELETE | `/users/me/avatar`                           | no     | `UserProfile` with `avatarUrl: null` (idempotent, deletes the file)                                                     |
+| POST   | `/users/me/password`                         | no     | 200 `AuthSession`: `{ currentPassword, newPassword }`, signs out every device · 403 `users.invalidPassword`             |
+| POST   | `/users/me/email`                            | no     | 202 `{ pendingEmail }`: `{ newEmail, password }` · 400 `users.sameEmail` · 403 `users.invalidPassword` · 409            |
 | GET    | `/preferences/me`                            | no     | `StyleProfile` (empty + `onboardingCompleted: false` for a new account)                                                 |
 | PUT    | `/preferences/me`                            | no     | `StyleProfile` (replaces it; completes the onboarding)                                                                  |
 | GET    | `/weather/current?latitude=&longitude=`      | no     | `CurrentWeather` (position rounded to ~1 km, never stored; without it: saved city, else 422)                            |
@@ -121,6 +126,28 @@ Local storage: `npm run db:up` also starts RustFS on port 9010
 `STORAGE_CREATE_BUCKET=true`. On a phone, set `STORAGE_PUBLIC_ENDPOINT` to
 `http://<your-PC-IP>:9010` so that photo links are reachable.
 
+### Account settings
+
+- `UserProfile` = `{ id, email, firstName, bio, avatarUrl, pendingEmail,
+createdAt }`, also in the `AuthSession` of login and register.
+- Profile photo: the app uploads the picture with `POST /uploads/wardrobe`
+  (same checks, metadata dropped), then sends its key to
+  `PUT /users/me/avatar`. The key must be an upload of the user, still
+  stored, and not the photo of a piece. `avatarUrl` is a signed link valid
+  `PHOTO_URL_TTL_SECONDS`, like the photos of the pieces. Replacing or
+  removing the photo deletes the previous file (best effort, logged without
+  the key). The former external `avatarUrl` of `PATCH /users/me` is ignored.
+- Password change: checks the current password, revokes every refresh token
+  of the user (other devices are signed out) and pending reset links, and
+  answers a fresh `AuthSession` for the device that made the change.
+  Already issued access tokens stay valid until they expire (15 min).
+- E-mail change: `POST /users/me/email` checks the password and sends a
+  single-use link to the NEW address (`CONFIRM_EMAIL_URL?token=…`, valid
+  `EMAIL_CHANGE_TTL_MINUTES`); only the SHA-256 of the token is stored, one
+  request per user (a new one replaces the previous link). The address
+  changes when the link is opened (`POST /auth/confirm-email`, public: it
+  may be opened signed out). Until then, `pendingEmail` shows it.
+
 ### Security notes
 
 - Passwords: bcrypt (cost 12). Policy shared with the app: 8+ characters,
@@ -129,6 +156,8 @@ Local storage: `npm run db:up` also starts RustFS on port 9010
 - Refresh token: 256-bit random, 30 days, single-use. Only its SHA-256 is
   stored. Replaying a used token revokes the whole session (theft detection).
 - Password reset: single-use token valid 1 hour; a reset signs out every device.
+  So does a password change (`POST /users/me/password`).
+- E-mail change: confirmed from the new address, single-use token valid 1 hour.
 - Login and forgot-password never reveal whether an account exists.
 - Every route requires a token unless listed as public above; a token of a
   deleted account is refused (401). `test/routes-auth.e2e-spec.ts` walks
@@ -139,9 +168,9 @@ Local storage: `npm run db:up` also starts RustFS on port 9010
 `DELETE /users/me` with `{ password }` (403 `users.invalidPassword` when
 wrong; 401 is kept for expired sessions). The database cascade removes the
 sessions, reset tokens, pieces, photo rows, style profile, weather settings,
-looks, opinions and wears. Then every file of the user is removed from the
-storage: the photos of her pieces and her uploads never attached
-(`users/<id>/` prefix). The storage step is best effort: a failure is logged
+looks, opinions, wears and pending e-mail change. Then every file of the user is removed from the
+storage: the photos of her pieces, her profile photo and her uploads never
+attached (`users/<id>/` prefix). The storage step is best effort: a failure is logged
 (error name only, no key or URL) and never keeps the data in the database.
 
 ### Rate limiting
@@ -151,14 +180,14 @@ store such as Redis). Beyond the limit: 429
 `{ statusCode: 429, code: 'request.rateLimited' }` and a `Retry-After`
 header (seconds).
 
-| Route(s)                                          | Variable                     | Default             |
-| ------------------------------------------------- | ---------------------------- | ------------------- |
-| `POST /auth/login`, `DELETE /users/me`            | `RATE_LIMIT_LOGIN`           | `10/60` (10 a min.) |
-| `POST /auth/register`                             | `RATE_LIMIT_REGISTER`        | `5/60`              |
-| `POST /auth/forgot-password`                      | `RATE_LIMIT_FORGOT_PASSWORD` | `5/900` (15 min.)   |
-| `POST /auth/reset-password`                       | `RATE_LIMIT_RESET_PASSWORD`  | `10/900`            |
-| `POST /auth/refresh`                              | `RATE_LIMIT_REFRESH`         | `30/60`             |
-| `POST /uploads/wardrobe` (per IP and per account) | `RATE_LIMIT_UPLOADS`         | `30/60`             |
+| Route(s)                                                                                  | Variable                     | Default             |
+| ----------------------------------------------------------------------------------------- | ---------------------------- | ------------------- |
+| `POST /auth/login`, `DELETE /users/me`, `POST /users/me/password`, `POST /users/me/email` | `RATE_LIMIT_LOGIN`           | `10/60` (10 a min.) |
+| `POST /auth/register`                                                                     | `RATE_LIMIT_REGISTER`        | `5/60`              |
+| `POST /auth/forgot-password`, `POST /users/me/email` (sends an e-mail)                    | `RATE_LIMIT_FORGOT_PASSWORD` | `5/900` (15 min.)   |
+| `POST /auth/reset-password`, `POST /auth/confirm-email`                                   | `RATE_LIMIT_RESET_PASSWORD`  | `10/900`            |
+| `POST /auth/refresh`                                                                      | `RATE_LIMIT_REFRESH`         | `30/60`             |
+| `POST /uploads/wardrobe` (per IP and per account)                                         | `RATE_LIMIT_UPLOADS`         | `30/60`             |
 
 Values are `<requests>/<seconds>`. `RATE_LIMIT_ENABLED=false` turns it off
 (e2e tests do, except `rate-limit.e2e-spec.ts`). Behind a reverse proxy, set
@@ -179,8 +208,8 @@ Values are `<requests>/<seconds>`. `RATE_LIMIT_ENABLED=false` turns it off
   (`src/infrastructure/logging/redaction.ts`): passwords, tokens, secrets,
   authorization, cookies, API keys, `Bearer` values, JWTs and signed URL
   parameters become `[REDACTED]`.
-- Exception: the development `ConsoleMailer` prints reset links on stdout
-  (refused in production).
+- Exception: the development `ConsoleMailer` prints reset and e-mail
+  confirmation links on stdout (refused in production).
 
 ### Pagination and bounds
 
@@ -216,12 +245,16 @@ name or id): users, users with a first look and the median time from
 sign-up to it, looks generated, like rate (likes / rated looks), looks worn
 (total, last 7 and 30 days), favourite looks and pieces.
 
-### Password reset emails
+### Password reset and e-mail confirmation emails
 
-With `MAIL_DRIVER=console` (the only driver for now, refused in production),
-the reset link is written to the API logs. To open it on a phone running
-**Expo Go**, set `RESET_PASSWORD_URL=exp://<your-LAN-IP>:8081/--/reset-password`;
-in a development or store build the default `klotho://reset-password` works.
+With `MAIL_DRIVER=console` (refused in production; `brevo` sends them), the
+reset and e-mail change links are written to the API logs. To open them on a
+phone running **Expo Go**, set
+`RESET_PASSWORD_URL=exp://<your-LAN-IP>:8081/--/reset-password` and
+`CONFIRM_EMAIL_URL=exp://<your-LAN-IP>:8081/--/confirm-email`; in a
+development or store build the defaults `klotho://reset-password` and
+`klotho://confirm-email` work. `EMAIL_CHANGE_TTL_MINUTES` (60) bounds the
+e-mail change link.
 
 ## Scripts
 
