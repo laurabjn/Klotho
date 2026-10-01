@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +16,9 @@ const CLEAR = 'rgba(251, 247, 242, 0)';
 
 export function PasswordChangedScreen() {
   const { t } = useTranslation();
+  // From Paramètres the user stays signed in; after a reset she signs in.
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const inApp = from === 'settings';
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -44,14 +47,32 @@ export function PasswordChangedScreen() {
             {t('auth.passwordChanged.title')}
           </AppText>
           <GoldRule centered />
-          <AppText center>{t('auth.passwordChanged.body')}</AppText>
+          <AppText center>
+            {inApp
+              ? t('settings.changePassword.doneBody')
+              : t('auth.passwordChanged.body')}
+          </AppText>
         </View>
-        {/* Every session was revoked by the reset: go back to the sign-in screen. */}
         <View style={styles.footer}>
-          <Button
-            label={t('auth.passwordChanged.login')}
-            onPress={() => router.replace('/login')}
-          />
+          {inApp ? (
+            <Button
+              label={t('settings.changePassword.backHome')}
+              onPress={() => router.replace('/')}
+            />
+          ) : (
+            <>
+              {/* Every session was revoked by the reset: sign in again. */}
+              <Button
+                label={t('auth.passwordChanged.login')}
+                onPress={() => router.replace('/login')}
+              />
+              <Button
+                variant="link"
+                label={t('settings.changePassword.backHome')}
+                onPress={() => router.replace('/')}
+              />
+            </>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -69,5 +90,9 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     paddingHorizontal: spacing.xl,
   },
-  footer: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
+  footer: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+  },
 });

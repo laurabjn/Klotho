@@ -19,6 +19,8 @@ describe('validateEnv', () => {
       REFRESH_TOKEN_TTL_DAYS: 30,
       PASSWORD_RESET_TTL_MINUTES: 60,
       RESET_PASSWORD_URL: 'klotho://reset-password',
+      EMAIL_CHANGE_TTL_MINUTES: 60,
+      CONFIRM_EMAIL_URL: 'klotho://confirm-email',
       BCRYPT_COST: 12,
       MAIL_DRIVER: 'console',
       MAIL_FROM_NAME: 'Klotho',

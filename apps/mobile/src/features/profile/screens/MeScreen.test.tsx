@@ -72,7 +72,7 @@ describe('MeScreen', () => {
     expect(screen.getByText('Rose poudré')).toBeOnTheScreen();
   });
 
-  it('only summarises the styles: changes happen in the preferences', async () => {
+  it('only summarises the styles: changes happen in "Tous les styles"', async () => {
     await renderWithProviders(<MeScreen />);
     await screen.findByText('Romantique');
 
@@ -80,15 +80,26 @@ describe('MeScreen', () => {
       screen.getByRole('button', { name: 'Mes styles préférés' }),
     );
 
-    expect(router.push).toHaveBeenCalledWith('/preferences');
+    expect(router.push).toHaveBeenCalledWith('/styles');
     expect(preferences.save).not.toHaveBeenCalled();
     expect(screen.queryByText('Vintage')).not.toBeOnTheScreen();
+  });
+
+  it('opens the profile edition and the settings', async () => {
+    await renderWithProviders(<MeScreen />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Modifier' }));
+    expect(router.push).toHaveBeenCalledWith('/profile/edit');
+    await fireEvent.press(screen.getByRole('button', { name: 'Paramètres' }));
+    expect(router.push).toHaveBeenCalledWith('/settings');
   });
 
   it('says what is not available yet', async () => {
     await renderWithProviders(<MeScreen />);
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Modifier' }));
+    await fireEvent.press(
+      screen.getByRole('switch', { name: 'Rappels de tenues et suggestions' }),
+    );
 
     expect(screen.getByText('Bientôt disponible')).toBeOnTheScreen();
   });

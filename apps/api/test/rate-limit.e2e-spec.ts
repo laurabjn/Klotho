@@ -62,10 +62,32 @@ describe('Rate limiting (e2e)', () => {
     ['/auth/forgot-password', { email: 'a@example.com' }],
     ['/auth/reset-password', { token: 'x', password: 'Dressing2026!' }],
     ['/auth/refresh', { refreshToken: 'x' }],
+    ['/auth/confirm-email', { token: 'x' }],
   ])('limits POST %s', async (path, body) => {
     await http().post(path).send(body);
     await http().post(path).send(body);
     await http().post(path).send(body).expect(429);
+  });
+
+  it.each([
+    [
+      '/users/me/password',
+      { currentPassword: 'Wrong2026!', newPassword: 'New2026!!' },
+    ],
+    [
+      '/users/me/email',
+      { newEmail: 'new@example.com', password: 'Wrong2026!' },
+    ],
+  ])('limits POST %s like a login', async (path, body) => {
+    const { tokens } = await register('laura@example.com');
+    const attempt = () =>
+      http()
+        .post(path)
+        .set('Authorization', `Bearer ${tokens.accessToken}`)
+        .send(body);
+    await attempt().expect(403);
+    await attempt().expect(403);
+    await attempt().expect(429);
   });
 
   it('limits registrations', async () => {

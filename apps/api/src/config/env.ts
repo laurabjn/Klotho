@@ -47,6 +47,8 @@ export const envSchema = z
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
     PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(60),
     RESET_PASSWORD_URL: z.url().default('klotho://reset-password'),
+    EMAIL_CHANGE_TTL_MINUTES: z.coerce.number().int().positive().default(60),
+    CONFIRM_EMAIL_URL: z.url().default('klotho://confirm-email'),
     BCRYPT_COST: z.coerce.number().int().min(4).max(15).default(12),
 
     // console: emails written to the server output (development only);
@@ -113,7 +115,7 @@ export const envSchema = z
     {
       path: ['MAIL_DRIVER'],
       message:
-        'the console mailer logs reset links and must not be used in production',
+        'the console mailer logs reset and confirmation links and must not be used in production',
     },
   );
 

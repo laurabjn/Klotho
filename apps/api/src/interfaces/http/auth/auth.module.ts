@@ -5,6 +5,7 @@ import {
   AUTH_SETTINGS,
   type AuthSettings,
 } from '../../../application/auth/auth-settings';
+import { ConfirmEmailChangeUseCase } from '../../../application/auth/confirm-email-change.use-case';
 import { ForgotPasswordUseCase } from '../../../application/auth/forgot-password.use-case';
 import { LoginUseCase } from '../../../application/auth/login.use-case';
 import { LogoutUseCase } from '../../../application/auth/logout.use-case';
@@ -12,6 +13,7 @@ import { RefreshTokenUseCase } from '../../../application/auth/refresh-token.use
 import { RegisterUseCase } from '../../../application/auth/register.use-case';
 import { ResetPasswordUseCase } from '../../../application/auth/reset-password.use-case';
 import { SessionIssuer } from '../../../application/auth/session-issuer';
+import { UserProfilePresenter } from '../../../application/users/user-profile.presenter';
 import {
   ACCESS_TOKEN_SERVICE,
   type AccessTokenService,
@@ -37,6 +39,14 @@ import {
   type Mailer,
 } from '../../../domain/notifications/ports/mailer';
 import { CLOCK, type Clock } from '../../../domain/shared/ports/clock';
+import {
+  FILE_STORAGE,
+  type FileStorage,
+} from '../../../domain/storage/ports/file-storage';
+import {
+  EMAIL_CHANGE_TOKEN_REPOSITORY,
+  type EmailChangeTokenRepository,
+} from '../../../domain/users/ports/email-change-token.repository';
 import {
   USER_REPOSITORY,
   type UserRepository,
@@ -73,6 +83,15 @@ import { JwtAuthGuard } from './jwt-auth.guard';
         ),
     },
     {
+      provide: UserProfilePresenter,
+      inject: [FILE_STORAGE, EMAIL_CHANGE_TOKEN_REPOSITORY, CLOCK],
+      useFactory: (
+        storage: FileStorage,
+        emailChanges: EmailChangeTokenRepository,
+        clock: Clock,
+      ) => new UserProfilePresenter(storage, emailChanges, clock),
+    },
+    {
       provide: RegisterUseCase,
       inject: [USER_REPOSITORY, PASSWORD_HASHER, SessionIssuer],
       useFactory: (
@@ -83,12 +102,18 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     },
     {
       provide: LoginUseCase,
-      inject: [USER_REPOSITORY, PASSWORD_HASHER, SessionIssuer],
+      inject: [
+        USER_REPOSITORY,
+        PASSWORD_HASHER,
+        SessionIssuer,
+        UserProfilePresenter,
+      ],
       useFactory: (
         users: UserRepository,
         hasher: PasswordHasher,
         sessions: SessionIssuer,
-      ) => new LoginUseCase(users, hasher, sessions),
+        profiles: UserProfilePresenter,
+      ) => new LoginUseCase(users, hasher, sessions, profiles),
     },
     {
       provide: RefreshTokenUseCase,
@@ -177,6 +202,24 @@ import { JwtAuthGuard } from './jwt-auth.guard';
           clock,
         ),
     },
+    {
+      provide: ConfirmEmailChangeUseCase,
+      inject: [
+        EMAIL_CHANGE_TOKEN_REPOSITORY,
+        USER_REPOSITORY,
+        SECURE_TOKEN_GENERATOR,
+        CLOCK,
+      ],
+      useFactory: (
+        emailChanges: EmailChangeTokenRepository,
+        users: UserRepository,
+        secureTokens: SecureTokenGenerator,
+        clock: Clock,
+      ) =>
+        new ConfirmEmailChangeUseCase(emailChanges, users, secureTokens, clock),
+    },
   ],
+  // The account routes (users module) open sessions and present profiles too.
+  exports: [SessionIssuer, UserProfilePresenter],
 })
 export class AuthModule {}

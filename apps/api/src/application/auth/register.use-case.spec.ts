@@ -32,7 +32,9 @@ describe('RegisterUseCase', () => {
       id: expect.any(String),
       email: laura.email,
       firstName: 'Laura',
+      bio: null,
       avatarUrl: null,
+      pendingEmail: null,
       createdAt: '2026-10-01T08:00:00.000Z',
     });
     expect(user).not.toHaveProperty('passwordHash');

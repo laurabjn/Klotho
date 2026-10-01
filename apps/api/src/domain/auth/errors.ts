@@ -12,3 +12,8 @@ export class InvalidRefreshTokenError extends DomainError {
 export class InvalidResetTokenError extends DomainError {
   readonly code = 'auth.invalidResetToken';
 }
+
+/** Unknown, expired, replaced or already used e-mail change link. */
+export class InvalidEmailTokenError extends DomainError {
+  readonly code = 'auth.invalidEmailToken';
+}

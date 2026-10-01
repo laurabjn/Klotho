@@ -3,6 +3,7 @@ import { onboardingEn, preferencesEn } from './preferences.en';
 import { wardrobeEn } from './wardrobe.en';
 import { outfitsEn } from './outfits.en';
 import { privacyEn } from './privacy.en';
+import { settingsEn } from './settings.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -40,8 +41,10 @@ export const en: TranslationResource = {
       body: 'Join Klotho for a personal, inspiring and stylish experience.',
       submit: 'Create my account',
       haveAccount: 'I already have an account',
-      consent: 'By creating your account, you accept our privacy policy.',
+      consent:
+        'By creating your account, you accept our terms and our privacy policy.',
       privacy: 'Read the privacy policy',
+      terms: 'Read the terms and conditions',
     },
     forgotPassword: {
       title: 'Forgot password',
@@ -95,6 +98,7 @@ export const en: TranslationResource = {
   weather: weatherEn,
   outfits: outfitsEn,
   privacy: privacyEn,
+  settings: settingsEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',
@@ -169,6 +173,7 @@ export const en: TranslationResource = {
       mismatch: 'Passwords do not match',
     },
     avatarUrl: { invalid: 'Invalid image' },
+    bio: { tooLong: '200 characters maximum' },
     preferences: {
       metal: 'Unknown metal',
       bottoms: 'Unknown choice',
@@ -216,6 +221,8 @@ export const en: TranslationResource = {
     },
     auth: {
       emailAlreadyUsed: 'An account already exists with this email.',
+      invalidEmailToken:
+        'This confirmation link is no longer valid. Ask again from your settings.',
       invalidCredentials: 'Incorrect email or password.',
       invalidRefreshToken: 'Your session has expired. Please sign in again.',
       invalidResetToken:
@@ -248,7 +255,11 @@ export const en: TranslationResource = {
       tooMany: 'Too many attempts. Try again in a few minutes.',
       rateLimited: 'Too many attempts. Try again in a few minutes.',
     },
-    users: { invalidPassword: 'Wrong password.' },
+    users: {
+      invalidPassword: 'Wrong password.',
+      invalidAvatar: 'This photo cannot be used. Choose another one.',
+      sameEmail: 'This is already your current address.',
+    },
     network:
       'Cannot reach the server. Check your internet connection and try again.',
     unknown: 'Something went wrong. Try again in a moment.',

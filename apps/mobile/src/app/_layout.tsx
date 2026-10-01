@@ -6,6 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
 import { restoreSession, useAuthStore } from '@/features/auth/store/auth.store';
+import { restoreWeatherSync } from '@/features/weather/store/weather-sync.store';
+import { restoreLanguage } from '@/lib/language';
 import { initMonitoring, wrapRoot } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
 import { useAppFonts } from '@/theme/fonts';
@@ -18,10 +20,15 @@ function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   const fontsReady = useAppFonts();
   const status = useAuthStore((state) => state.status);
-  const ready = fontsReady && status !== 'restoring';
+  const [languageReady, setLanguageReady] = useState(false);
+  const ready = fontsReady && languageReady && status !== 'restoring';
 
   useEffect(() => {
     void restoreSession();
+    // The language chosen in Paramètres, before the first screen shows.
+    void Promise.all([restoreLanguage(), restoreWeatherSync()]).finally(() =>
+      setLanguageReady(true),
+    );
   }, []);
 
   useEffect(() => {
@@ -50,6 +57,9 @@ function RootLayout() {
         <Stack.Screen name="reset-password" />
         <Stack.Screen name="password-changed" />
         <Stack.Screen name="privacy" />
+        <Stack.Screen name="terms" />
+        {/* Opened from the confirmation e-mail, signed in or not. */}
+        <Stack.Screen name="confirm-email" />
       </Stack>
       <StatusBar style="dark" />
     </QueryClientProvider>

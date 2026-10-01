@@ -116,4 +116,12 @@ export class InMemoryWardrobePhotoRepository implements WardrobePhotoRepository 
       photo.isMain = photo.id === photoId;
     return Promise.resolve();
   }
+
+  isStorageKeyUsed(storageKey: string): Promise<boolean> {
+    return Promise.resolve(
+      this.wardrobe.items.some((item) =>
+        item.photos.some((photo) => photo.storageKey === storageKey),
+      ),
+    );
+  }
 }

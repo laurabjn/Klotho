@@ -85,4 +85,11 @@ export class PrismaWardrobePhotoRepository implements WardrobePhotoRepository {
       }),
     ]);
   }
+
+  async isStorageKeyUsed(storageKey: string): Promise<boolean> {
+    const count = await this.prisma.wardrobeItemPhoto.count({
+      where: { storageKey },
+    });
+    return count > 0;
+  }
 }

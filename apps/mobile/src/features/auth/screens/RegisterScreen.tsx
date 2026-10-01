@@ -143,6 +143,12 @@ export function RegisterScreen() {
       <Button
         variant="link"
         decorated={false}
+        label={t('auth.register.terms')}
+        onPress={() => router.push('/terms')}
+      />
+      <Button
+        variant="link"
+        decorated={false}
         label={t('auth.register.privacy')}
         onPress={() => router.push('/privacy')}
       />
