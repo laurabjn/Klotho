@@ -90,7 +90,7 @@ async function main() {
       temperature,
       condition: flag('rain') ? 'rain' : 'clear',
       precipitation: flag('rain') ? 2 : 0,
-      imposedItemId: imposed?.id ?? null,
+      imposedItemIds: imposed ? [imposed.id] : [],
       exclusions: {
         itemIds: [],
         categories: [],

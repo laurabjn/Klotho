@@ -48,7 +48,17 @@ export function ScreenHeader({
           </Pressable>
         )}
         <View style={styles.titles}>
-          {title && <AppText variant="title">{title}</AppText>}
+          {title && (
+            <AppText
+              variant="title"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+              style={styles.title}
+            >
+              {title}
+            </AppText>
+          )}
           {overline && <AppText variant="overline">{overline}</AppText>}
         </View>
         {right}
@@ -61,6 +71,7 @@ const styles = StyleSheet.create({
   container: { gap: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   titles: { flex: 1, gap: spacing.xs },
+  title: { fontSize: 30, lineHeight: 35 },
   back: {
     width: touchTarget,
     height: touchTarget,

@@ -36,32 +36,38 @@ npm run dev                # http://localhost:3100/health
 
 Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 
-| Method | Route                                   | Public | Result                                                                                       |
-| ------ | --------------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
-| GET    | `/health`                               | yes    | `{ status: 'ok' }`                                                                           |
-| POST   | `/auth/register`                        | yes    | 201 `AuthSession` · 409 email already used                                                   |
-| POST   | `/auth/login`                           | yes    | 200 `AuthSession` · 401 invalid credentials                                                  |
-| POST   | `/auth/refresh`                         | yes    | 200 `AuthTokens` (rotated) · 401                                                             |
-| POST   | `/auth/logout`                          | yes    | 204 (idempotent)                                                                             |
-| POST   | `/auth/forgot-password`                 | yes    | 202, whether or not the email exists                                                         |
-| POST   | `/auth/reset-password`                  | yes    | 204 · 400 invalid or expired token                                                           |
-| GET    | `/users/me`                             | no     | `UserProfile`                                                                                |
-| PATCH  | `/users/me`                             | no     | `UserProfile` (only `firstName`, `avatarUrl`)                                                |
-| GET    | `/preferences/me`                       | no     | `StyleProfile` (empty + `onboardingCompleted: false` for a new account)                      |
-| PUT    | `/preferences/me`                       | no     | `StyleProfile` (replaces it; completes the onboarding)                                       |
-| GET    | `/weather/current?latitude=&longitude=` | no     | `CurrentWeather` (position rounded to ~1 km, never stored; without it: saved city, else 422) |
-| GET    | `/weather/cities?q=&lang=`              | no     | `City[]` (city search, for users who do not share their position)                            |
-| GET    | `/weather/settings`                     | no     | `WeatherSettings` (location mode, saved city, °C/°F)                                         |
-| PUT    | `/weather/settings`                     | no     | `WeatherSettings` (replaces them)                                                            |
-| GET    | `/wardrobe`                             | no     | `Page<WardrobeItem>`, filters and pagination below                                           |
-| POST   | `/wardrobe`                             | no     | 201 `WardrobeItem` (owner = authenticated user)                                              |
-| GET    | `/wardrobe/:id`                         | no     | `WardrobeItem` · 404 if missing or not mine                                                  |
-| PATCH  | `/wardrobe/:id`                         | no     | `WardrobeItem` (partial update) · 404                                                        |
-| DELETE | `/wardrobe/:id`                         | no     | 204 · 404                                                                                    |
-| POST   | `/uploads/wardrobe`                     | no     | 201 `UploadedPhoto` (multipart, field `file`) · 413 · 415                                    |
-| POST   | `/wardrobe/:id/photos`                  | no     | 201 item · 400 unknown upload · 409 limit (5)                                                |
-| PATCH  | `/wardrobe/:id/photos/:photoId/main`    | no     | item (this photo becomes the main one)                                                       |
-| DELETE | `/wardrobe/:id/photos/:photoId`         | no     | item (next photo becomes main)                                                               |
+| Method | Route                                   | Public | Result                                                                                                             |
+| ------ | --------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/health`                               | yes    | `{ status: 'ok' }`                                                                                                 |
+| POST   | `/auth/register`                        | yes    | 201 `AuthSession` · 409 email already used                                                                         |
+| POST   | `/auth/login`                           | yes    | 200 `AuthSession` · 401 invalid credentials                                                                        |
+| POST   | `/auth/refresh`                         | yes    | 200 `AuthTokens` (rotated) · 401                                                                                   |
+| POST   | `/auth/logout`                          | yes    | 204 (idempotent)                                                                                                   |
+| POST   | `/auth/forgot-password`                 | yes    | 202, whether or not the email exists                                                                               |
+| POST   | `/auth/reset-password`                  | yes    | 204 · 400 invalid or expired token                                                                                 |
+| GET    | `/users/me`                             | no     | `UserProfile`                                                                                                      |
+| PATCH  | `/users/me`                             | no     | `UserProfile` (only `firstName`, `avatarUrl`)                                                                      |
+| GET    | `/preferences/me`                       | no     | `StyleProfile` (empty + `onboardingCompleted: false` for a new account)                                            |
+| PUT    | `/preferences/me`                       | no     | `StyleProfile` (replaces it; completes the onboarding)                                                             |
+| GET    | `/weather/current?latitude=&longitude=` | no     | `CurrentWeather` (position rounded to ~1 km, never stored; without it: saved city, else 422)                       |
+| GET    | `/weather/cities?q=&lang=`              | no     | `City[]` (city search, for users who do not share their position)                                                  |
+| GET    | `/weather/settings`                     | no     | `WeatherSettings` (location mode, saved city, °C/°F)                                                               |
+| PUT    | `/weather/settings`                     | no     | `WeatherSettings` (replaces them)                                                                                  |
+| POST   | `/outfits/generate`                     | no     | `Outfit[]`: 5 saved looks (style, occasion, temperature, condition, mandatoryItemId, exclusions, excludeOutfitIds) |
+| GET    | `/outfits?limit=`                       | no     | `Outfit[]`, most recent first (the home "Tenue du jour" is the first)                                              |
+| GET    | `/outfits/:id`                          | no     | `Outfit` (pieces with photos, highlights; never the raw score)                                                     |
+| GET    | `/outfits/:id/alternatives?role=`       | no     | `OutfitAlternative[]`: pieces for that role, best first, `compatible`                                              |
+| POST   | `/outfits/:id/replace-item`             | no     | `Outfit` with the piece swapped and scored again (saved)                                                           |
+| POST   | `/outfits/:id/variant`                  | no     | new `Outfit` keeping `lockedItemIds`, never a look already seen                                                    |
+| GET    | `/wardrobe`                             | no     | `Page<WardrobeItem>`, filters and pagination below                                                                 |
+| POST   | `/wardrobe`                             | no     | 201 `WardrobeItem` (owner = authenticated user)                                                                    |
+| GET    | `/wardrobe/:id`                         | no     | `WardrobeItem` · 404 if missing or not mine                                                                        |
+| PATCH  | `/wardrobe/:id`                         | no     | `WardrobeItem` (partial update) · 404                                                                              |
+| DELETE | `/wardrobe/:id`                         | no     | 204 · 404                                                                                                          |
+| POST   | `/uploads/wardrobe`                     | no     | 201 `UploadedPhoto` (multipart, field `file`) · 413 · 415                                                          |
+| POST   | `/wardrobe/:id/photos`                  | no     | 201 item · 400 unknown upload · 409 limit (5)                                                                      |
+| PATCH  | `/wardrobe/:id/photos/:photoId/main`    | no     | item (this photo becomes the main one)                                                                             |
+| DELETE | `/wardrobe/:id/photos/:photoId`         | no     | item (next photo becomes main)                                                                                     |
 
 ### Wardrobe list
 

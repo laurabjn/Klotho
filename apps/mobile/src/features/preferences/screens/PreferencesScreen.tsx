@@ -2,7 +2,7 @@ import type { StyleProfile, StyleProfileFields } from '@klotho/shared';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/brand/AppHeader';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { errorMessageKey } from '@/lib/api/errors';
 import { colors, spacing } from '@/theme/tokens';
 
@@ -63,17 +64,17 @@ function Editor({ profile }: { profile: StyleProfile }) {
 
   return (
     <>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollPage contentContainerStyle={styles.content}>
         <AppHeader />
         <ScreenHeader
           title={t('preferences.title')}
           overline={t('preferences.overline')}
         />
         <StylesSection {...props} />
-        <ColorsSection {...props} />
+        <ColorsSection {...props} row />
         <PracticalSection {...props} />
         <AdvancedSection {...props} />
-      </ScrollView>
+      </ScrollPage>
       <View style={styles.footer}>
         <FormError
           message={

@@ -12,13 +12,13 @@ interface AppTextProps extends TextProps {
 
 /** How much each style may grow with the system text size. */
 const MAX_SCALE: Record<Variant, number> = {
-  hero: 1.2,
-  title: 1.2,
-  heading: 1.25,
-  overline: 1.3,
-  body: 1.5,
-  hint: 1.4,
-  label: 1.4,
+  hero: 1.1,
+  title: 1.1,
+  heading: 1.15,
+  overline: 1.2,
+  body: 1.3,
+  hint: 1.25,
+  label: 1.25,
 };
 
 export function AppText({

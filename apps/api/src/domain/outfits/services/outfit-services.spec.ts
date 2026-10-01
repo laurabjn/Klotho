@@ -35,7 +35,7 @@ describe('buildCombinations', () => {
       piece({ category: 'LAYER' }),
     ];
 
-    const outfits = buildCombinations(items, null, rankAll);
+    const outfits = buildCombinations(items, [], rankAll);
 
     // (1 top×bottom + 1 dress) × (no layer + 1 layer) × 1 shoes
     expect(outfits).toHaveLength(4);
@@ -44,7 +44,7 @@ describe('buildCombinations', () => {
   it('needs shoes', () => {
     const items = [piece({ category: 'TOP' }), piece({ category: 'BOTTOM' })];
 
-    expect(buildCombinations(items, null, rankAll)).toEqual([]);
+    expect(buildCombinations(items, [], rankAll)).toEqual([]);
   });
 
   it('puts an imposed dress in every look, and no top then', () => {
@@ -57,7 +57,7 @@ describe('buildCombinations', () => {
       piece({ category: 'SHOES' }),
     ];
 
-    const outfits = buildCombinations(items, dress, rankAll);
+    const outfits = buildCombinations(items, [dress], rankAll);
 
     expect(outfits).toHaveLength(1);
     expect(outfits[0]!.pieces.map((p) => p.item)).toContain(dress);
@@ -73,7 +73,7 @@ describe('buildCombinations', () => {
       piece({ category: 'SHOES' }),
     ];
 
-    const outfits = buildCombinations(items, null, {
+    const outfits = buildCombinations(items, [], {
       maxPerRole: 2,
       rank: (item) => item.formalityLevel ?? 0,
     });

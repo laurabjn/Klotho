@@ -1,5 +1,6 @@
 import type { MaterialCommunityIcons } from '@expo/vector-icons';
 import type {
+  Occasion,
   Season,
   Style,
   WardrobeCategory,
@@ -46,6 +47,16 @@ export const styleIcons: Record<Style, IconName> = {
   vintage50s: 'record-player',
   vintage60s: 'flower-poppy',
   victorian: 'crown-outline',
+};
+
+export const occasionIcons: Record<Occasion, IconName> = {
+  walk: 'walk',
+  everyday: 'coffee-outline',
+  date: 'heart-outline',
+  restaurant: 'silverware-fork-knife',
+  work: 'briefcase-outline',
+  evening: 'glass-cocktail',
+  ceremony: 'ring',
 };
 
 export const seasonIcons: Record<Season, IconName> = {

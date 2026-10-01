@@ -27,6 +27,7 @@ import { Chip } from '@/components/ui/Chip';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { signOut, useAuthStore } from '@/features/auth/store/auth.store';
 import {
   toFields,
@@ -138,7 +139,7 @@ export function MeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollPage contentContainerStyle={styles.content}>
         <AppHeader />
         <ScreenHeader
           back={false}
@@ -352,7 +353,7 @@ export function MeScreen() {
           label={t('auth.logout.action')}
           onPress={() => setDialog('logout')}
         />
-      </ScrollView>
+      </ScrollPage>
       <ConfirmDialog
         visible={dialog === 'logout'}
         icon="log-out-outline"

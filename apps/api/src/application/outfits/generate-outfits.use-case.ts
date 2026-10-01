@@ -23,7 +23,7 @@ export interface GenerateOutfitsCommand {
   condition?: WeatherCondition | null;
   precipitation?: number;
   windSpeed?: number;
-  imposedItemId?: string | null;
+  imposedItemIds?: string[];
   exclusions?: OutfitExclusions;
   excludedOutfitKeys?: string[];
   count?: number;
@@ -60,7 +60,7 @@ export class GenerateOutfitsUseCase {
         profile,
         today: this.clock.now(),
       },
-      imposedItemId: command.imposedItemId ?? null,
+      imposedItemIds: command.imposedItemIds ?? [],
       exclusions: command.exclusions,
       excludedOutfitKeys: command.excludedOutfitKeys,
       count: command.count,

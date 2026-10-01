@@ -1,9 +1,11 @@
 import { PHOTOS_MAX_PER_ITEM, type WardrobeItem } from '@klotho/shared';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FlatList,
+  Pressable,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -29,11 +31,22 @@ import { usePhotoSource } from './usePhotoSource';
 /** Horizontal padding of the details screen, to size the pages. */
 const SCREEN_PADDING = spacing.xl;
 
-/** Swipeable photos of an item, with add / set main / delete actions. */
-export function WardrobePhotoCarousel({ item }: { item: WardrobeItem }) {
+/**
+ * Swipeable photos of an item, with add / set main / delete actions. Given a
+ * `width` (photo beside the details, as on the mockup), the actions become
+ * small round buttons under the photo.
+ */
+export function WardrobePhotoCarousel({
+  item,
+  width: fixedWidth,
+}: {
+  item: WardrobeItem;
+  width?: number;
+}) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
-  const pageWidth = width - SCREEN_PADDING * 2;
+  const pageWidth = fixedWidth ?? width - SCREEN_PADDING * 2;
+  const narrow = fixedWidth !== undefined;
   const [index, setIndex] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -51,12 +64,12 @@ export function WardrobePhotoCarousel({ item }: { item: WardrobeItem }) {
     setIndex(Math.round(event.nativeEvent.contentOffset.x / pageWidth));
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, narrow && { width: pageWidth }]}>
       {photos.length === 0 ? (
         <ItemVisual
           category={item.category}
           color={item.primaryColor}
-          size="hero"
+          size={narrow ? 'portrait' : 'hero'}
         />
       ) : (
         <View>
@@ -106,39 +119,67 @@ export function WardrobePhotoCarousel({ item }: { item: WardrobeItem }) {
         </View>
       )}
 
-      <View style={styles.actions}>
-        {canAdd && (
-          <View style={styles.flex}>
-            <Button
-              variant="secondary"
+      {narrow ? (
+        <View style={styles.iconActions}>
+          {canAdd && (
+            <IconAction
               icon="camera-outline"
               label={t('wardrobe.photos.add')}
-              loading={add.isPending || source.busy}
+              busy={add.isPending || source.busy}
               onPress={source.open}
             />
-          </View>
-        )}
-        {current && !current.isMain && (
-          <View style={styles.flex}>
-            <Button
-              variant="secondary"
+          )}
+          {current && !current.isMain && (
+            <IconAction
               icon="star-outline"
               label={t('wardrobe.photos.setMain')}
-              loading={setMain.isPending}
+              busy={setMain.isPending}
               onPress={() => setMain.mutate(current.id)}
             />
-          </View>
-        )}
-        {current && (
-          <Button
-            variant="link"
-            icon="trash-outline"
-            decorated={false}
-            label={t('wardrobe.photos.delete')}
-            onPress={() => setConfirmDelete(true)}
-          />
-        )}
-      </View>
+          )}
+          {current && (
+            <IconAction
+              icon="trash-outline"
+              label={t('wardrobe.photos.delete')}
+              onPress={() => setConfirmDelete(true)}
+            />
+          )}
+        </View>
+      ) : (
+        <View style={styles.actions}>
+          {canAdd && (
+            <View style={styles.flex}>
+              <Button
+                variant="secondary"
+                icon="camera-outline"
+                label={t('wardrobe.photos.add')}
+                loading={add.isPending || source.busy}
+                onPress={source.open}
+              />
+            </View>
+          )}
+          {current && !current.isMain && (
+            <View style={styles.flex}>
+              <Button
+                variant="secondary"
+                icon="star-outline"
+                label={t('wardrobe.photos.setMain')}
+                loading={setMain.isPending}
+                onPress={() => setMain.mutate(current.id)}
+              />
+            </View>
+          )}
+          {current && (
+            <Button
+              variant="link"
+              icon="trash-outline"
+              decorated={false}
+              label={t('wardrobe.photos.delete')}
+              onPress={() => setConfirmDelete(true)}
+            />
+          )}
+        </View>
+      )}
       <FormError
         message={
           error
@@ -167,6 +208,32 @@ export function WardrobePhotoCarousel({ item }: { item: WardrobeItem }) {
         }}
       />
     </View>
+  );
+}
+
+function IconAction({
+  icon,
+  label,
+  busy = false,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  busy?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ busy, disabled: busy }}
+      disabled={busy}
+      onPress={onPress}
+      hitSlop={4}
+      style={({ pressed }) => [styles.iconAction, pressed && styles.pressed]}
+    >
+      <Ionicons name={icon} size={20} color={colors.primary} />
+    </Pressable>
   );
 }
 
@@ -207,4 +274,20 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   flex: { flex: 1, minWidth: 150 },
+  iconActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  iconAction: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  pressed: { opacity: 0.6 },
 });

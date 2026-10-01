@@ -221,4 +221,25 @@ describe('PreferencesScreen', () => {
     ).toBeOnTheScreen();
     expect(screen.getByText('Ma colorimétrie')).toBeOnTheScreen();
   });
+
+  it('offers to go back to the top once scrolled down', async () => {
+    api.get.mockResolvedValue(saved());
+    await renderWithProviders(<PreferencesScreen />);
+    const section = await screen.findByText('Ma colorimétrie');
+    expect(
+      screen.queryByRole('button', { name: 'Revenir en haut' }),
+    ).not.toBeOnTheScreen();
+
+    await fireEvent.scroll(section, {
+      nativeEvent: { contentOffset: { y: 1200 } },
+    });
+    await press('Revenir en haut');
+
+    await fireEvent.scroll(section, {
+      nativeEvent: { contentOffset: { y: 0 } },
+    });
+    expect(
+      screen.queryByRole('button', { name: 'Revenir en haut' }),
+    ).not.toBeOnTheScreen();
+  });
 });

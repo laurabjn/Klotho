@@ -155,7 +155,7 @@ describe('OutfitGeneratorService (Sprint 6 TDD table)', () => {
     const skirt = items.find((i) => i.subcategory === 'midiSkirt')!;
     const result = engine.generate(items, {
       context: context(),
-      imposedItemId: skirt.id,
+      imposedItemIds: [skirt.id],
     });
 
     expect(result).toHaveLength(5);
@@ -312,13 +312,13 @@ describe('OutfitGeneratorService', () => {
     expect(() =>
       engine.generate(wardrobe(), {
         context: context(),
-        imposedItemId: 'unknown',
+        imposedItemIds: ['unknown'],
       }),
     ).toThrow(ImposedItemNotFoundError);
     expect(() =>
       engine.generate([...wardrobe(), washing], {
         context: context(),
-        imposedItemId: washing.id,
+        imposedItemIds: [washing.id],
       }),
     ).toThrow(ImposedItemUnavailableError);
   });
@@ -327,7 +327,7 @@ describe('OutfitGeneratorService', () => {
     const puffer = piece({ category: 'LAYER', subcategory: 'puffer' });
     const result = engine.generate([...wardrobe(), puffer], {
       context: context({ temperature: 30 }),
-      imposedItemId: puffer.id,
+      imposedItemIds: [puffer.id],
     });
 
     expect(result.length).toBeGreaterThan(0);

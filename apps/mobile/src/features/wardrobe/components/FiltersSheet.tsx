@@ -1,6 +1,4 @@
-import Slider from '@react-native-community/slider';
 import {
-  displayTemperature,
   SEASONS,
   STYLES,
   WARDROBE_CATEGORIES,
@@ -17,12 +15,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import { AppText } from '@/components/ui/AppText';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { ChipGroup } from '@/components/ui/ChipGroup';
 import { ColorPicker } from '@/components/ui/ColorPicker';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import { TemperatureSlider } from '@/components/ui/TemperatureSlider';
 import { useWeatherSettings } from '@/features/weather/hooks/useWeatherSettings';
 import {
   categoryIcons,
@@ -30,7 +28,7 @@ import {
   statusIcons,
   styleIcons,
 } from '@/theme/icons';
-import { colors, fonts, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
 
 export interface SheetFilters {
   category: WardrobeCategory[];
@@ -65,10 +63,6 @@ export function countActiveFilters(filters: SheetFilters): number {
   );
 }
 
-/** Range of the mockup slider, in °C. */
-const TEMPERATURE_RANGE = { min: -5, max: 30 };
-const TEMPERATURE_TICKS = [-5, 0, 5, 10, 15, 20, 25, 30];
-
 interface FiltersSheetProps {
   visible: boolean;
   value: SheetFilters;
@@ -89,7 +83,6 @@ export function FiltersSheet({
   const { t } = useTranslation();
   const [draft, setDraft] = useState(value);
   const unit = useWeatherSettings().data?.temperatureUnit ?? 'celsius';
-  const symbol = unit === 'fahrenheit' ? '°F' : '°C';
 
   const set = <K extends keyof SheetFilters>(key: K, next: SheetFilters[K]) =>
     setDraft((current) => ({ ...current, [key]: next }));
@@ -126,7 +119,6 @@ export function FiltersSheet({
         />
         <ChipGroup<WardrobeCategory>
           multiple
-          scroll
           options={WARDROBE_CATEGORIES.map((category) => ({
             value: category,
             label: t(`wardrobe.categories.${category}`),
@@ -149,7 +141,6 @@ export function FiltersSheet({
         <SectionTitle variant="heading" title={t('wardrobe.filters.styles')} />
         <ChipGroup<Style>
           multiple
-          scroll
           options={STYLES.map((style) => ({
             value: style,
             label: t(`wardrobe.styles.${style}`),
@@ -163,7 +154,6 @@ export function FiltersSheet({
         <SectionTitle variant="heading" title={t('wardrobe.filters.seasons')} />
         <ChipGroup<Season>
           multiple
-          scroll
           options={SEASONS.map((season) => ({
             value: season,
             label: t(`wardrobe.seasons.${season}`),
@@ -174,39 +164,19 @@ export function FiltersSheet({
         />
       </View>
       <View style={styles.section}>
-        <View style={styles.temperatureTitle}>
-          <SectionTitle
-            variant="heading"
-            title={t('wardrobe.filters.temperature')}
-          />
-          <AppText style={styles.temperatureValue}>
-            {draft.temperature === null
-              ? t('wardrobe.filters.anyTemperature')
-              : `${displayTemperature(draft.temperature, unit)}${symbol}`}
-          </AppText>
-        </View>
-        <Slider
-          accessibilityLabel={t('wardrobe.filters.temperature')}
-          minimumValue={TEMPERATURE_RANGE.min}
-          maximumValue={TEMPERATURE_RANGE.max}
-          step={1}
-          value={draft.temperature ?? TEMPERATURE_RANGE.min}
-          onValueChange={(temperature) => set('temperature', temperature)}
-          minimumTrackTintColor={colors.primary}
-          maximumTrackTintColor={colors.border}
-          thumbTintColor={colors.primary}
+        <TemperatureSlider
+          title={
+            <SectionTitle
+              variant="heading"
+              title={t('wardrobe.filters.temperature')}
+            />
+          }
+          value={draft.temperature}
+          onChange={(temperature) => set('temperature', temperature)}
+          unit={unit}
+          emptyLabel={t('wardrobe.filters.anyTemperature')}
           testID="temperature-slider"
         />
-        <View
-          style={styles.ticks}
-          importantForAccessibility="no-hide-descendants"
-        >
-          {TEMPERATURE_TICKS.map((tick) => (
-            <AppText key={tick} variant="hint">
-              {`${displayTemperature(tick, unit)}°`}
-            </AppText>
-          ))}
-        </View>
       </View>
       <View style={styles.section}>
         <SectionTitle
@@ -215,7 +185,6 @@ export function FiltersSheet({
         />
         <ChipGroup<WardrobeStatus>
           multiple
-          scroll
           options={WARDROBE_STATUSES.map((status) => ({
             value: status,
             label: t(`wardrobe.statuses.${status}`),
@@ -228,7 +197,6 @@ export function FiltersSheet({
       <View style={styles.section}>
         <SectionTitle variant="heading" title={t('wardrobe.filters.sort')} />
         <ChipGroup
-          scroll
           options={WARDROBE_SORTS.map((sort) => ({
             value: sort,
             label: t(`wardrobe.sorts.${sort}`),
@@ -244,20 +212,4 @@ export function FiltersSheet({
 const styles = StyleSheet.create({
   section: { gap: spacing.md },
   flex: { flex: 1 },
-  temperatureTitle: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-  },
-  temperatureValue: {
-    fontFamily: fonts.serif,
-    fontSize: 24,
-    color: colors.title,
-  },
-  ticks: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xs,
-    marginTop: -spacing.sm,
-  },
 });

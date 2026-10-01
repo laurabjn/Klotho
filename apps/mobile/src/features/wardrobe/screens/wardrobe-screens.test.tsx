@@ -7,6 +7,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { Linking } from 'react-native';
 
+import { useGenerationDraftStore } from '@/features/outfits/store/generation-draft.store';
 import { NetworkError } from '@/lib/api/errors';
 import { renderWithProviders } from '@/testing/render';
 
@@ -29,6 +30,7 @@ jest.mock('expo-router', () => ({
     push: jest.fn(),
     replace: jest.fn(),
     back: jest.fn(),
+    navigate: jest.fn(),
     canGoBack: () => true,
   },
   useLocalSearchParams: jest.fn(() => ({})),
@@ -390,6 +392,7 @@ describe('WardrobeItemDetailsScreen', () => {
   beforeEach(() => {
     jest.mocked(useLocalSearchParams).mockReturnValue({ id: 'item-42' });
     api.get.mockResolvedValue(item);
+    api.list.mockResolvedValue(page([]));
   });
 
   it('shows the piece', async () => {
@@ -397,7 +400,36 @@ describe('WardrobeItemDetailsScreen', () => {
 
     expect(await screen.findByText('Blazer structuré')).toBeOnTheScreen();
     expect(screen.getByText('Sézane')).toBeOnTheScreen();
-    expect(screen.getByText('Portée 8 fois')).toBeOnTheScreen();
+    expect(screen.getByText('8 fois')).toBeOnTheScreen();
+    expect(screen.getByText('Une pièce que tu adores !')).toBeOnTheScreen();
+    expect(screen.getByText('Pas encore portée')).toBeOnTheScreen();
+  });
+
+  it('shows the pieces that go with it', async () => {
+    const jeans = wardrobeItem({
+      id: 'jeans',
+      name: 'Jean droit',
+      category: 'BOTTOM',
+      primaryColor: 'denim',
+    });
+    api.list.mockResolvedValue(page([item, jeans]));
+    await renderWithProviders(<WardrobeItemDetailsScreen />);
+
+    expect(await screen.findByText('S’accorde avec')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Jean droit' }));
+    expect(router.push).toHaveBeenCalledWith('/piece/jeans');
+  });
+
+  it('creates an outfit around the piece', async () => {
+    await renderWithProviders(<WardrobeItemDetailsScreen />);
+    await screen.findByText('Blazer structuré');
+
+    await press('Créer une tenue avec cette pièce');
+
+    expect(useGenerationDraftStore.getState().mandatoryItem?.id).toBe(
+      'item-42',
+    );
+    expect(router.navigate).toHaveBeenCalledWith('/inspirations');
   });
 
   it('marks the piece as in the wash', async () => {

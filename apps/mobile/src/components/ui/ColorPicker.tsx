@@ -7,7 +7,7 @@ import {
   type ColorFamily,
   type ColorKey,
 } from '@klotho/shared';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -35,12 +35,18 @@ type Props = (
   compactCount?: number;
   /** Four big swatches per row, as in the onboarding mockup. */
   large?: boolean;
+  /** One line of swatches scrolling sideways instead of a grid. */
+  row?: boolean;
 };
 
 /** Grid of colour swatches with their name, as in the "Palette complète" mockup. */
 export function ColorPicker(props: Props) {
   const { t } = useTranslation();
-  const cellStyle = [styles.cell, props.large && styles.cellLarge];
+  const cellStyle = [
+    styles.cell,
+    props.large && styles.cellLarge,
+    props.row && styles.cellRow,
+  ];
   const swatchSize = props.large && styles.swatchLarge;
   const [family, setFamily] = useState<ColorFamily | 'all'>('all');
   const [expanded, setExpanded] = useState(props.compactCount === undefined);
@@ -83,7 +89,7 @@ export function ColorPicker(props: Props) {
           ))}
         </ScrollView>
       )}
-      <View style={styles.grid}>
+      <Swatches row={props.row}>
         {keys.map((key) => {
           const selected = isSelected(key);
           const label = t(`wardrobe.colors.${key}`);
@@ -142,8 +148,22 @@ export function ColorPicker(props: Props) {
             </AppText>
           </Pressable>
         )}
-      </View>
+      </Swatches>
     </View>
+  );
+}
+
+/** The swatches: wrapped in a grid, or on one line scrolling sideways. */
+function Swatches({ row, children }: { row?: boolean; children: ReactNode }) {
+  if (!row) return <View style={styles.grid}>{children}</View>;
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.line}
+    >
+      {children}
+    </ScrollView>
   );
 }
 
@@ -155,6 +175,8 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: spacing.md },
   cell: { width: '20%', alignItems: 'center', gap: spacing.xs },
   cellLarge: { width: '25%' },
+  line: { gap: spacing.xs, paddingVertical: 2 },
+  cellRow: { width: 76 },
   swatchLarge: { width: 64, height: 64 },
   swatch: {
     width: SWATCH,

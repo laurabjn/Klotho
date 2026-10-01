@@ -12,3 +12,17 @@ export class ImposedItemNotFoundError extends DomainError {
 export class ImposedItemUnavailableError extends DomainError {
   readonly code = 'outfits.imposedItemUnavailable';
 }
+
+export class OutfitNotFoundError extends DomainError {
+  readonly code = 'outfits.notFound';
+}
+
+/** Not enough suitable pieces to build a look (e.g. only sandals at 4 °C). */
+export class NoOutfitPossibleError extends DomainError {
+  readonly code = 'outfits.noOutfitPossible';
+}
+
+/** The replacement is not a piece of the right kind, or cannot be worn. */
+export class InvalidReplacementError extends DomainError {
+  readonly code = 'outfits.invalidReplacement';
+}

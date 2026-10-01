@@ -1,4 +1,4 @@
-import type { Style } from '@klotho/shared';
+import type { Occasion, Style } from '@klotho/shared';
 
 // Editorial photos of the mockups. Provisional crops of the mockup boards:
 // replace the files (same names) with the HD versions, then update the ratios.
@@ -40,6 +40,13 @@ export const photos = {
     ratio: 360 / 428,
   },
 } satisfies Record<string, Photo>;
+
+/** Occasion cards of "Créer une tenue"; the others show an icon. */
+export const occasionPhotos: Partial<Record<Occasion, number>> = {
+  everyday: require('../../assets/occasions/everyday.jpg'),
+  work: require('../../assets/occasions/work.jpg'),
+  date: require('../../assets/occasions/date.jpg'),
+};
 
 /** Square-ish thumbnails of the style cards; styles without one show an icon. */
 export const stylePhotos: Partial<Record<Style, number>> = {
