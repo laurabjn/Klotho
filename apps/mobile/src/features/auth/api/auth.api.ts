@@ -27,4 +27,11 @@ export const authApi = {
   resetPassword: (body: ResetPasswordInput) =>
     request<void>('/auth/reset-password', { method: 'POST', body }),
   me: () => request<UserProfile>('/users/me', { auth: true }),
+  /** RGPD: erases the account and all its data (password required). */
+  deleteAccount: (password: string) =>
+    request<void>('/users/me', {
+      method: 'DELETE',
+      body: { password },
+      auth: true,
+    }),
 };

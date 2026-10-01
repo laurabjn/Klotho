@@ -9,6 +9,7 @@ import {
 import type { ApiErrorBody } from '@klotho/shared';
 import type { Response } from 'express';
 
+import type { RequestWithId } from '../logging/request-logger.middleware';
 import {
   InvalidCredentialsError,
   InvalidRefreshTokenError,
@@ -17,6 +18,7 @@ import {
 import { DomainError } from '../../../domain/shared/domain-error';
 import {
   EmailAlreadyUsedError,
+  InvalidPasswordError,
   UserNotFoundError,
 } from '../../../domain/users/errors';
 import {
@@ -49,6 +51,8 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [InvalidResetTokenError, HttpStatus.BAD_REQUEST],
   // Neutral 404: the user behind a valid token no longer exists.
   [UserNotFoundError, HttpStatus.NOT_FOUND],
+  // 403, not 401: the app would take a 401 for an expired session.
+  [InvalidPasswordError, HttpStatus.FORBIDDEN],
   [WardrobeItemNotFoundError, HttpStatus.NOT_FOUND],
   [InvalidTemperatureRangeError, HttpStatus.BAD_REQUEST],
   [WardrobePhotoNotFoundError, HttpStatus.NOT_FOUND],
@@ -80,12 +84,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const response = host.switchToHttp().getResponse<Response>();
-    const body = this.toBody(exception);
+    const http = host.switchToHttp();
+    const response = http.getResponse<Response>();
+    const { requestId } = http.getRequest<RequestWithId>();
+    const body = this.toBody(exception, requestId);
     response.status(body.statusCode).json(body);
   }
 
-  private toBody(exception: unknown): ApiErrorBody {
+  private toBody(exception: unknown, requestId?: string): ApiErrorBody {
     if (exception instanceof DomainError) {
       const status = DOMAIN_ERROR_STATUS.get(
         exception.constructor as new () => DomainError,
@@ -104,7 +110,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       };
     }
 
+    // The logger masks secrets that the error message might hold.
     this.logger.error(
+      `Unhandled ${exception instanceof Error ? exception.name : typeof exception} [${requestId ?? 'no-request-id'}]`,
       exception instanceof Error ? exception.stack : String(exception),
     );
     return {

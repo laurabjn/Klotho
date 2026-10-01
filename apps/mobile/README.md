@@ -44,6 +44,25 @@ necessary for native modules that Expo Go does not ship, and to open
    then install the APK from the link EAS gives
 3. `npm run mobile:dev` from the repo root instead of `npm run mobile`
 
+## Beta build (EAS)
+
+App id: `com.laurabjn.klotho` (Android package and iOS bundle id; final).
+
+1. `npx eas-cli@latest login`, then `npx eas-cli@latest init` once (links
+   the project to your Expo account)
+2. `npm run build:preview:android` (from apps/mobile): an
+   installable APK for the testers (internal distribution)
+3. The API URL is baked in at build time: set `EXPO_PUBLIC_API_URL` to the
+   public API (EAS environment variables or `.env`)
+
+## Crash reporting
+
+Sentry, only when `EXPO_PUBLIC_SENTRY_DSN` is set (see `.env.example`):
+crashes and unexpected errors (5xx, bugs), never personal data (no e-mail,
+tokens or request bodies). Source maps upload is off in the preview
+profile (`SENTRY_DISABLE_AUTO_UPLOAD`); add `SENTRY_AUTH_TOKEN` as an EAS
+secret to turn it on.
+
 ## Session
 
 - The refresh token is stored in the OS keychain (`expo-secure-store`); the

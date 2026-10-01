@@ -43,6 +43,12 @@ export class PrismaUserRepository implements UserRepository {
     }
   }
 
+  async delete(id: string): Promise<boolean> {
+    // deleteMany: no error when the user is already gone (concurrent calls).
+    const { count } = await this.prisma.user.deleteMany({ where: { id } });
+    return count > 0;
+  }
+
   async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
     try {
       await this.prisma.user.update({ where: { id }, data: { passwordHash } });

@@ -1,20 +1,22 @@
-import { Logger } from '@nestjs/common';
-
 import type {
   Mailer,
   PasswordResetEmail,
 } from '../../domain/notifications/ports/mailer';
 
 /**
- * Development mailer: writes emails to the server log instead of sending them.
- * It logs a usable reset link, so env validation forbids it in production.
+ * Development mailer: writes emails to the console instead of sending them.
+ * It prints a usable reset link, so env validation forbids it in production.
+ * It writes to stdout directly: the logger would (rightly) mask the token.
  */
 export class ConsoleMailer implements Mailer {
-  private readonly logger = new Logger('ConsoleMailer');
+  constructor(
+    private readonly write: (line: string) => void = (line) =>
+      process.stdout.write(`${line}\n`),
+  ) {}
 
   sendPasswordReset(email: PasswordResetEmail): Promise<void> {
-    this.logger.log(
-      `Password reset for ${email.to} (${email.firstName}): ${email.resetUrl}`,
+    this.write(
+      `[ConsoleMailer] Password reset for ${email.to} (${email.firstName}): ${email.resetUrl}`,
     );
     return Promise.resolve();
   }

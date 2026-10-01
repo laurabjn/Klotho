@@ -37,3 +37,10 @@ jest.mock('expo-location', () => ({
   getLastKnownPositionAsync: jest.fn(() => Promise.resolve(null)),
   getCurrentPositionAsync: jest.fn(),
 }));
+
+// Crash reporting: nothing leaves the tests.
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  captureException: jest.fn(),
+  wrap: <T>(component: T) => component,
+}));

@@ -1,6 +1,7 @@
 import { onboardingFr, preferencesFr } from './preferences.fr';
 import { wardrobeFr } from './wardrobe.fr';
 import { outfitsFr } from './outfits.fr';
+import { privacyFr } from './privacy.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -40,6 +41,9 @@ export const fr = {
       body: 'Rejoins Klotho et découvre une expérience personnalisée, inspirante et pleine de style.',
       submit: 'Créer mon compte',
       haveAccount: "J'ai déjà un compte",
+      consent:
+        'En créant ton compte, tu acceptes notre politique de confidentialité.',
+      privacy: 'Lire la politique de confidentialité',
     },
     forgotPassword: {
       title: 'Mot de passe oublié',
@@ -92,6 +96,7 @@ export const fr = {
   preferences: preferencesFr,
   weather: weatherFr,
   outfits: outfitsFr,
+  privacy: privacyFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',
@@ -247,7 +252,11 @@ export const fr = {
         'Choisis une ville ou autorise la localisation pour voir la météo.',
     },
     validation: { failed: 'Certains champs sont invalides.' },
-    request: { tooMany: 'Trop de tentatives. Réessaie dans quelques minutes.' },
+    request: {
+      tooMany: 'Trop de tentatives. Réessaie dans quelques minutes.',
+      rateLimited: 'Trop de tentatives. Réessaie dans quelques minutes.',
+    },
+    users: { invalidPassword: 'Mot de passe incorrect.' },
     network:
       'Impossible de joindre le serveur. Vérifie ta connexion internet et réessaie.',
     unknown: 'Une erreur est survenue. Réessaie dans un instant.',

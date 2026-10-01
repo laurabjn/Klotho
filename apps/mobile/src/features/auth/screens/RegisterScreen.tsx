@@ -137,6 +137,15 @@ export function RegisterScreen() {
           />
         )}
       />
+      <AppText variant="hint" center>
+        {t('auth.register.consent')}
+      </AppText>
+      <Button
+        variant="link"
+        decorated={false}
+        label={t('auth.register.privacy')}
+        onPress={() => router.push('/privacy')}
+      />
       <Button
         label={t('auth.register.submit')}
         loading={register.isPending}

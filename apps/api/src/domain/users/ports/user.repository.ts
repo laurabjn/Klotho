@@ -7,6 +7,12 @@ export interface UserRepository {
   create(user: NewUser): Promise<User>;
   updateProfile(id: string, changes: ProfileChanges): Promise<User>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
+  /**
+   * Deletes the account and, by cascade, everything it owns (sessions,
+   * wardrobe, photo rows, profile, settings, looks, feedback, wears).
+   * Returns false when the user does not exist.
+   */
+  delete(id: string): Promise<boolean>;
 }
 
 export const USER_REPOSITORY = Symbol('UserRepository');

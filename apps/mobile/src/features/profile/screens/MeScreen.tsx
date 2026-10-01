@@ -360,7 +360,7 @@ export function MeScreen() {
           <MenuRow
             icon="shield-check-outline"
             label={t('profile.privacy')}
-            onPress={soon}
+            onPress={() => router.push('/privacy')}
           />
           <View style={styles.separator} />
           <MenuRow

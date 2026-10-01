@@ -11,6 +11,10 @@ import {
   ACCESS_TOKEN_SERVICE,
   type AccessTokenService,
 } from '../../../domain/auth/ports/access-token.service';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../../../domain/users/ports/user.repository';
 import type { AuthenticatedRequest } from './current-user.decorator';
 import { IS_PUBLIC } from './public.decorator';
 
@@ -21,6 +25,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     @Inject(ACCESS_TOKEN_SERVICE)
     private readonly accessTokens: AccessTokenService,
+    @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -37,6 +42,9 @@ export class JwtAuthGuard implements CanActivate {
         ? await this.accessTokens.verify(token)
         : null;
     if (!userId) throw new UnauthorizedException();
+    // A deleted account must not keep using its last access token (up to
+    // 15 minutes), e.g. to upload files nobody would ever delete.
+    if (!(await this.users.findById(userId))) throw new UnauthorizedException();
 
     request.userId = userId;
     return true;

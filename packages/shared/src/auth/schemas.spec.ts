@@ -1,4 +1,5 @@
 import {
+  deleteAccountSchema,
   emailSchema,
   forgotPasswordSchema,
   loginSchema,
@@ -201,5 +202,14 @@ describe('updateProfileSchema', () => {
     expect(
       updateProfileSchema.safeParse({ avatarUrl: 'http://x.fr/a.png' }).success,
     ).toBe(false);
+  });
+});
+
+describe('deleteAccountSchema', () => {
+  it('requires the current password, without applying the policy', () => {
+    expect(deleteAccountSchema.safeParse({ password: 'x' }).success).toBe(true);
+    expect(firstMessage(deleteAccountSchema.safeParse({ password: '' }))).toBe(
+      'errors.password.required',
+    );
   });
 });

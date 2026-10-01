@@ -1,4 +1,5 @@
 import {
+  OUTFIT_ALTERNATIVES_MAX,
   styleProfileSchema,
   type GenerateOutfitsRequest,
   type Outfit as OutfitDto,
@@ -302,7 +303,9 @@ export class ListOutfitAlternativesUseCase {
         item,
         score: scoreOutfit(withPiece(look, role, item), context).score,
       }))
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => b.score - a.score)
+      // Bounded: each alternative carries signed photo URLs.
+      .slice(0, OUTFIT_ALTERNATIVES_MAX);
 
     const byId = new Map(items.map((item) => [item.id, item]));
     return Promise.all(

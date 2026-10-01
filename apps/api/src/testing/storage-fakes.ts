@@ -14,6 +14,10 @@ import type { InMemoryWardrobeRepository } from './in-memory-wardrobe.repository
 
 export class InMemoryFileStorage implements FileStorage {
   readonly files = new Map<string, { body: Uint8Array; contentType: string }>();
+  /** Every key passed to delete(), in order. */
+  readonly deleted: string[] = [];
+  /** When set, delete() and list() fail (storage outage). */
+  failing = false;
 
   put(key: string, body: Uint8Array, contentType: string): Promise<void> {
     this.files.set(key, { body, contentType });
@@ -25,8 +29,17 @@ export class InMemoryFileStorage implements FileStorage {
   }
 
   delete(keys: string[]): Promise<void> {
+    if (this.failing) return Promise.reject(new Error('storage is down'));
+    this.deleted.push(...keys);
     for (const key of keys) this.files.delete(key);
     return Promise.resolve();
+  }
+
+  list(prefix: string): Promise<string[]> {
+    if (this.failing) return Promise.reject(new Error('storage is down'));
+    return Promise.resolve(
+      [...this.files.keys()].filter((key) => key.startsWith(prefix)),
+    );
   }
 
   signedUrl(key: string): Promise<string> {

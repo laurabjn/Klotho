@@ -26,6 +26,8 @@ const KNOWN_CODES = new Set([
   'auth.unauthorized',
   'validation.failed',
   'request.tooMany',
+  'request.rateLimited',
+  'users.invalidPassword',
   'uploads.invalidImage',
   'uploads.tooLarge',
   'uploads.notFound',
