@@ -272,6 +272,62 @@ describe('Wardrobe (e2e)', () => {
     });
   });
 
+  describe('favourite pieces', () => {
+    it('PUT / DELETE /wardrobe/:id/favorite, idempotent, and ?favorite=true', async () => {
+      const blouse = await add(laura, {
+        category: 'TOP',
+        primaryColor: 'ecru',
+      });
+      const jeans = await add(laura, {
+        category: 'BOTTOM',
+        primaryColor: 'denim',
+      });
+      expect(blouse.isFavorite).toBe(false);
+
+      for (let i = 0; i < 2; i += 1) {
+        const res = await http()
+          .put(`/wardrobe/${blouse.id}/favorite`)
+          .set(as(laura))
+          .expect(200);
+        expect((res.body as WardrobeItem).isFavorite).toBe(true);
+      }
+      const favorites = await list(laura, '?favorite=true');
+      expect(favorites.items.map((i) => i.id)).toEqual([blouse.id]);
+      expect(
+        (await list(laura, '?favorite=false')).items.map((i) => i.id),
+      ).toEqual([jeans.id]);
+
+      for (let i = 0; i < 2; i += 1) {
+        const res = await http()
+          .delete(`/wardrobe/${blouse.id}/favorite`)
+          .set(as(laura))
+          .expect(200);
+        expect((res.body as WardrobeItem).isFavorite).toBe(false);
+      }
+      expect((await list(laura, '?favorite=true')).total).toBe(0);
+    });
+
+    it("404 for an unknown item or another user's", async () => {
+      const item = await add(laura, { category: 'TOP', primaryColor: 'ecru' });
+
+      await http()
+        .put(`/wardrobe/${item.id}/favorite`)
+        .set(as(other))
+        .expect(404);
+      await http()
+        .delete(`/wardrobe/${item.id}/favorite`)
+        .set(as(other))
+        .expect(404);
+      await http().put('/wardrobe/unknown/favorite').set(as(laura)).expect(404);
+      await http().put(`/wardrobe/${item.id}/favorite`).expect(401);
+      expect((await list(laura, '?favorite=true')).total).toBe(0);
+    });
+
+    it('400 for an invalid favourite filter', async () => {
+      await http().get('/wardrobe?favorite=maybe').set(as(laura)).expect(400);
+    });
+  });
+
   it('deleting the account deletes its items (cascade)', async () => {
     await add(laura, { category: 'TOP', primaryColor: 'ecru' });
 

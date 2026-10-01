@@ -8,14 +8,18 @@ import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
 import { itemTitle } from '../labels';
 import { ItemVisual } from './ItemVisual';
+import { PieceHeart } from './PieceHeart';
 
 /** Grid card: visual, name, main colour, first style, and availability if not available. */
 export function WardrobeItemCard({
   item,
   onPress,
+  detail = 'colorStyle',
 }: {
   item: WardrobeItem;
   onPress: () => void;
+  /** Under the name: colour and style, or the category ("Mes pièces favorites"). */
+  detail?: 'colorStyle' | 'category';
 }) {
   const { t } = useTranslation();
   const title = itemTitle(t, item);
@@ -39,6 +43,7 @@ export function WardrobeItemCard({
           color={item.primaryColor}
           photo={item.photos[0]}
         />
+        <PieceHeart item={item} />
         {unavailable && (
           <View style={styles.badge}>
             <AppText variant="hint" style={styles.badgeText} numberOfLines={1}>
@@ -51,19 +56,35 @@ export function WardrobeItemCard({
         <AppText numberOfLines={1} style={styles.name}>
           {title}
         </AppText>
-        <View style={styles.row}>
-          <ColorDot color={item.primaryColor} size={12} />
-          <AppText variant="hint" numberOfLines={1} style={styles.flex}>
-            {colorName}
-          </AppText>
-          {style && (
-            <View style={styles.tag}>
-              <AppText variant="hint" numberOfLines={1} style={styles.tagText}>
-                {style}
-              </AppText>
-            </View>
-          )}
-        </View>
+        {detail === 'category' ? (
+          <View style={styles.categoryTag}>
+            <AppText
+              variant="hint"
+              numberOfLines={1}
+              style={styles.categoryText}
+            >
+              {t(`wardrobe.categories.${item.category}`)}
+            </AppText>
+          </View>
+        ) : (
+          <View style={styles.row}>
+            <ColorDot color={item.primaryColor} size={12} />
+            <AppText variant="hint" numberOfLines={1} style={styles.flex}>
+              {colorName}
+            </AppText>
+            {style && (
+              <View style={styles.tag}>
+                <AppText
+                  variant="hint"
+                  numberOfLines={1}
+                  style={styles.tagText}
+                >
+                  {style}
+                </AppText>
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </Pressable>
   );
@@ -101,11 +122,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.input,
   },
   tagText: { fontSize: 11, lineHeight: 15 },
+  categoryTag: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 2,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primaryLight,
+  },
+  categoryText: { fontSize: 12, lineHeight: 16, color: colors.link },
   badge: {
     position: 'absolute',
     top: spacing.xs,
     left: spacing.xs,
-    right: spacing.xs,
+    // Leaves room for the heart.
+    right: spacing.xs + 36,
     alignSelf: 'flex-start',
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,

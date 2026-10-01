@@ -63,6 +63,7 @@ function toWhere(
     ...(filters.status?.length && { status: { in: filters.status } }),
     ...(filters.season?.length && { seasons: { hasSome: filters.season } }),
     ...(filters.style?.length && { styles: { hasSome: filters.style } }),
+    ...(filters.favorite !== undefined && { isFavorite: filters.favorite }),
     AND: and,
   };
 }
@@ -125,6 +126,25 @@ export class PrismaWardrobeRepository implements WardrobeRepository {
         await this.prisma.wardrobeItem.update({
           where: { id, userId },
           data: changes,
+          include,
+        }),
+      );
+    } catch (error) {
+      if (isRecordNotFound(error)) return null;
+      throw error;
+    }
+  }
+
+  async setFavorite(
+    userId: string,
+    id: string,
+    favorite: boolean,
+  ): Promise<WardrobeItem | null> {
+    try {
+      return toDomain(
+        await this.prisma.wardrobeItem.update({
+          where: { id, userId },
+          data: { isFavorite: favorite },
           include,
         }),
       );

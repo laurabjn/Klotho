@@ -27,6 +27,7 @@ export function wardrobeItem(
     photos: [],
     wearCount: 0,
     lastWornAt: null,
+    isFavorite: false,
     createdAt: '2026-10-01T08:00:00.000Z',
     updatedAt: '2026-10-01T08:00:00.000Z',
     ...overrides,

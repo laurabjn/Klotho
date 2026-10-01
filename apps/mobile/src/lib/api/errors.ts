@@ -41,6 +41,7 @@ const KNOWN_CODES = new Set([
   'outfits.invalidReplacement',
   'outfits.imposedItemNotFound',
   'outfits.imposedItemUnavailable',
+  'outfits.wearNotFound',
 ]);
 
 /** i18n key of the message to show for any error thrown by the API client. */

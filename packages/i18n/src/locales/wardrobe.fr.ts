@@ -374,4 +374,15 @@ export const wardrobeFr = {
     createOutfit: 'Créer une tenue avec cette pièce',
     temperatureUpTo: "Jusqu'à {{max}} °C",
   },
+  favorites: {
+    title: 'Mes pièces favorites',
+    overline: 'Tes indispensables préférés',
+    search: 'Rechercher une pièce, une marque…',
+    all: 'Toutes',
+    emptyTitle: 'Pas encore de pièce favorite',
+    emptyBody: 'Touche le cœur d’une pièce pour la retrouver ici.',
+    noResult: 'Aucune pièce favorite ne correspond.',
+    add: 'Ajouter aux favoris',
+    remove: 'Retirer des favoris',
+  },
 } as const;

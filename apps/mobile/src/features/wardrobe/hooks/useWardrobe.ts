@@ -13,6 +13,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { patchCached } from '@/lib/query-patch';
+
 import { addPhotos } from '../api/photos.api';
 import { wardrobeApi } from '../api/wardrobe.api';
 import type { LocalPhoto } from '../photos/pick-photo';
@@ -80,6 +82,26 @@ export function useUpdateWardrobeItem(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: UpdateWardrobeItemInput) => wardrobeApi.update(id, body),
+    onSuccess: (item) => {
+      queryClient.setQueryData(wardrobeKeys.item(id), item);
+      return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });
+    },
+  });
+}
+
+/** The heart of a piece ("Mes pièces favorites"). */
+export function useToggleItemFavorite(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (favorite: boolean) => wardrobeApi.favorite(id, favorite),
+    // Every copy of the piece (lists, details, looks) changes at once.
+    onMutate: (favorite) => {
+      const undo = [wardrobeKeys.all, ['outfits']].map((root) =>
+        patchCached(queryClient, root, id, { isFavorite: favorite }),
+      );
+      return { undo: () => undo.forEach((step) => step()) };
+    },
+    onError: (_error, _favorite, context) => context?.undo(),
     onSuccess: (item) => {
       queryClient.setQueryData(wardrobeKeys.item(id), item);
       return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });

@@ -4,15 +4,25 @@ import {
   DEFAULT_ENGINE_SETTINGS,
   OutfitGeneratorService,
 } from '../../../application/outfits/outfit-generator.service';
+import { ListOutfitsUseCase } from '../../../application/outfits/list-outfits.use-case';
+import {
+  DeleteOutfitWearUseCase,
+  ListOutfitHistoryUseCase,
+  MarkOutfitWornUseCase,
+} from '../../../application/outfits/mark-outfit-worn.use-case';
 import {
   CreateOutfitsUseCase,
   CreateOutfitVariantUseCase,
   GetOutfitUseCase,
   ListOutfitAlternativesUseCase,
-  ListRecentOutfitsUseCase,
   OutfitWorkshop,
   ReplaceOutfitItemUseCase,
 } from '../../../application/outfits/outfit.use-cases';
+import {
+  ClearOutfitFeedbackUseCase,
+  SubmitOutfitFeedbackUseCase,
+} from '../../../application/outfits/submit-outfit-feedback.use-case';
+import { ToggleOutfitFavoriteUseCase } from '../../../application/outfits/toggle-outfit-favorite.use-case';
 import {
   OUTFIT_REPOSITORY,
   type OutfitRepository,
@@ -37,10 +47,16 @@ const logger = new Logger('OutfitEngine');
 const useCases = [
   CreateOutfitsUseCase,
   GetOutfitUseCase,
-  ListRecentOutfitsUseCase,
+  ListOutfitsUseCase,
   ListOutfitAlternativesUseCase,
   ReplaceOutfitItemUseCase,
   CreateOutfitVariantUseCase,
+  SubmitOutfitFeedbackUseCase,
+  ClearOutfitFeedbackUseCase,
+  ToggleOutfitFavoriteUseCase,
+  MarkOutfitWornUseCase,
+  ListOutfitHistoryUseCase,
+  DeleteOutfitWearUseCase,
 ];
 
 @Module({

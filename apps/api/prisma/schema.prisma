@@ -23,6 +23,8 @@ model User {
   styleProfile        StyleProfile?
   weatherSettings     WeatherSettings?
   outfits             Outfit[]
+  outfitFeedbacks     OutfitFeedback[]
+  outfitWears         OutfitWear[]
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -98,6 +100,7 @@ model WardrobeItem {
   status          WardrobeStatus   @default(AVAILABLE)
   wearCount       Int              @default(0)
   lastWornAt      DateTime?
+  isFavorite      Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -174,15 +177,20 @@ model Outfit {
   score            Float
   /// Sub-scores (0 to 1) behind "Pourquoi cette tenue ?".
   breakdown        Json
-  isFavorite       Boolean  @default(false)
+  isFavorite       Boolean   @default(false)
+  /// When it became a favourite ("Favoris" lists the latest first).
+  favoritedAt      DateTime?
   /// The look this one is a variant of.
   variantOfId      String?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime  @default(now())
 
-  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items OutfitItem[]
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OutfitItem[]
+  feedbacks OutfitFeedback[]
+  wears     OutfitWear[]
 
   @@index([userId, createdAt])
+  @@index([userId, isFavorite, favoritedAt])
 }
 
 model OutfitItem {
@@ -196,4 +204,37 @@ model OutfitItem {
 
   @@unique([outfitId, role])
   @@index([wardrobeItemId])
+}
+
+/// The user's opinion of a look: one per look, the last one wins. Reasons are keys of packages/shared.
+model OutfitFeedback {
+  id        String   @id @default(cuid())
+  outfitId  String
+  userId    String
+  rating    String
+  reasons   String[]
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  outfit Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([outfitId, userId])
+  @@index([userId])
+}
+
+/// A day a look was worn, in the user's own calendar (no time, no time zone).
+model OutfitWear {
+  id        String   @id @default(cuid())
+  userId    String
+  outfitId  String
+  wornOn    DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  outfit Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([outfitId, wornOn])
+  @@index([userId, wornOn])
 }

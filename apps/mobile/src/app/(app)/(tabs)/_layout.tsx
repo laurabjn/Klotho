@@ -2,7 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, type ColorValue } from 'react-native';
+import { StyleSheet, Text, View, type ColorValue } from 'react-native';
 
 import { SplashView } from '@/components/brand/SplashView';
 import { useStyleProfile } from '@/features/preferences/hooks/useStyleProfile';
@@ -62,7 +62,19 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: '#6B5148',
-        tabBarLabelStyle: styles.label,
+        // Never cut ("Ma garde-r…"): the label shrinks a little instead.
+        tabBarLabel: ({ color, children }) => (
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+            maxFontSizeMultiplier={1.1}
+            style={[styles.label, { color }]}
+          >
+            {children}
+          </Text>
+        ),
+        tabBarItemStyle: styles.item,
         tabBarStyle: styles.bar,
         sceneStyle: { backgroundColor: colors.background },
       }}
@@ -120,7 +132,8 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  label: { fontFamily: fonts.serif, fontSize: 12 },
+  label: { fontFamily: fonts.serif, fontSize: 12, textAlign: 'center' },
+  item: { paddingHorizontal: 0 },
   icon: { alignItems: 'center', gap: 2 },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: 'transparent' },
   dotActive: { backgroundColor: colors.primary },

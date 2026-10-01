@@ -91,6 +91,9 @@ describe('HomeScreen', () => {
         highlights: ['weather'],
         variantOf: null,
         createdAt: new Date().toISOString(),
+        isFavorite: false,
+        feedback: null,
+        lastWornOn: null,
       },
     ]);
     await renderWithProviders(<HomeScreen />);
@@ -125,6 +128,9 @@ describe('HomeScreen', () => {
       highlights: ['weather'],
       variantOf: null,
       createdAt: new Date().toISOString(),
+      isFavorite: false,
+      feedback: null,
+      lastWornOn: null,
     });
     jest.mocked(outfitsApi.recent).mockResolvedValue([look('o1', 'boho')]);
     jest

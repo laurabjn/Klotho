@@ -31,6 +31,7 @@ export interface WardrobeItem {
   photos: WardrobePhoto[];
   wearCount: number;
   lastWornAt: Date | null;
+  isFavorite: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +63,7 @@ export type WardrobeItemFields = Omit<
   | 'photos'
   | 'wearCount'
   | 'lastWornAt'
+  | 'isFavorite'
   | 'createdAt'
   | 'updatedAt'
 >;
@@ -79,6 +81,8 @@ export interface WardrobeFilters {
   q?: string;
   /** Wearable at this temperature (°C): within the range, or no range set. */
   temperature?: number;
+  /** "Mes pièces favorites" (true), or the others (false). */
+  favorite?: boolean;
 }
 
 export interface WardrobeListQuery {

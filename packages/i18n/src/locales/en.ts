@@ -107,6 +107,9 @@ export const en: TranslationResource = {
     reminders: 'Outfit reminders and suggestions',
     privacy: 'Privacy',
     help: 'Help',
+    favoriteOutfits: 'My favourite outfits',
+    favoritePieces: 'My favourite pieces',
+    history: 'My outfit history',
     ok: 'OK',
     dominantStyle: 'Main style',
     noDominantStyle: 'Add pieces to find out',
@@ -172,6 +175,12 @@ export const en: TranslationResource = {
       occasion: 'Unknown occasion',
       condition: 'Unknown weather',
       role: 'Unknown place in the outfit',
+      filter: 'Unknown filter',
+      rating: 'Choose “I like it” or “I don’t”',
+      reason: 'Unknown reason',
+      note: '250 characters maximum',
+      day: 'Invalid date',
+      period: 'The end date must follow the start date',
     },
     weather: {
       coordinates: 'Invalid location',
@@ -224,6 +233,7 @@ export const en: TranslationResource = {
       imposedItemNotFound: 'This piece is no longer in your wardrobe.',
       imposedItemUnavailable:
         'This piece is not available today (in the wash, lent…).',
+      wearNotFound: 'This outfit is no longer in your history.',
     },
     weather: {
       unavailable: 'The weather is unavailable right now. Try again later.',

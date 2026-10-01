@@ -17,6 +17,7 @@ import { permissionState, pickPhoto } from '../photos/pick-photo';
 import { page, wardrobeItem } from '../testing';
 import { AddWardrobeItemScreen } from './AddWardrobeItemScreen';
 import { EditWardrobeItemScreen } from './EditWardrobeItemScreen';
+import { FavoritePiecesScreen } from './FavoritePiecesScreen';
 import { WardrobeItemDetailsScreen } from './WardrobeItemDetailsScreen';
 import { WardrobeScreen } from './WardrobeScreen';
 
@@ -420,6 +421,21 @@ describe('WardrobeItemDetailsScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/piece/jeans');
   });
 
+  it('adds the piece to the favourites', async () => {
+    api.favorite.mockResolvedValue({ ...item, isFavorite: true });
+    await renderWithProviders(<WardrobeItemDetailsScreen />);
+    await screen.findByText('Blazer structuré');
+
+    await press('Ajouter aux favoris');
+
+    await waitFor(() =>
+      expect(api.favorite).toHaveBeenCalledWith('item-42', true),
+    );
+    expect(
+      await screen.findByRole('button', { name: 'Retirer des favoris' }),
+    ).toBeOnTheScreen();
+  });
+
   it('creates an outfit around the piece', async () => {
     await renderWithProviders(<WardrobeItemDetailsScreen />);
     await screen.findByText('Blazer structuré');
@@ -576,6 +592,74 @@ describe('EditWardrobeItemScreen', () => {
         category: 'TOP',
         primaryColor: 'ecru',
       }),
+    );
+  });
+});
+
+describe('WardrobeScreen hearts', () => {
+  it('adds a piece to the favourites from the grid', async () => {
+    const skirt = wardrobeItem({ id: 'skirt', name: 'Jupe satinée' });
+    // The server then lists it as a favourite.
+    let favorite = false;
+    api.list.mockImplementation(() =>
+      Promise.resolve(page([{ ...skirt, isFavorite: favorite }])),
+    );
+    api.favorite.mockImplementation(() => {
+      favorite = true;
+      return Promise.resolve({ ...skirt, isFavorite: true });
+    });
+    await renderWithProviders(<WardrobeScreen />);
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Ajouter aux favoris' }),
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Retirer des favoris' }),
+    ).toBeOnTheScreen();
+    expect(api.favorite).toHaveBeenCalledWith('skirt', true);
+  });
+});
+
+describe('FavoritePiecesScreen', () => {
+  it('lists the favourite pieces, by category', async () => {
+    const cardigan = wardrobeItem({
+      id: 'cardigan',
+      name: 'Cardigan en maille',
+      isFavorite: true,
+    });
+    api.list.mockResolvedValue(page([cardigan]));
+    await renderWithProviders(<FavoritePiecesScreen />);
+
+    expect(await screen.findByText('Cardigan en maille')).toBeOnTheScreen();
+    expect(api.list).toHaveBeenCalledWith(
+      expect.objectContaining({ favorite: 'true' }),
+    );
+
+    await fireEvent.press(screen.getByRole('radio', { name: 'Hauts' }));
+    await waitFor(() =>
+      expect(api.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ favorite: 'true', category: ['TOP'] }),
+      ),
+    );
+  });
+
+  it('takes a piece out of the favourites', async () => {
+    const cardigan = wardrobeItem({
+      id: 'cardigan',
+      name: 'Cardigan en maille',
+      isFavorite: true,
+    });
+    api.list.mockResolvedValue(page([cardigan]));
+    api.favorite.mockResolvedValue({ ...cardigan, isFavorite: false });
+    await renderWithProviders(<FavoritePiecesScreen />);
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Retirer des favoris' }),
+    );
+
+    await waitFor(() =>
+      expect(api.favorite).toHaveBeenCalledWith('cardigan', false),
     );
   });
 });

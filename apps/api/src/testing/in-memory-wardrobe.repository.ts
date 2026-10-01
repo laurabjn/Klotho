@@ -33,6 +33,7 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
       photos: [],
       wearCount: 0,
       lastWornAt: null,
+      isFavorite: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -62,6 +63,10 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
       )
       .filter((i) => intersects(i.seasons, filters.season))
       .filter((i) => intersects(i.styles, filters.style))
+      .filter(
+        (i) =>
+          filters.favorite === undefined || i.isFavorite === filters.favorite,
+      )
       .filter(
         (i) =>
           filters.temperature === undefined ||
@@ -110,6 +115,24 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
     };
     this.items[index] = updated;
     return Promise.resolve(view(updated));
+  }
+
+  setFavorite(userId: string, id: string, favorite: boolean) {
+    const item = this.items.find((i) => i.id === id && i.userId === userId);
+    if (!item) return Promise.resolve(null);
+    Object.assign(item, { isFavorite: favorite, updatedAt: this.clock.now() });
+    return Promise.resolve(view(item));
+  }
+
+  /** Usage counters, as an outfit wear changes them (outfit repository). */
+  updateUsage(
+    id: string,
+    change: (
+      item: WardrobeItem,
+    ) => Pick<WardrobeItem, 'wearCount' | 'lastWornAt'>,
+  ): void {
+    const item = this.items.find((i) => i.id === id);
+    if (item) Object.assign(item, change(item));
   }
 
   deleteOwned(userId: string, id: string): Promise<boolean> {

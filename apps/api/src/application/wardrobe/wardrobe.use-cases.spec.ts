@@ -15,6 +15,7 @@ import { CreateWardrobeItemUseCase } from './create-wardrobe-item.use-case';
 import { DeleteWardrobeItemUseCase } from './delete-wardrobe-item.use-case';
 import { GetWardrobeItemUseCase } from './get-wardrobe-item.use-case';
 import { ListWardrobeItemsUseCase } from './list-wardrobe-items.use-case';
+import { SetWardrobeFavoriteUseCase } from './toggle-wardrobe-favorite.use-case';
 import { UpdateWardrobeItemUseCase } from './update-wardrobe-item.use-case';
 
 const LAURA = 'user-laura';
@@ -29,6 +30,7 @@ describe('Wardrobe use cases', () => {
   let get: GetWardrobeItemUseCase;
   let update: UpdateWardrobeItemUseCase;
   let remove: DeleteWardrobeItemUseCase;
+  let favorite: SetWardrobeFavoriteUseCase;
 
   /** Goes through the shared schema, like the HTTP layer does. */
   const add = (userId: string, input: CreateWardrobeItemInput) => {
@@ -46,6 +48,7 @@ describe('Wardrobe use cases', () => {
     get = new GetWardrobeItemUseCase(repository, storage);
     update = new UpdateWardrobeItemUseCase(repository, storage);
     remove = new DeleteWardrobeItemUseCase(repository, storage);
+    favorite = new SetWardrobeFavoriteUseCase(repository, storage);
   });
 
   describe('CreateWardrobeItemUseCase', () => {
@@ -58,6 +61,7 @@ describe('Wardrobe use cases', () => {
         status: 'AVAILABLE',
         wearCount: 0,
         lastWornAt: null,
+        isFavorite: false,
         createdAt: expect.any(String),
       });
       expect(repository.items[0]?.userId).toBe(LAURA);
@@ -188,6 +192,42 @@ describe('Wardrobe use cases', () => {
       await expect(
         update.execute(LAURA, itemId, { minTemperature: 25 }),
       ).rejects.toBeInstanceOf(InvalidTemperatureRangeError);
+    });
+
+    it('adds and removes a favourite, idempotently', async () => {
+      const added = await favorite.execute(LAURA, itemId, true);
+      clock.advance(MINUTE);
+      const again = await favorite.execute(LAURA, itemId, true);
+
+      expect(added.isFavorite).toBe(true);
+      expect(again).toEqual(added); // nothing changed, not even updatedAt
+      await expect(
+        favorite.execute(LAURA, itemId, false),
+      ).resolves.toMatchObject({ isFavorite: false });
+      await expect(
+        favorite.execute(LAURA, itemId, false),
+      ).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it("cannot favourite another user's item", async () => {
+      await expect(
+        favorite.execute(OTHER, itemId, true),
+      ).rejects.toBeInstanceOf(WardrobeItemNotFoundError);
+      expect(repository.items[0]?.isFavorite).toBe(false);
+    });
+
+    it('lists the favourites only', async () => {
+      const { id: other } = await add(LAURA, {
+        category: 'BOTTOM',
+        primaryColor: 'denim',
+      });
+      await favorite.execute(LAURA, itemId, true);
+
+      const favorites = await list.execute(LAURA, query({ favorite: 'true' }));
+      const others = await list.execute(LAURA, query({ favorite: 'false' }));
+
+      expect(favorites.items.map((i) => i.id)).toEqual([itemId]);
+      expect(others.items.map((i) => i.id)).toEqual([other]);
     });
 
     it('deletes my item', async () => {

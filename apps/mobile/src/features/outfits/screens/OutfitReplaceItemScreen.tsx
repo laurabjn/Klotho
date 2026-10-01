@@ -21,6 +21,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ItemVisual } from '@/features/wardrobe/components/ItemVisual';
+import { PieceHeart } from '@/features/wardrobe/components/PieceHeart';
 import { itemTitle, subcategoryLabel } from '@/features/wardrobe/labels';
 import { errorMessageKey } from '@/lib/api/errors';
 import { categoryIcons, styleIcons } from '@/theme/icons';
@@ -210,6 +211,7 @@ function Replace({ outfit }: { outfit: Outfit }) {
                         color={item.primaryColor}
                         photo={item.photos[0]}
                       />
+                      {!selected && <PieceHeart item={item} size={28} />}
                       {selected && (
                         <View style={styles.check}>
                           <Ionicons

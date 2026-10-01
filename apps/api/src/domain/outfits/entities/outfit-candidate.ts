@@ -56,6 +56,16 @@ export interface Outfit {
   pieces: OutfitPiece[];
 }
 
+/**
+ * What the user told about past looks (US8.1): the main pieces of the looks
+ * she liked and disliked, and her favourite pieces.
+ */
+export interface OutfitFeedbackSignals {
+  liked: string[][];
+  disliked: string[][];
+  favoriteItemIds: string[];
+}
+
 /** Everything that shapes the day's looks, besides the wardrobe itself. */
 export interface OutfitContext {
   /** In °C: the manual temperature when given, else the weather; null if unknown. */
@@ -69,18 +79,21 @@ export interface OutfitContext {
   occasion: Occasion | null;
   profile: StyleProfileFields;
   today: Date;
+  /** None for a user who never gave an opinion. */
+  feedback?: OutfitFeedbackSignals;
 }
 
 export const mainPieces = (outfit: Outfit): OutfitPiece[] =>
   outfit.pieces.filter((piece) => MAIN_ROLES.includes(piece.role));
+
+/** Same identity as outfitKey, from the ids of the main pieces. */
+export const keyOfMainPieces = (itemIds: string[]): string =>
+  [...itemIds].sort().join('+');
 
 /**
  * Stable identity of a look: its main pieces, whatever their order. The
  * same look with another bag is the same look.
  */
 export function outfitKey(outfit: Outfit): string {
-  return mainPieces(outfit)
-    .map((piece) => piece.item.id)
-    .sort()
-    .join('+');
+  return keyOfMainPieces(mainPieces(outfit).map((piece) => piece.item.id));
 }

@@ -15,6 +15,7 @@ import {
 } from '../../../application/wardrobe/photos/photo-settings';
 import { SetMainWardrobePhotoUseCase } from '../../../application/wardrobe/photos/set-main-wardrobe-photo.use-case';
 import { UploadWardrobePhotoUseCase } from '../../../application/wardrobe/photos/upload-wardrobe-photo.use-case';
+import { SetWardrobeFavoriteUseCase } from '../../../application/wardrobe/toggle-wardrobe-favorite.use-case';
 import { UpdateWardrobeItemUseCase } from '../../../application/wardrobe/update-wardrobe-item.use-case';
 import type { Env } from '../../../config/env';
 import {
@@ -43,6 +44,7 @@ const itemUseCases = [
   GetWardrobeItemUseCase,
   UpdateWardrobeItemUseCase,
   DeleteWardrobeItemUseCase,
+  SetWardrobeFavoriteUseCase,
 ];
 
 const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
