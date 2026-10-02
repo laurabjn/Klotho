@@ -34,11 +34,18 @@ describe('PrivacyScreen', () => {
     await renderWithProviders(<PrivacyScreen />);
 
     await press('Supprimer mon compte');
+    expect(
+      screen.getByText('Cette action est irréversible.'),
+    ).toBeOnTheScreen();
+    const confirm = screen.getByRole('button', {
+      name: 'Oui, supprimer mon compte',
+    });
+    expect(confirm.props.accessibilityState).toMatchObject({ disabled: true });
     await fireEvent.changeText(
       screen.getByLabelText('Mot de passe'),
       'Klotho2026!',
     );
-    await press('Supprimer définitivement');
+    await press('Oui, supprimer mon compte');
 
     await waitFor(() =>
       expect(useAuthStore.getState().status).toBe('signedOut'),
@@ -54,11 +61,23 @@ describe('PrivacyScreen', () => {
 
     await press('Supprimer mon compte');
     await fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'wrong');
-    await press('Supprimer définitivement');
+    await press('Oui, supprimer mon compte');
 
     expect(
       await screen.findByText('Mot de passe incorrect.'),
     ).toBeOnTheScreen();
     expect(useAuthStore.getState().status).toBe('signedIn');
+  });
+
+  it('forgets the password when the deletion is cancelled', async () => {
+    await renderWithProviders(<PrivacyScreen />);
+
+    await press('Supprimer mon compte');
+    await fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'secret');
+    await press('Annuler');
+    await press('Supprimer mon compte');
+
+    expect(screen.getByLabelText('Mot de passe').props.value).toBe('');
+    expect(authApi.deleteAccount).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FormError } from '@/components/ui/FormError';
 import { FormScrollView } from '@/components/ui/FormScrollView';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
@@ -104,6 +105,11 @@ function DeleteAccount() {
       await forgetDeletedAccount();
     },
   });
+  const close = () => {
+    setOpen(false);
+    setPassword('');
+    remove.reset();
+  };
 
   return (
     <View style={[styles.card, styles.danger]}>
@@ -120,52 +126,47 @@ function DeleteAccount() {
         </AppText>
       </View>
       <AppText style={styles.body}>{t('privacy.delete.body')}</AppText>
-      {open ? (
-        <View style={styles.confirm}>
-          <AppText variant="label">{t('privacy.delete.confirmTitle')}</AppText>
-          <AppText variant="hint">{t('privacy.delete.confirmBody')}</AppText>
-          <TextField
-            label={t('privacy.delete.password')}
-            icon="lock-closed-outline"
-            password
-            value={password}
-            onChangeText={setPassword}
-            autoComplete="current-password"
-          />
-          <FormError
-            message={
-              remove.error
-                ? t(errorMessageKey(remove.error) as 'apiErrors.unknown')
-                : null
-            }
-          />
-          <Button
-            variant="secondary"
-            icon="trash-outline"
-            label={t('privacy.delete.confirm')}
-            disabled={password.length === 0}
-            loading={remove.isPending}
-            onPress={() => remove.mutate()}
-          />
-          <Button
-            variant="link"
-            decorated={false}
-            label={t('privacy.delete.cancel')}
-            onPress={() => {
-              setOpen(false);
-              setPassword('');
-              remove.reset();
-            }}
-          />
+      <Button
+        variant="secondary"
+        icon="trash-outline"
+        label={t('privacy.delete.action')}
+        onPress={() => setOpen(true)}
+      />
+      <ConfirmDialog
+        visible={open}
+        tone="danger"
+        icon="trash-outline"
+        title={t('privacy.delete.confirmTitle')}
+        message={t('privacy.delete.confirmBody')}
+        confirmLabel={t('privacy.delete.confirm')}
+        cancelLabel={t('privacy.delete.cancel')}
+        confirmDisabled={password.length === 0}
+        loading={remove.isPending}
+        onConfirm={() => remove.mutate()}
+        onCancel={close}
+      >
+        <View style={styles.warning}>
+          <Ionicons name="warning-outline" size={18} color={colors.error} />
+          <AppText style={styles.warningText}>
+            {t('privacy.delete.warning')}
+          </AppText>
         </View>
-      ) : (
-        <Button
-          variant="secondary"
-          icon="trash-outline"
-          label={t('privacy.delete.action')}
-          onPress={() => setOpen(true)}
+        <TextField
+          label={t('privacy.delete.password')}
+          icon="lock-closed-outline"
+          password
+          value={password}
+          onChangeText={setPassword}
+          autoComplete="current-password"
         />
-      )}
+        <FormError
+          message={
+            remove.error
+              ? t(errorMessageKey(remove.error) as 'apiErrors.unknown')
+              : null
+          }
+        />
+      </ConfirmDialog>
     </View>
   );
 }
@@ -198,5 +199,15 @@ const styles = StyleSheet.create({
   },
   heading: { flex: 1, fontSize: 20, lineHeight: 25 },
   body: { fontFamily: fonts.serifRegular, fontSize: 15, lineHeight: 21 },
-  confirm: { gap: spacing.sm },
+  warning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.pill,
+    backgroundColor: '#F6DEDA',
+  },
+  warningText: { fontSize: 15, color: colors.error },
 });

@@ -25,16 +25,6 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
     active_one: '{{count}} active filter',
     active_other: '{{count}} active filters',
   },
-  empty: {
-    title: 'Your wardrobe is still empty',
-    body: 'Add your first pieces so Klotho can create outfits that feel like you.',
-    action: 'Add my first piece',
-  },
-  noResult: {
-    title: 'No piece found',
-    body: 'No piece matches your search.',
-    clear: 'Clear filters',
-  },
   loadError: 'Could not load your wardrobe.',
   sorts: {
     recent: 'Recently added',
@@ -266,7 +256,6 @@ export const wardrobeEn: TranslationResource['wardrobe'] = {
       'Add one or more photos to recognise your piece at a glance. You can also do it later.',
     mainHint:
       'The first photo is the main one. Tap another photo to choose it.',
-    uploading: 'Uploading photos…',
     pickFailed: 'The photo could not be loaded. Try again.',
     uploadFailed_one:
       'One photo could not be uploaded. You can add it again from this page.',

@@ -24,16 +24,6 @@ export const wardrobeFr = {
     active_one: '{{count}} filtre actif',
     active_other: '{{count}} filtres actifs',
   },
-  empty: {
-    title: 'Ton dressing est encore vide',
-    body: 'Ajoute tes premières pièces pour que Klotho puisse créer des tenues qui te ressemblent.',
-    action: 'Ajouter ma première pièce',
-  },
-  noResult: {
-    title: 'Aucune pièce trouvée',
-    body: 'Aucune pièce ne correspond à ta recherche.',
-    clear: 'Effacer les filtres',
-  },
   loadError: 'Impossible de charger ta garde-robe.',
   sorts: {
     recent: 'Ajout récent',
@@ -265,7 +255,6 @@ export const wardrobeFr = {
       'Ajoute une ou plusieurs photos pour reconnaître ta pièce en un coup d’œil. Tu pourras aussi le faire plus tard.',
     mainHint:
       'La première photo est la photo principale. Appuie sur une autre photo pour la choisir.',
-    uploading: 'Envoi des photos…',
     pickFailed: 'La photo n’a pas pu être chargée. Réessaie.',
     uploadFailed_one:
       'Une photo n’a pas pu être envoyée. Tu peux la rajouter depuis cette fiche.',

@@ -79,3 +79,14 @@ export const stylePhotos: Partial<Record<Style, number>> = {
   cottagecore: require('../../assets/styles/cottagecore.jpg'),
   artsy: require('../../assets/styles/artsy.jpg'),
 };
+
+/** Illustrations of the state screens (provisional crops of the board). */
+export const statePhotos = {
+  emptyWardrobe: require('../../assets/states/empty-wardrobe.jpg'),
+  generating: require('../../assets/states/generating.jpg'),
+  noOutfit: require('../../assets/states/no-outfit.jpg'),
+  offline: require('../../assets/states/offline.jpg'),
+  photos: require('../../assets/states/photos.jpg'),
+  location: require('../../assets/states/location.jpg'),
+  search: require('../../assets/states/search.jpg'),
+} as const;

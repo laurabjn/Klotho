@@ -5,6 +5,8 @@ import { Linking, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { PermissionScreen } from '@/components/ui/PermissionScreen';
+import { statePhotos } from '@/theme/photos';
 import { spacing } from '@/theme/tokens';
 
 import {
@@ -91,23 +93,28 @@ export function usePhotoSource(onPicked: (photo: LocalPhoto) => void) {
           />
         </View>
       </BottomSheet>
-      <ConfirmDialog
+      <PermissionScreen
         visible={primer !== null}
-        icon={primer === 'camera' ? 'camera-outline' : 'images-outline'}
+        image={statePhotos.photos}
         title={
           primer === 'camera'
             ? t('wardrobe.photos.permissionCameraTitle')
             : t('wardrobe.photos.permissionLibraryTitle')
         }
-        message={t('wardrobe.photos.primerBody')}
-        confirmLabel={t('wardrobe.photos.allow')}
-        cancelLabel={t('wardrobe.photos.later')}
-        onConfirm={() => {
-          const source = primer;
-          setPrimer(null);
-          if (source) afterClosing(() => void run(source));
+        body={t('wardrobe.photos.primerBody')}
+        primary={{
+          label: t('wardrobe.photos.allow'),
+          onPress: () => {
+            const source = primer;
+            setPrimer(null);
+            if (source) afterClosing(() => void run(source));
+          },
         }}
-        onCancel={() => setPrimer(null)}
+        secondary={{
+          label: t('wardrobe.photos.later'),
+          onPress: () => setPrimer(null),
+        }}
+        onClose={() => setPrimer(null)}
       />
       <ConfirmDialog
         visible={denied !== null}

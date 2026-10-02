@@ -13,6 +13,7 @@ import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { errorMessageKey } from '@/lib/api/errors';
 import { colors, spacing } from '@/theme/tokens';
 
+import { GeneratingModal } from '../components/GeneratingModal';
 import { OutfitCard } from '../components/OutfitCard';
 import { useGenerateOutfits, useOutfitList } from '../hooks/useOutfits';
 
@@ -97,6 +98,7 @@ export function OutfitResultsScreen() {
           />
         </View>
       )}
+      <GeneratingModal visible={again.isPending} />
     </SafeAreaView>
   );
 }

@@ -125,7 +125,16 @@ describe('WeatherSettingsScreen', () => {
     await choose('Utiliser ma position');
 
     expect(
-      await screen.findByRole('button', { name: 'Ouvrir les réglages' }),
+      await screen.findByText('Autorisation de localisation'),
+    ).toBeOnTheScreen();
+    await press('Saisir ma ville manuellement');
+
+    expect(
+      screen.queryByText('Autorisation de localisation'),
+    ).not.toBeOnTheScreen();
+    // The city search, and still the way to the settings.
+    expect(
+      screen.getByRole('button', { name: 'Ouvrir les réglages' }),
     ).toBeOnTheScreen();
   });
 

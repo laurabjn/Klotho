@@ -8,7 +8,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Linking } from 'react-native';
 
 import { useGenerationDraftStore } from '@/features/outfits/store/generation-draft.store';
-import { NetworkError } from '@/lib/api/errors';
+import { ApiError, NetworkError } from '@/lib/api/errors';
 import { renderWithProviders } from '@/testing/render';
 
 import { photosApi } from '../api/photos.api';
@@ -83,8 +83,12 @@ describe('WardrobeScreen', () => {
     await renderWithProviders(<WardrobeScreen />);
 
     expect(
-      await screen.findByText('Ton dressing est encore vide'),
+      await screen.findByText('Mon dressing est encore vide'),
     ).toBeOnTheScreen();
+    // Nothing to search in an empty wardrobe.
+    expect(
+      screen.queryByLabelText('Rechercher une pièce, une marque…'),
+    ).not.toBeOnTheScreen();
     await press('Ajouter ma première pièce');
     expect(router.push).toHaveBeenCalledWith('/piece/new');
   });
@@ -134,6 +138,31 @@ describe('WardrobeScreen', () => {
     await fireEvent.press(screen.getByRole('radio', { name: 'Sacs' }));
 
     expect(await screen.findByText('Aucune pièce trouvée')).toBeOnTheScreen();
+    await press('Effacer les filtres');
+    await waitFor(() =>
+      expect(api.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ category: [] }),
+      ),
+    );
+  });
+
+  it('repeats the search that found nothing', async () => {
+    api.list
+      .mockResolvedValueOnce(page([wardrobeItem({ name: 'Blouse' })]))
+      .mockResolvedValue(page([]));
+    await renderWithProviders(<WardrobeScreen />);
+    await screen.findByText('Blouse');
+
+    await fireEvent.changeText(
+      screen.getByLabelText('Rechercher une pièce, une marque…'),
+      'veste rouge',
+    );
+
+    expect(
+      await screen.findByText(
+        'Aucune pièce ne correspond à ta recherche « veste rouge ».',
+      ),
+    ).toBeOnTheScreen();
   });
 
   it('offers to retry when the list cannot be loaded', async () => {
@@ -142,12 +171,19 @@ describe('WardrobeScreen', () => {
       .mockResolvedValue(page([]));
     await renderWithProviders(<WardrobeScreen />);
 
-    expect(
-      await screen.findByText('Impossible de charger ta garde-robe.'),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText('Problème de connexion')).toBeOnTheScreen();
     await press('Réessayer');
     expect(
-      await screen.findByText('Ton dressing est encore vide'),
+      await screen.findByText('Mon dressing est encore vide'),
+    ).toBeOnTheScreen();
+  });
+
+  it('tells a server error from a connection problem', async () => {
+    api.list.mockRejectedValue(new ApiError(500, 'internal'));
+    await renderWithProviders(<WardrobeScreen />);
+
+    expect(
+      await screen.findByText('Impossible de charger ta garde-robe.'),
     ).toBeOnTheScreen();
   });
 });
@@ -227,9 +263,9 @@ describe('AddWardrobeItemScreen', () => {
     await toColorsStep();
     await finishWithBlack();
 
-    await waitFor(() =>
-      expect(router.replace).toHaveBeenCalledWith('/piece/new-item'),
-    );
+    expect(await screen.findByText('Photo ajoutée !')).toBeOnTheScreen();
+    await press('Compléter les détails');
+    expect(router.replace).toHaveBeenCalledWith('/piece/new-item/edit');
     expect(pickPhoto).toHaveBeenCalledWith('library');
     expect(upload.mock.calls.map(([photo]) => photo.uri)).toEqual([
       'file:///photo-2.jpg',
@@ -252,11 +288,70 @@ describe('AddWardrobeItemScreen', () => {
     await toColorsStep();
     await finishWithBlack();
 
-    await waitFor(() =>
-      expect(router.replace).toHaveBeenCalledWith(
-        '/piece/new-item?photosFailed=1',
-      ),
+    expect(
+      await screen.findByText('Une erreur est survenue'),
+    ).toBeOnTheScreen();
+    expect(api.create).toHaveBeenCalledTimes(1);
+    await press('Annuler');
+    expect(router.replace).toHaveBeenCalledWith(
+      '/piece/new-item?photosFailed=1',
     );
+  });
+
+  it('sends a failed photo again onto the created piece', async () => {
+    jest
+      .mocked(pickPhoto)
+      .mockResolvedValue({ status: 'picked', photo: localPhoto(1) });
+    api.create.mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    jest
+      .spyOn(photosApi, 'upload')
+      .mockRejectedValueOnce(new NetworkError())
+      .mockResolvedValue({ key: 'key-1', width: 1200, height: 1600 });
+    const attach = jest
+      .spyOn(photosApi, 'attach')
+      .mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    await press('Ajouter une photo');
+    await press('Prendre une photo');
+    await screen.findByRole('button', { name: /Photo 1 sur 1/ });
+    await toColorsStep();
+    await finishWithBlack();
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Réessayer' }),
+    );
+
+    expect(await screen.findByText('Photo ajoutée !')).toBeOnTheScreen();
+    expect(api.create).toHaveBeenCalledTimes(1);
+    expect(attach).toHaveBeenCalledWith('new-item', 'key-1');
+  });
+
+  it('starts a new piece from the success screen', async () => {
+    jest
+      .mocked(pickPhoto)
+      .mockResolvedValue({ status: 'picked', photo: localPhoto(1) });
+    api.create.mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    jest
+      .spyOn(photosApi, 'upload')
+      .mockResolvedValue({ key: 'key-1', width: 1200, height: 1600 });
+    jest
+      .spyOn(photosApi, 'attach')
+      .mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    await press('Ajouter une photo');
+    await press('Prendre une photo');
+    await screen.findByRole('button', { name: /Photo 1 sur 1/ });
+    await toColorsStep();
+    await finishWithBlack();
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Ajouter une autre pièce' }),
+    );
+
+    expect(screen.getByLabelText('Étape 1/5')).toBeOnTheScreen();
+    expect(
+      screen.queryByRole('button', { name: /Photo 1 sur 1/ }),
+    ).not.toBeOnTheScreen();
   });
 
   it('explains why before the system permission dialog', async () => {

@@ -44,7 +44,8 @@ export const privacyFr = {
     confirmBody:
       'C’est définitif. Saisis ton mot de passe pour confirmer la suppression de toutes tes données.',
     password: 'Mot de passe',
-    confirm: 'Supprimer définitivement',
+    warning: 'Cette action est irréversible.',
+    confirm: 'Oui, supprimer mon compte',
     cancel: 'Annuler',
   },
 } as const;

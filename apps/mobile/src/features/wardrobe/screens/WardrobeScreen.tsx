@@ -23,9 +23,13 @@ import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { OfflineState } from '@/components/ui/OfflineState';
 import { ScrollToTopButton, useScrollToTop } from '@/components/ui/ScrollToTop';
+import { StateView } from '@/components/ui/StateView';
+import { errorMessageKey, NetworkError } from '@/lib/api/errors';
 import { useDebouncedValue } from '@/lib/useDebouncedValue';
 import { categoryIcons } from '@/theme/icons';
+import { statePhotos } from '@/theme/photos';
 import { useCompactLayout } from '@/theme/useCompactLayout';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
@@ -73,6 +77,8 @@ export function WardrobeScreen() {
   const total = list.data?.pages[0]?.total ?? 0;
   const activeFilters = countActiveFilters(sheetFilters);
   const isFiltered = activeFilters > 0 || categories.length > 0 || q !== '';
+  // Nothing to search nor filter in an empty wardrobe.
+  const isEmpty = list.isSuccess && total === 0 && !isFiltered;
 
   const clearFilters = () => {
     setSearch('');
@@ -100,75 +106,79 @@ export function WardrobeScreen() {
           </View>
         )}
       </View>
-      <View style={styles.searchRow}>
-        <View style={styles.search}>
-          <Ionicons name="search-outline" size={20} color={colors.muted} />
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder={t('wardrobe.searchPlaceholder')}
-            placeholderTextColor={colors.placeholder}
-            accessibilityLabel={t('wardrobe.searchPlaceholder')}
-            returnKeyType="search"
-            maxFontSizeMultiplier={1.2}
-            style={styles.searchInput}
-          />
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            activeFilters
-              ? `${t('wardrobe.filters.open')}, ${t('wardrobe.filters.active', { count: activeFilters })}`
-              : t('wardrobe.filters.open')
-          }
-          onPress={() => setSheetVisible(true)}
-          style={[
-            styles.filterButton,
-            activeFilters > 0 && styles.filterButtonActive,
-          ]}
-        >
-          <MaterialCommunityIcons
-            name="tune-variant"
-            size={22}
-            color={activeFilters > 0 ? colors.onPrimary : colors.title}
-          />
-          {activeFilters > 0 && (
-            <View style={styles.filterCount}>
-              <AppText variant="hint" style={styles.filterCountText}>
-                {activeFilters}
-              </AppText>
+      {!isEmpty && (
+        <>
+          <View style={styles.searchRow}>
+            <View style={styles.search}>
+              <Ionicons name="search-outline" size={20} color={colors.muted} />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder={t('wardrobe.searchPlaceholder')}
+                placeholderTextColor={colors.placeholder}
+                accessibilityLabel={t('wardrobe.searchPlaceholder')}
+                returnKeyType="search"
+                maxFontSizeMultiplier={1.2}
+                style={styles.searchInput}
+              />
             </View>
-          )}
-        </Pressable>
-      </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesScroll}
-        contentContainerStyle={styles.categories}
-      >
-        <Chip
-          label={t('wardrobe.all')}
-          icon="view-grid-outline"
-          selected={categories.length === 0}
-          onPress={() => setCategory(null)}
-        />
-        {WARDROBE_CATEGORIES.map((value) => (
-          <Chip
-            key={value}
-            label={t(`wardrobe.categories.${value}`)}
-            icon={categoryIcons[value]}
-            selected={categories.includes(value)}
-            onPress={() =>
-              setCategory(
-                categories.length === 1 && categories[0] === value
-                  ? null
-                  : value,
-              )
-            }
-          />
-        ))}
-      </ScrollView>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                activeFilters
+                  ? `${t('wardrobe.filters.open')}, ${t('wardrobe.filters.active', { count: activeFilters })}`
+                  : t('wardrobe.filters.open')
+              }
+              onPress={() => setSheetVisible(true)}
+              style={[
+                styles.filterButton,
+                activeFilters > 0 && styles.filterButtonActive,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="tune-variant"
+                size={22}
+                color={activeFilters > 0 ? colors.onPrimary : colors.title}
+              />
+              {activeFilters > 0 && (
+                <View style={styles.filterCount}>
+                  <AppText variant="hint" style={styles.filterCountText}>
+                    {activeFilters}
+                  </AppText>
+                </View>
+              )}
+            </Pressable>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesScroll}
+            contentContainerStyle={styles.categories}
+          >
+            <Chip
+              label={t('wardrobe.all')}
+              icon="view-grid-outline"
+              selected={categories.length === 0}
+              onPress={() => setCategory(null)}
+            />
+            {WARDROBE_CATEGORIES.map((value) => (
+              <Chip
+                key={value}
+                label={t(`wardrobe.categories.${value}`)}
+                icon={categoryIcons[value]}
+                selected={categories.includes(value)}
+                onPress={() =>
+                  setCategory(
+                    categories.length === 1 && categories[0] === value
+                      ? null
+                      : value,
+                  )
+                }
+              />
+            ))}
+          </ScrollView>
+        </>
+      )}
     </View>
   );
 
@@ -177,11 +187,16 @@ export function WardrobeScreen() {
       return <ActivityIndicator style={styles.loader} color={colors.primary} />;
     }
     if (list.isError) {
-      return (
+      return list.error instanceof NetworkError ? (
+        <OfflineState
+          onRetry={() => void list.refetch()}
+          retrying={list.isRefetching}
+        />
+      ) : (
         <EmptyState
           icon="cloud-offline-outline"
           title={t('wardrobe.loadError')}
-          body={t('apiErrors.network')}
+          body={t(errorMessageKey(list.error) as 'apiErrors.unknown')}
           actionLabel={t('common.retry')}
           onAction={() => void list.refetch()}
         />
@@ -189,22 +204,28 @@ export function WardrobeScreen() {
     }
     if (isFiltered) {
       return (
-        <EmptyState
-          icon="search-outline"
-          title={t('wardrobe.noResult.title')}
-          body={t('wardrobe.noResult.body')}
-          actionLabel={t('wardrobe.noResult.clear')}
-          onAction={clearFilters}
+        <StateView
+          image={statePhotos.search}
+          imageRatio={1.8}
+          title={t('states.noResult.title')}
+          body={
+            q
+              ? t('states.noResult.body', { query: q })
+              : t('states.noResult.bodyFilters')
+          }
+          primary={{ label: t('states.noResult.clear'), onPress: clearFilters }}
         />
       );
     }
     return (
-      <EmptyState
-        icon="shirt-outline"
-        title={t('wardrobe.empty.title')}
-        body={t('wardrobe.empty.body')}
-        actionLabel={t('wardrobe.empty.action')}
-        onAction={() => router.push('/piece/new')}
+      <StateView
+        image={statePhotos.emptyWardrobe}
+        title={t('states.emptyWardrobe.title')}
+        body={t('states.emptyWardrobe.body')}
+        primary={{
+          label: t('states.emptyWardrobe.add'),
+          onPress: () => router.push('/piece/new'),
+        }}
       />
     );
   };
