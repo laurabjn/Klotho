@@ -23,6 +23,10 @@ import {
   type FileStorage,
 } from '../../../domain/storage/ports/file-storage';
 import {
+  NOTIFIER,
+  type Notifier,
+} from '../../../domain/notifications/ports/notifier';
+import {
   IMAGE_PROCESSOR,
   type ImageProcessor,
 } from '../../../domain/storage/ports/image-processor';
@@ -34,6 +38,7 @@ import {
   WARDROBE_REPOSITORY,
   type WardrobeRepository,
 } from '../../../domain/wardrobe/ports/wardrobe.repository';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { UploadsController } from './uploads.controller';
 import { WardrobeController } from './wardrobe.controller';
 
@@ -42,7 +47,6 @@ const itemUseCases = [
   ListWardrobeItemsUseCase,
   CreateWardrobeItemUseCase,
   GetWardrobeItemUseCase,
-  UpdateWardrobeItemUseCase,
   DeleteWardrobeItemUseCase,
   SetWardrobeFavoriteUseCase,
 ];
@@ -51,6 +55,7 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
 
 @Module({
   imports: [
+    NotificationsModule,
     MulterModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => ({
@@ -71,6 +76,15 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
       useFactory: (wardrobe: WardrobeRepository, storage: FileStorage) =>
         new UseCase(wardrobe, storage),
     })),
+    {
+      provide: UpdateWardrobeItemUseCase,
+      inject: [WARDROBE_REPOSITORY, FILE_STORAGE, NOTIFIER],
+      useFactory: (
+        wardrobe: WardrobeRepository,
+        storage: FileStorage,
+        notifier: Notifier,
+      ) => new UpdateWardrobeItemUseCase(wardrobe, storage, notifier),
+    },
     ...photoUseCases.map((UseCase) => ({
       provide: UseCase,
       inject: [WARDROBE_REPOSITORY, WARDROBE_PHOTO_REPOSITORY, FILE_STORAGE],

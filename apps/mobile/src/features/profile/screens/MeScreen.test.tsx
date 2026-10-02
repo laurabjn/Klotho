@@ -12,6 +12,7 @@ import { signIn, useAuthStore } from '@/features/auth/store/auth.store';
 import { preferencesApi } from '@/features/preferences/api/preferences.api';
 import { EMPTY_STYLE_PROFILE } from '@/features/preferences/hooks/useStyleProfile';
 import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
+import { notificationsApi } from '@/features/notifications/api/notifications.api';
 import { weatherApi } from '@/features/weather/api/weather.api';
 import { renderWithProviders, session } from '@/testing/render';
 
@@ -21,6 +22,7 @@ jest.mock('@/features/auth/api/auth.api');
 jest.mock('@/features/preferences/api/preferences.api');
 jest.mock('@/features/wardrobe/api/wardrobe.api');
 jest.mock('@/features/weather/api/weather.api');
+jest.mock('@/features/notifications/api/notifications.api');
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), navigate: jest.fn() },
 }));
@@ -94,14 +96,39 @@ describe('MeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/settings');
   });
 
-  it('says what is not available yet', async () => {
+  it('turns the outfit reminders off', async () => {
+    jest.mocked(notificationsApi.settings).mockResolvedValue({
+      tips: true,
+      reminders: true,
+      news: false,
+      reminderTime: '08:00',
+    });
+    jest.mocked(notificationsApi.saveSettings).mockImplementation((body) =>
+      Promise.resolve({
+        tips: true,
+        news: false,
+        reminderTime: '08:00',
+        reminders: true,
+        ...body,
+      }),
+    );
     await renderWithProviders(<MeScreen />);
-
-    await fireEvent.press(
-      screen.getByRole('switch', { name: 'Rappels de tenues et suggestions' }),
+    const reminders = await screen.findByRole('switch', {
+      name: 'Rappels de tenues et suggestions',
+    });
+    await waitFor(() =>
+      expect(reminders.props.accessibilityState).toMatchObject({
+        checked: true,
+      }),
     );
 
-    expect(screen.getByText('Bientôt disponible')).toBeOnTheScreen();
+    await fireEvent.press(reminders);
+
+    await waitFor(() =>
+      expect(notificationsApi.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ reminders: false }),
+      ),
+    );
   });
 
   it('adds a metal to the preferred ones', async () => {

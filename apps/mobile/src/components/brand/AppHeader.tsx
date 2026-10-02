@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
+
 import { KlothoBrandRow } from './KlothoLogo';
 import { UserAvatar } from './UserAvatar';
 
@@ -14,7 +16,14 @@ export function AppHeader({ right }: { right?: ReactNode }) {
   return (
     <View style={styles.row}>
       <KlothoBrandRow />
-      {right === undefined ? <ProfileButton /> : right}
+      {right === undefined ? (
+        <View style={styles.actions}>
+          <NotificationBell />
+          <ProfileButton />
+        </View>
+      ) : (
+        right
+      )}
     </View>
   );
 }
@@ -41,5 +50,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   pressed: { opacity: 0.7 },
 });

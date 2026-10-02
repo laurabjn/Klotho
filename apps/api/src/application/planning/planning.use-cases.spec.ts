@@ -6,6 +6,7 @@ import {
 } from '../../domain/outfits/errors';
 import { PastDayError, PlanNotFoundError } from '../../domain/planning/errors';
 import type { WardrobeItem } from '../../domain/wardrobe/entities/wardrobe-item.entity';
+import { SpyNotifier } from '../../testing/in-memory-notification.repositories';
 import {
   InMemoryDayNoteRepository,
   InMemoryOutfitPlanRepository,
@@ -284,7 +285,12 @@ describe('Planning use cases', () => {
   });
 
   describe('PlanWeekUseCase', () => {
-    const planWeek = () => new PlanWeekUseCase(planner);
+    let notifier: SpyNotifier;
+    const planWeek = () => new PlanWeekUseCase(planner, notifier);
+
+    beforeEach(() => {
+      notifier = new SpyNotifier();
+    });
     const command = (from: string) => ({ from, style: null, occasion: null });
 
     it('plans every free day until Sunday with varied looks and the forecasts', async () => {
@@ -315,6 +321,13 @@ describe('Planning use cases', () => {
         temperature: 19,
         condition: 'clear',
       });
+      expect(notifier.calls).toEqual([
+        {
+          kind: 'weekPlanned',
+          userId: 'laura',
+          data: { count: 3, outfitId: created[0]!.outfit.id },
+        },
+      ]);
     });
 
     it('avoids the pieces of the other days when it can', async () => {
@@ -382,6 +395,7 @@ describe('Planning use cases', () => {
       await expect(
         planWeek().execute('laura', command('2026-10-04')),
       ).resolves.toEqual([]);
+      expect(notifier.calls).toEqual([]);
     });
 
     it('fails when no day can be planned', async () => {
@@ -389,6 +403,7 @@ describe('Planning use cases', () => {
         planWeek().execute('empty', command('2026-10-01')),
       ).rejects.toBeInstanceOf(NoOutfitPossibleError);
       expect(plans.plans).toHaveLength(0);
+      expect(notifier.calls).toEqual([]);
     });
   });
 

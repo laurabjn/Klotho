@@ -44,3 +44,18 @@ jest.mock('@sentry/react-native', () => ({
   captureException: jest.fn(),
   wrap: <T>(component: T) => component,
 }));
+
+// Phone notifications: scheduled nowhere in the tests.
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  addNotificationResponseReceivedListener: jest.fn(() => ({
+    remove: jest.fn(),
+  })),
+  getPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: false, canAskAgain: true }),
+  ),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve('id')),
+  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  SchedulableTriggerInputTypes: { DAILY: 'daily', WEEKLY: 'weekly' },
+}));

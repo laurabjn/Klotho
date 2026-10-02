@@ -134,6 +134,13 @@ describe('Authentication on every route (e2e)', () => {
         'PUT /plans/:day',
         'POST /plans/:day/move',
         'GET /days/:day/note',
+        'GET /notifications',
+        'GET /notifications/unread-count',
+        'POST /notifications/:id/read',
+        'POST /notifications/read-all',
+        'DELETE /notifications/:id',
+        'GET /notifications/settings',
+        'PUT /notifications/settings',
       ]),
     );
     expect(routes.map(label).sort()).toEqual(

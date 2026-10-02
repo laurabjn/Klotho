@@ -18,6 +18,7 @@ import {
   daysBetween,
   sundayOf,
 } from '../../domain/planning/calendar';
+import type { Notifier } from '../../domain/notifications/ports/notifier';
 import { PastDayError, PlanNotFoundError } from '../../domain/planning/errors';
 import type { DayNoteRepository } from '../../domain/planning/ports/day-note.repository';
 import type {
@@ -204,7 +205,10 @@ export interface PlanWeekCommand {
  * worn (the engine's anti-repetition then prefers other ones).
  */
 export class PlanWeekUseCase {
-  constructor(private readonly planner: Planner) {}
+  constructor(
+    private readonly planner: Planner,
+    private readonly notifier: Notifier,
+  ) {}
 
   async execute(
     userId: string,
@@ -313,6 +317,11 @@ export class PlanWeekUseCase {
       forecast,
     }));
     const created = await this.planner.plans.createMany(userId, plans);
+    if (created.length > 0)
+      await this.notifier.weekPlanned(userId, {
+        count: created.length,
+        outfitId: created[0]!.outfitId,
+      });
     return this.planner.present(userId, created);
   }
 }

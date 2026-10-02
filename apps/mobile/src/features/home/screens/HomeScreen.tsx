@@ -27,6 +27,7 @@ import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
 import { ItemVisual } from '@/features/wardrobe/components/ItemVisual';
 import { wardrobeKeys } from '@/features/wardrobe/hooks/useWardrobe';
 import { OutfitCollage } from '@/features/outfits/components/OutfitCollage';
+import { NotificationBanner } from '@/features/notifications/components/NotificationBanner';
 import { OutfitHeart } from '@/features/outfits/components/OutfitHeart';
 import {
   useGenerateOutfits,
@@ -64,6 +65,7 @@ export function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollPage contentContainerStyle={styles.content}>
         <AppHeader />
+        <NotificationBanner />
         <View style={[styles.hello, compact && styles.stacked]}>
           <View style={styles.helloText}>
             <AppText variant="title">

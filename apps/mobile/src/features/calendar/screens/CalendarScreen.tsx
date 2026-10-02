@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { GoldRule } from '@/components/ui/GoldRule';
 import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { SectionTitle } from '@/components/ui/SectionTitle';
@@ -37,6 +36,7 @@ import { occasionIcons } from '@/theme/icons';
 import { useCompactLayout } from '@/theme/useCompactLayout';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
+import { PlannedDialog } from '../components/PlannedDialog';
 import { plansByDay, usePlanWeek, usePlans } from '../hooks/usePlans';
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -119,26 +119,26 @@ export function CalendarScreen() {
           }
         />
       </ScrollPage>
-      <ConfirmDialog
+      <PlannedDialog
         visible={result !== null}
-        icon="checkmark-circle-outline"
         title={
           result?.length
             ? t('outfits.planning.doneTitle')
             : t('outfits.calendar.plan')
+        }
+        overline={
+          result?.length ? t('outfits.planning.doneOverline') : undefined
         }
         message={
           result?.length
             ? t('outfits.planning.doneBody')
             : t('outfits.planning.weekFull')
         }
-        confirmLabel={t('outfits.planning.seeCalendar')}
-        cancelLabel={t('outfits.planning.close')}
-        onConfirm={() => {
+        onSeeCalendar={() => {
           setResult(null);
           setView('week');
         }}
-        onCancel={() => setResult(null)}
+        onClose={() => setResult(null)}
       />
     </SafeAreaView>
   );

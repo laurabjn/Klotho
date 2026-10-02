@@ -2,6 +2,7 @@ import { generateOutfitsSchema, outfitFeedbackSchema } from '@klotho/shared';
 
 import { OutfitNotFoundError } from '../../domain/outfits/errors';
 import { MINUTE } from '../../testing/fakes';
+import { SpyNotifier } from '../../testing/in-memory-notification.repositories';
 import { outfitWorkshop } from '../../testing/outfit-workshop';
 import { CreateOutfitsUseCase } from './outfit.use-cases';
 import {
@@ -96,8 +97,11 @@ describe('Outfit feedback (US8.1)', () => {
         .sort()
         .join();
 
+    let notifier: SpyNotifier;
+
     beforeEach(async () => {
-      create = new CreateOutfitsUseCase(t.workshop);
+      notifier = new SpyNotifier();
+      create = new CreateOutfitsUseCase(t.workshop, notifier);
       for (const category of [
         'TOP',
         'TOP',
@@ -106,6 +110,18 @@ describe('Outfit feedback (US8.1)', () => {
         'SHOES',
       ] as const)
         await t.add('laura', category);
+    });
+
+    it('notifies the generated looks, with the best one', async () => {
+      const looks = await generate();
+
+      expect(notifier.calls).toEqual([
+        {
+          kind: 'outfitsGenerated',
+          userId: 'laura',
+          data: { count: looks.length, outfitId: looks[0]!.id },
+        },
+      ]);
     });
 
     it('never proposes a disliked look again', async () => {

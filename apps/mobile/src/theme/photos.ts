@@ -27,6 +27,10 @@ export const photos = {
     source: require('../../assets/photos/change-email.jpg'),
     ratio: 280 / 360,
   },
+  planned: {
+    source: require('../../assets/photos/planned.jpg'),
+    ratio: 420 / 225,
+  },
   passwordFooter: {
     source: require('../../assets/photos/password-footer.jpg'),
     ratio: 735 / 250,

@@ -25,6 +25,10 @@ import {
 } from '../../../application/outfits/submit-outfit-feedback.use-case';
 import { ToggleOutfitFavoriteUseCase } from '../../../application/outfits/toggle-outfit-favorite.use-case';
 import {
+  NOTIFIER,
+  type Notifier,
+} from '../../../domain/notifications/ports/notifier';
+import {
   OUTFIT_REPOSITORY,
   type OutfitRepository,
 } from '../../../domain/outfits/ports/outfit.repository';
@@ -41,12 +45,12 @@ import {
   WARDROBE_REPOSITORY,
   type WardrobeRepository,
 } from '../../../domain/wardrobe/ports/wardrobe.repository';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { OutfitsController } from './outfits.controller';
 
 const logger = new Logger('OutfitEngine');
 
 const useCases = [
-  CreateOutfitsUseCase,
   GetOutfitUseCase,
   DeleteOutfitUseCase,
   ListOutfitsUseCase,
@@ -62,6 +66,7 @@ const useCases = [
 ];
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [OutfitsController],
   providers: [
     {
@@ -99,6 +104,12 @@ const useCases = [
       inject: [OutfitWorkshop],
       useFactory: (workshop: OutfitWorkshop) => new UseCase(workshop),
     })),
+    {
+      provide: CreateOutfitsUseCase,
+      inject: [OutfitWorkshop, NOTIFIER],
+      useFactory: (workshop: OutfitWorkshop, notifier: Notifier) =>
+        new CreateOutfitsUseCase(workshop, notifier),
+    },
   ],
   // The planning reuses the looks and their presentation.
   exports: [OutfitWorkshop],

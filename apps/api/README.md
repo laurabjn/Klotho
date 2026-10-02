@@ -81,6 +81,13 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | POST   | `/plans/week`                                | no     | 200 `OutfitPlan[]` created: `{ from, style?, occasion? }` · 400 `plans.pastDay` · 422 `outfits.noOutfitPossible`        |
 | GET    | `/days/:day/note`                            | no     | `DayNote` (`text: null` when none)                                                                                      |
 | PUT    | `/days/:day/note`                            | no     | 200 `DayNote`: `{ text }` (500 max; empty removes it)                                                                   |
+| GET    | `/notifications?category=&page=&pageSize=`   | no     | `Page<AppNotification>` newest first; `category`: `all` (default), `outfits`, `dressing`; 50 a page max                 |
+| GET    | `/notifications/unread-count`                | no     | `{ count }` (the bell's badge)                                                                                          |
+| POST   | `/notifications/:id/read`                    | no     | 204 (idempotent) · 404 `notifications.notFound`                                                                         |
+| POST   | `/notifications/read-all`                    | no     | 204                                                                                                                     |
+| DELETE | `/notifications/:id`                         | no     | 204 · 404 `notifications.notFound`                                                                                      |
+| GET    | `/notifications/settings`                    | no     | `NotificationSettings` (`tips`, `reminders`, `news`, `reminderTime`; defaults when never saved)                         |
+| PUT    | `/notifications/settings`                    | no     | 200 `NotificationSettings` (replaces them)                                                                              |
 | GET    | `/wardrobe`                                  | no     | `Page<WardrobeItem>`, filters and pagination below                                                                      |
 | POST   | `/wardrobe`                                  | no     | 201 `WardrobeItem` (owner = authenticated user)                                                                         |
 | GET    | `/wardrobe/:id`                              | no     | `WardrobeItem` · 404 if missing or not mine                                                                             |
@@ -148,6 +155,42 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
   a look worn at least once is kept (409 `outfits.worn`) so that the history
   and the wear counts of its pieces stay true.
 
+### Notifications
+
+- The API stores and returns only the `kind` and the `data` of a
+  notification (`NotificationData` of `packages/shared`): the app writes the
+  text from them, in its language. `data.imageUrl` is computed when read: a
+  signed URL of the main photo of the piece (`itemId`), else of the first
+  piece of the look with a photo (`outfitId`), else `null`. Signed URLs are
+  never stored.
+- Settings: `reminders` gates `outfitsGenerated`, `weekPlanned` and
+  `dailyOutfit`; `tips` gates `forgottenPiece` and `pieceAvailable`; `news`
+  gates nothing yet. `reminderTime` is kept for the app's local reminders.
+- Created after an action (a failure is logged, kind and error name only,
+  and never fails the action):
+  - `outfitsGenerated` after `POST /outfits/generate`: `{ count, outfitId }`
+    (the best look). When the user's newest notification is an unread
+    `outfitsGenerated` of the last 10 minutes, it is updated instead
+    (`count` added, newest best look, moved to now).
+  - `weekPlanned` after `POST /plans/week` planned at least one day:
+    `{ count, outfitId }` (the look of the first planned day).
+  - `pieceAvailable` when `PATCH /wardrobe/:id` brings a favourite piece
+    from another status back to `AVAILABLE`: `{ itemId, itemName }`.
+- Created lazily by `GET /notifications` and `GET /notifications/unread-count`:
+  - `dailyOutfit` `{ outfitId }`: once per calendar day **of the server
+    (UTC)**, when a look is planned that day, else when a look was generated
+    that day (the last one).
+  - `forgottenPiece` `{ itemId, itemName, weeks }`: at most once every 7
+    days, the `AVAILABLE` piece least recently worn, not worn for 21 days
+    (never worn: added 21 days ago or more; never worn ones come first), never
+    the same piece twice in a row. `weeks` counts from the last wear (or the
+    addition).
+  - A marker per user and kind (`NotificationMarker`) records the last one,
+    claimed in one transaction with the creation: concurrent reads create a
+    single notification, and deleting it does not bring it back in the same
+    period.
+- `itemName` is `null` for a piece without a name.
+
 ### Photos
 
 1. `POST /uploads/wardrobe` receives the picture. The server checks the real
@@ -209,7 +252,8 @@ createdAt }`, also in the `AuthSession` of login and register.
 `DELETE /users/me` with `{ password }` (403 `users.invalidPassword` when
 wrong; 401 is kept for expired sessions). The database cascade removes the
 sessions, reset tokens, pieces, photo rows, style profile, weather settings,
-looks, opinions, wears, plans, day notes and pending e-mail change. Then every file of the user is removed from the
+looks, opinions, wears, plans, day notes, notifications (with their
+settings and markers) and pending e-mail change. Then every file of the user is removed from the
 storage: the photos of her pieces, her profile photo and her uploads never
 attached (`users/<id>/` prefix). The storage step is best effort: a failure is logged
 (error name only, no key or URL) and never keeps the data in the database.
@@ -255,12 +299,13 @@ Values are `<requests>/<seconds>`. `RATE_LIMIT_ENABLED=false` turns it off
 ### Pagination and bounds
 
 Lists are paginated: `/wardrobe` (100 max a page), `/outfits` (50),
-`/outfits/history` (100); `/plans` covers 62 days at most. Other answers are bounded: 5 looks a generation,
+`/outfits/history` (100), `/notifications` (50); `/plans` covers 62 days at most. Other answers are bounded: 5 looks a generation,
 30 alternatives, 5 cities. The engine reads the whole wardrobe and the
 user's opinions (indexed by user). Indexes cover every list query: wardrobe
 by user + category/status, creation date, last worn date and wear count;
 looks by user + creation date and favourites; wears by user + day; opinions
-by user; plans and day notes by user + day.
+by user; plans and day notes by user + day; notifications by user +
+creation date.
 
 ### Outfit engine performance
 

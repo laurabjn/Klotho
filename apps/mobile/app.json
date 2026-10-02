@@ -54,7 +54,13 @@
           "locationWhenInUsePermission": "Klotho utilise ta position uniquement pour connaître la météo locale. Elle n’est jamais enregistrée."
         }
       ],
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "expo-notifications",
+        {
+          "color": "#B07A6E"
+        }
+      ]
     ],
     "scheme": "klotho"
   }

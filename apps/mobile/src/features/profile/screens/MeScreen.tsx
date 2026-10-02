@@ -12,7 +12,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   useWindowDimensions,
   View,
   type ViewStyle,
@@ -35,6 +34,7 @@ import {
   useStyleProfile,
 } from '@/features/preferences/hooks/useStyleProfile';
 import { useFavoriteOutfitCount } from '@/features/outfits/hooks/useOutfits';
+import { NotificationSwitches } from '@/features/notifications/components/NotificationSwitches';
 import { MetalPicker } from '@/features/preferences/components/MetalPicker';
 import { useWardrobeStats } from '@/features/wardrobe/hooks/useWardrobe';
 import {
@@ -60,7 +60,6 @@ export function MeScreen() {
   const saveWeather = useSaveWeatherSettings();
   const [dialog, setDialog] = useState<'logout' | 'soon' | null>(null);
   const [signingOut, setSigningOut] = useState(false);
-  const soon = () => setDialog('soon');
 
   const fields = profile.data ? toFields(profile.data) : null;
   const preferredStyles = fields?.preferredStyles ?? [];
@@ -308,23 +307,12 @@ export function MeScreen() {
           </Card>
         </View>
 
-        {/* Notifications come later: shown, off, and "coming soon" on press. */}
         <Card>
           <AppText variant="heading">{t('profile.notifications')}</AppText>
           <AppText variant="overline">
             {t('profile.notificationsOverline')}
           </AppText>
-          <ToggleRow
-            icon="bell-outline"
-            label={t('profile.tips')}
-            onPress={soon}
-          />
-          <View style={styles.separator} />
-          <ToggleRow
-            icon="hanger"
-            label={t('profile.reminders')}
-            onPress={soon}
-          />
+          <NotificationSwitches />
         </Card>
 
         <Card style={styles.menu}>
@@ -453,37 +441,6 @@ function Stat({
         {reversed ? valueText : labelText}
       </View>
     </View>
-  );
-}
-
-function ToggleRow({
-  icon,
-  label,
-  onPress,
-}: {
-  icon: IconName;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="switch"
-      accessibilityLabel={label}
-      accessibilityState={{ checked: false, disabled: true }}
-      onPress={onPress}
-      style={styles.menuRow}
-    >
-      <MaterialCommunityIcons name={icon} size={22} color={colors.title} />
-      <AppText style={styles.toggleLabel}>{label}</AppText>
-      <View pointerEvents="none">
-        <Switch
-          value={false}
-          disabled
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.surface}
-        />
-      </View>
-    </Pressable>
   );
 }
 

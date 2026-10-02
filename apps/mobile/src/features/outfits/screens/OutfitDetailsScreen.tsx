@@ -23,6 +23,7 @@ import { FormError } from '@/components/ui/FormError';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { errorMessageKey } from '@/lib/api/errors';
 import { DayPickerSheet } from '@/features/calendar/components/DayPickerSheet';
+import { PlannedDialog } from '@/features/calendar/components/PlannedDialog';
 import { usePlanOutfit } from '@/features/calendar/hooks/usePlans';
 import { formatDay, today } from '@/lib/days';
 import { occasionIcons, styleIcons, type IconName } from '@/theme/icons';
@@ -301,9 +302,8 @@ function Details({ outfit }: { outfit: Outfit }) {
           )
         }
       />
-      <ConfirmDialog
+      <PlannedDialog
         visible={plannedOn !== null}
-        icon="checkmark-circle-outline"
         title={t('outfits.planning.doneTitle')}
         message={t('outfits.planning.doneOne', {
           date: plannedOn
@@ -314,14 +314,12 @@ function Details({ outfit }: { outfit: Outfit }) {
               })
             : '',
         })}
-        confirmLabel={t('outfits.planning.seeCalendar')}
-        cancelLabel={t('outfits.planning.close')}
-        onConfirm={() => {
+        onSeeCalendar={() => {
           const day = plannedOn;
           setPlannedOn(null);
           if (day) router.push(`/calendar/${day}`);
         }}
-        onCancel={() => setPlannedOn(null)}
+        onClose={() => setPlannedOn(null)}
       />
       <ConfirmDialog
         visible={sheet === 'delete'}

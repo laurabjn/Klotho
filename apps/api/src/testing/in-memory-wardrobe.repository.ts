@@ -135,6 +135,27 @@ export class InMemoryWardrobeRepository implements WardrobeRepository {
     if (item) Object.assign(item, change(item));
   }
 
+  findForgotten(userId: string, before: Date, limit: number) {
+    const time = (date: Date | null) => date?.getTime() ?? -Infinity;
+    return Promise.resolve(
+      this.items
+        .filter(
+          (i) =>
+            i.userId === userId &&
+            i.status === 'AVAILABLE' &&
+            (i.lastWornAt ?? i.createdAt) < before,
+        )
+        .sort(
+          (a, b) =>
+            time(a.lastWornAt) - time(b.lastWornAt) ||
+            a.createdAt.getTime() - b.createdAt.getTime() ||
+            a.id.localeCompare(b.id),
+        )
+        .slice(0, limit)
+        .map(view),
+    );
+  }
+
   deleteOwned(userId: string, id: string): Promise<boolean> {
     const index = this.items.findIndex(
       (i) => i.id === id && i.userId === userId,

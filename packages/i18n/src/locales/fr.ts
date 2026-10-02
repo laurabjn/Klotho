@@ -1,6 +1,7 @@
 import { onboardingFr, preferencesFr } from './preferences.fr';
 import { wardrobeFr } from './wardrobe.fr';
 import { outfitsFr } from './outfits.fr';
+import { notificationsFr } from './notifications.fr';
 import { privacyFr } from './privacy.fr';
 import { settingsFr } from './settings.fr';
 import { weatherFr } from './weather.fr';
@@ -99,6 +100,7 @@ export const fr = {
   weather: weatherFr,
   outfits: outfitsFr,
   privacy: privacyFr,
+  notifications: notificationsFr,
   settings: settingsFr,
   profile: {
     title: 'Mon profil',
@@ -194,6 +196,9 @@ export const fr = {
       day: 'Date invalide',
       period: 'La date de fin doit suivre la date de début',
     },
+    notifications: {
+      time: 'Heure invalide',
+    },
     plans: {
       range: 'Période trop longue (deux mois au plus)',
       note: '500 caractères maximum',
@@ -254,6 +259,9 @@ export const fr = {
       imposedItemUnavailable:
         'Cette pièce n’est pas disponible aujourd’hui (au lavage, prêtée…).',
       wearNotFound: 'Cette tenue n’est déjà plus dans ton historique.',
+    },
+    notifications: {
+      notFound: 'Cette notification n’existe plus.',
       worn: 'Cette tenue est dans ton historique : elle ne peut pas être supprimée.',
     },
     plans: {
