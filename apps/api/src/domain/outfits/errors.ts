@@ -22,6 +22,14 @@ export class OutfitWearNotFoundError extends DomainError {
   readonly code = 'outfits.wearNotFound';
 }
 
+/**
+ * A look worn at least once stays: the history and the wear counts of its
+ * pieces depend on it.
+ */
+export class OutfitWornError extends DomainError {
+  readonly code = 'outfits.worn';
+}
+
 /** Not enough suitable pieces to build a look (e.g. only sandals at 4 °C). */
 export class NoOutfitPossibleError extends DomainError {
   readonly code = 'outfits.noOutfitPossible';

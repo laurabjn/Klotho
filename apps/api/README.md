@@ -63,6 +63,7 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | GET    | `/outfits?filter=&page=&pageSize=`           | no     | `Page<Outfit>`: `generated` (default, most recent first), `favorites` (last favourited first), `worn` (last worn first) |
 | GET    | `/outfits/history?from=&to=&page=&pageSize=` | no     | `Page<OutfitWear>`, last worn first; `from` / `to` are inclusive days (YYYY-MM-DD)                                      |
 | DELETE | `/outfits/history/:wearId`                   | no     | 204: undoes a wear and the usage it added to the pieces · 404 `outfits.wearNotFound`                                    |
+| DELETE | `/outfits/:id`                               | no     | 204: "Supprimer de mes tenues", with its plans and opinion · 404 `outfits.notFound` · 409 `outfits.worn` (worn once)    |
 | GET    | `/outfits/:id`                               | no     | `Outfit` (pieces with photos, highlights, `isFavorite`, `feedback`, `lastWornOn`; never the raw score)                  |
 | GET    | `/outfits/:id/alternatives?role=`            | no     | `OutfitAlternative[]`: pieces for that role, best first (30 max), `compatible`                                          |
 | POST   | `/outfits/:id/replace-item`                  | no     | `Outfit` with the piece swapped and scored again (saved)                                                                |
@@ -72,6 +73,14 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | POST   | `/outfits/:id/favorite`                      | no     | 200 `Outfit` (idempotent); DELETE removes it                                                                            |
 | DELETE | `/outfits/:id/favorite`                      | no     | 200 `Outfit` (idempotent)                                                                                               |
 | POST   | `/outfits/:id/wear`                          | no     | 200 `OutfitWear`: `{ wornOn: 'YYYY-MM-DD' }`, once per look and day; counts a wear for every piece                      |
+| GET    | `/plans?from=&to=`                           | no     | `OutfitPlan[]` by day; `from` / `to` are inclusive days, 62 days at most                                                |
+| PUT    | `/plans/:day`                                | no     | 200 `OutfitPlan`: `{ outfitId }`, creates or replaces the day's plan · 400 invalid day · 404 `outfits.notFound`         |
+| DELETE | `/plans/:day`                                | no     | 204 (idempotent; the look stays)                                                                                        |
+| POST   | `/plans/:day/move`                           | no     | 200 `OutfitPlan[]`: `{ toDay }`, the moved plan then the swapped one · 404 `plans.notFound`                             |
+| POST   | `/plans/:day/regenerate`                     | no     | 200 `OutfitPlan`: one new look for that day · 404 `plans.notFound` · 422 `outfits.noOutfitPossible`                     |
+| POST   | `/plans/week`                                | no     | 200 `OutfitPlan[]` created: `{ from, style?, occasion? }` · 400 `plans.pastDay` · 422 `outfits.noOutfitPossible`        |
+| GET    | `/days/:day/note`                            | no     | `DayNote` (`text: null` when none)                                                                                      |
+| PUT    | `/days/:day/note`                            | no     | 200 `DayNote`: `{ text }` (500 max; empty removes it)                                                                   |
 | GET    | `/wardrobe`                                  | no     | `Page<WardrobeItem>`, filters and pagination below                                                                      |
 | POST   | `/wardrobe`                                  | no     | 201 `WardrobeItem` (owner = authenticated user)                                                                         |
 | GET    | `/wardrobe/:id`                              | no     | `WardrobeItem` · 404 if missing or not mine                                                                             |
@@ -106,6 +115,38 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
   Undoing it (`DELETE /outfits/history/:wearId`) removes that wear, never
   counts below 0, and recomputes `lastWornAt` from the remaining wears.
 - Days (`wornOn`, `from`, `to`) are the user's calendar days, sent by the app.
+
+### Outfit planning
+
+- One look per day and user (`OutfitPlan`), on the user's calendar days
+  (`YYYY-MM-DD`, sent by the app, like the wears). A `:day` that is not a
+  real day answers 400 `validation.failed`. The home screen reads today's
+  plan with `GET /plans?from=<today>&to=<today>`.
+- Each plan keeps the forecast it was planned with (`forecast`, or `null`).
+  It comes from the city saved in the weather settings (the phone position
+  is never stored, so without a city there is none), with the 5-day /
+  3-hour OpenWeatherMap forecast (`/data/2.5/forecast`): the slots are
+  grouped by local day (`city.timezone`), the temperature is the warmest
+  slot of the day, rounded, and the condition the most frequent one of the
+  8:00–20:00 slots (on a tie, the one that matters most: storm, snow, rain,
+  fog, cloudy, clear). It is cached like the current weather. Beyond 5 days,
+  or when the provider fails, the forecast is `null` and planning still works.
+- Moving a plan onto a planned day swaps both looks; each day keeps its
+  forecast. "Changer la tenue" (`regenerate`) saves one new look with the
+  style and occasion of the planned one and the day's forecast, never the
+  same look nor a disliked one.
+- "Planifier ma semaine" (`POST /plans/week`) plans every free day from
+  `from` (yesterday at the earliest, for time zones; else 400
+  `plans.pastDay`) to the Sunday of its week; planned days are kept. Each
+  look is generated with the day's forecast (else the current weather of the
+  city, not stored), the given style (else the first preferred one) and
+  occasion. The week stays varied: a look is never planned twice, and the
+  pieces of the other days count as just worn, so the engine's
+  anti-repetition prefers other ones. Days without a possible look stay
+  free; 422 `outfits.noOutfitPossible` only when no day could be planned.
+- Deleting a look (`DELETE /outfits/:id`) removes its plans and its opinion;
+  a look worn at least once is kept (409 `outfits.worn`) so that the history
+  and the wear counts of its pieces stay true.
 
 ### Photos
 
@@ -168,7 +209,7 @@ createdAt }`, also in the `AuthSession` of login and register.
 `DELETE /users/me` with `{ password }` (403 `users.invalidPassword` when
 wrong; 401 is kept for expired sessions). The database cascade removes the
 sessions, reset tokens, pieces, photo rows, style profile, weather settings,
-looks, opinions, wears and pending e-mail change. Then every file of the user is removed from the
+looks, opinions, wears, plans, day notes and pending e-mail change. Then every file of the user is removed from the
 storage: the photos of her pieces, her profile photo and her uploads never
 attached (`users/<id>/` prefix). The storage step is best effort: a failure is logged
 (error name only, no key or URL) and never keeps the data in the database.
@@ -214,12 +255,12 @@ Values are `<requests>/<seconds>`. `RATE_LIMIT_ENABLED=false` turns it off
 ### Pagination and bounds
 
 Lists are paginated: `/wardrobe` (100 max a page), `/outfits` (50),
-`/outfits/history` (100). Other answers are bounded: 5 looks a generation,
+`/outfits/history` (100); `/plans` covers 62 days at most. Other answers are bounded: 5 looks a generation,
 30 alternatives, 5 cities. The engine reads the whole wardrobe and the
 user's opinions (indexed by user). Indexes cover every list query: wardrobe
 by user + category/status, creation date, last worn date and wear count;
 looks by user + creation date and favourites; wears by user + day; opinions
-by user.
+by user; plans and day notes by user + day.
 
 ### Outfit engine performance
 

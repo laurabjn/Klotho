@@ -39,6 +39,7 @@ import {
 import {
   CreateOutfitsUseCase,
   CreateOutfitVariantUseCase,
+  DeleteOutfitUseCase,
   GetOutfitUseCase,
   ListOutfitAlternativesUseCase,
   ReplaceOutfitItemUseCase,
@@ -56,6 +57,7 @@ export class OutfitsController {
   constructor(
     private readonly createOutfits: CreateOutfitsUseCase,
     private readonly getOutfit: GetOutfitUseCase,
+    private readonly deleteOutfit: DeleteOutfitUseCase,
     private readonly listOutfits: ListOutfitsUseCase,
     private readonly listAlternatives: ListOutfitAlternativesUseCase,
     private readonly replaceItem: ReplaceOutfitItemUseCase,
@@ -113,6 +115,16 @@ export class OutfitsController {
     @Param('id') id: string,
   ): Promise<Outfit> {
     return this.getOutfit.execute(userId, id);
+  }
+
+  /** "Supprimer de mes tenues": refused (409) once the look was worn. */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    return this.deleteOutfit.execute(userId, id);
   }
 
   /** Pieces that could take a role in the look, best first. */

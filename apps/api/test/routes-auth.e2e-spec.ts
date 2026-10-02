@@ -128,6 +128,12 @@ describe('Authentication on every route (e2e)', () => {
         'POST /uploads/wardrobe',
         'POST /outfits/generate',
         'GET /outfits/history',
+        'DELETE /outfits/:id',
+        'GET /plans',
+        'POST /plans/week',
+        'PUT /plans/:day',
+        'POST /plans/:day/move',
+        'GET /days/:day/note',
       ]),
     );
     expect(routes.map(label).sort()).toEqual(

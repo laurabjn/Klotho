@@ -199,3 +199,16 @@ export function useWearHistory() {
     getNextPageParam: (last) => (last.hasMore ? last.page + 1 : undefined),
   });
 }
+
+/** "Supprimer de mes tenues". */
+export function useDeleteOutfit(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => outfitsApi.remove(id),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: outfitKeys.one(id) });
+      void queryClient.invalidateQueries({ queryKey: ['outfits'] });
+      void queryClient.invalidateQueries({ queryKey: ['plans'] });
+    },
+  });
+}

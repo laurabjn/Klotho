@@ -10,6 +10,8 @@ import { ApiError } from '@/lib/api/errors';
 import { today } from '@/lib/days';
 import { renderWithProviders } from '@/testing/render';
 
+import { plansApi } from '@/features/calendar/api/plans.api';
+
 import { outfitsApi } from '../api/outfits.api';
 import { useGenerationDraftStore } from '../store/generation-draft.store';
 import { MyOutfitsScreen } from './MyOutfitsScreen';
@@ -34,6 +36,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams,
 }));
 jest.mock('../api/outfits.api');
+jest.mock('@/features/calendar/api/plans.api');
 jest.mock('@/features/preferences/api/preferences.api');
 jest.mock('@/features/wardrobe/api/wardrobe.api');
 jest.mock('@/features/weather/api/weather.api');
@@ -279,6 +282,51 @@ describe('OutfitDetailsScreen', () => {
       pathname: '/outfits/[id]/feedback',
       params: { id: 'o1', rating: 'dislike' },
     });
+  });
+});
+
+describe('OutfitDetailsScreen quick actions', () => {
+  it('plans the look on a day', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    jest.mocked(plansApi.plan).mockResolvedValue({
+      id: 'p1',
+      day: today(),
+      outfit: outfit('o1'),
+      forecast: null,
+    });
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Plus d’actions' }),
+    );
+    await press('Planifier cette tenue');
+    await screen.findByRole('button', { name: 'Planifier' });
+    await press('Planifier');
+
+    await waitFor(() =>
+      expect(plansApi.plan).toHaveBeenCalledWith(today(), 'o1'),
+    );
+    expect(await screen.findByText('Tenue planifiée !')).toBeOnTheScreen();
+  });
+
+  it('deletes the look', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    api.remove.mockResolvedValue(undefined);
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Plus d’actions' }),
+    );
+    await press('Supprimer de mes tenues');
+    const buttons = await screen.findAllByRole('button', {
+      name: 'Supprimer de mes tenues',
+    });
+    await fireEvent.press(buttons[buttons.length - 1]!);
+
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(api.remove).toHaveBeenCalledWith('o1');
   });
 });
 

@@ -28,6 +28,8 @@ model User {
   outfits             Outfit[]
   outfitFeedbacks     OutfitFeedback[]
   outfitWears         OutfitWear[]
+  outfitPlans         OutfitPlan[]
+  dayNotes            DayNote[]
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -186,7 +188,7 @@ model WeatherSettings {
 
 /// A look proposed by the outfit engine. Its score stays on the server.
 model Outfit {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   userId           String
   style            String?
   occasion         String?
@@ -206,6 +208,7 @@ model Outfit {
   items     OutfitItem[]
   feedbacks OutfitFeedback[]
   wears     OutfitWear[]
+  plans     OutfitPlan[]
 
   @@index([userId, createdAt])
   @@index([userId, isFavorite, favoritedAt])
@@ -255,4 +258,36 @@ model OutfitWear {
 
   @@unique([outfitId, wornOn])
   @@index([userId, wornOn])
+}
+
+/// A look planned for a day of the user's calendar: one per day. The forecast
+/// it was planned with is kept when it was known.
+model OutfitPlan {
+  id                  String   @id @default(cuid())
+  userId              String
+  outfitId            String
+  day                 DateTime @db.Date
+  forecastTemperature Int?
+  forecastCondition   String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  outfit Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@index([outfitId])
+}
+
+/// "Notes" of a day of the calendar: one per day.
+model DayNote {
+  id        String   @id @default(cuid())
+  userId    String
+  day       DateTime @db.Date
+  text      String
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
 }

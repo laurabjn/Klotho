@@ -136,6 +136,11 @@ export interface OutfitRepository {
    * does not exist or is someone else's.
    */
   deleteWear(userId: string, wearId: string): Promise<boolean>;
+  /**
+   * Deletes a look never worn, with its plans and its opinion, in one
+   * transaction. 'worn' keeps it.
+   */
+  delete(userId: string, id: string): Promise<'deleted' | 'notFound' | 'worn'>;
 }
 
 export const OUTFIT_REPOSITORY = Symbol('OutfitRepository');

@@ -1,14 +1,15 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import type { OutfitWear, Season } from '@klotho/shared';
+import { DAY_NOTE_MAX, type Outfit, type Season } from '@klotho/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { TFunction } from 'i18next';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,8 +22,10 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ScrollPage } from '@/components/ui/ScrollToTop';
+import { ScrollToFocusedInputContext } from '@/components/ui/useScrollToFocusedInput';
 import { OutfitCollage } from '@/features/outfits/components/OutfitCollage';
 import {
+  useMarkWorn,
   useRemoveWear,
   useToggleOutfitFavorite,
   useWornLooks,
@@ -42,6 +45,16 @@ import {
   type IconName,
 } from '@/theme/icons';
 import { useCompactLayout } from '@/theme/useCompactLayout';
+
+import { DayPickerSheet } from '../components/DayPickerSheet';
+import {
+  useDayNote,
+  useMovePlan,
+  usePlans,
+  useRegeneratePlan,
+  useRemovePlan,
+  useSaveDayNote,
+} from '../hooks/usePlans';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
 /** The season of a day (northern hemisphere). */
@@ -67,9 +80,15 @@ export function DayDetailScreen() {
   const params = useLocalSearchParams<{ day: string }>();
   const [day, setDay] = useState(params.day);
   const worn = useWornLooks({ from: day, to: day });
-  const [soon, setSoon] = useState(false);
+  const plans = usePlans(day, day);
   const wears = worn.data ?? [];
-  const first = wears[0]?.outfit;
+  const plan = plans.data?.[0];
+  // Once worn, the planned look is shown with the worn ones.
+  const planned =
+    plan && !wears.some((wear) => wear.outfit.id === plan.outfit.id)
+      ? plan
+      : undefined;
+  const first = wears[0]?.outfit ?? planned?.outfit;
   const choice = first ? weatherChoiceOf(first.condition) : null;
   const season = seasonOf(day);
 
@@ -130,9 +149,9 @@ export function DayDetailScreen() {
           </View>
         </View>
 
-        {worn.isPending ? (
+        {worn.isPending || plans.isPending ? (
           <ActivityIndicator color={colors.primary} />
-        ) : wears.length === 0 ? (
+        ) : wears.length === 0 && !planned ? (
           <EmptyState
             icon="calendar-clear-outline"
             title={t('outfits.day.empty')}
@@ -143,31 +162,43 @@ export function DayDetailScreen() {
             })}
           />
         ) : (
-          wears.map((wear) => (
-            <WornLook
-              key={wear.id}
-              wear={wear}
-              season={season}
-              onSoon={() => setSoon(true)}
-            />
-          ))
+          <>
+            {planned && (
+              <DayLook
+                outfit={planned.outfit}
+                season={season}
+                day={day}
+                planned
+                onMoved={setDay}
+                note={<DayNoteRow day={day} />}
+              />
+            )}
+            {wears.map((wear, index) => (
+              <DayLook
+                key={wear.id}
+                outfit={wear.outfit}
+                season={season}
+                day={day}
+                wearId={wear.id}
+                // The note goes with the first look of the day.
+                note={
+                  !planned && index === 0 ? <DayNoteRow day={day} /> : undefined
+                }
+              />
+            ))}
+          </>
         )}
+        {/* A day without a look can still have its note. */}
+        {!worn.isPending &&
+          !plans.isPending &&
+          wears.length === 0 &&
+          !planned && <DayNoteRow day={day} />}
       </ScrollPage>
-      <ConfirmDialog
-        visible={soon}
-        icon="sparkles-outline"
-        title={t('outfits.soon.title')}
-        message={t('outfits.soon.body')}
-        confirmLabel={t('outfits.soon.ok')}
-        onConfirm={() => setSoon(false)}
-        onCancel={() => setSoon(false)}
-      />
     </SafeAreaView>
   );
 }
 
-function weatherText(t: TFunction, wear: OutfitWear): string | null {
-  const { outfit } = wear;
+function weatherText(t: TFunction, outfit: Outfit): string | null {
   const choice = weatherChoiceOf(outfit.condition);
   if (!choice || outfit.temperature === null) return null;
   return t('outfits.day.weatherText', {
@@ -177,26 +208,51 @@ function weatherText(t: TFunction, wear: OutfitWear): string | null {
   });
 }
 
-function WornLook({
-  wear,
+/**
+ * The look of the day: planned ("Changer la tenue", "Déplacer", "Je l'ai
+ * portée", "Supprimer") or worn ("Voir la tenue", "Supprimer").
+ */
+function DayLook({
+  outfit,
   season,
-  onSoon,
+  day,
+  wearId,
+  planned = false,
+  onMoved,
+  note,
 }: {
-  wear: OutfitWear;
+  outfit: Outfit;
   season: Season;
-  onSoon: () => void;
+  day: string;
+  wearId?: string;
+  planned?: boolean;
+  /** The day the plan was moved to (the screen follows it). */
+  onMoved?: (day: string) => void;
+  /** "Notes", with the other rows of the day, before the buttons. */
+  note?: React.ReactNode;
 }) {
   const { t } = useTranslation();
-  const { outfit } = wear;
   const compact = useCompactLayout();
   const favorite = useToggleOutfitFavorite(outfit.id);
-  const remove = useRemoveWear();
+  const removeWear = useRemoveWear();
+  const removePlan = useRemovePlan();
+  const regenerate = useRegeneratePlan();
+  const move = useMovePlan();
+  const wear = useMarkWorn(outfit.id);
   const [confirm, setConfirm] = useState(false);
+  const [moving, setMoving] = useState(false);
   const openLook = () => router.push(`/outfits/${outfit.id}`);
-  const weather = weatherText(t, wear);
+  const weather = weatherText(t, outfit);
+  const remove = planned ? removePlan : removeWear;
+  const error = regenerate.error ?? wear.error ?? remove.error;
 
   return (
     <View style={styles.look}>
+      <AppText variant="overline">
+        {planned
+          ? t('outfits.planning.plannedLook')
+          : t('outfits.planning.wornLooks')}
+      </AppText>
       <View style={[styles.card, styles.lookCard, compact && styles.stacked]}>
         <Pressable
           accessibilityRole="button"
@@ -278,25 +334,48 @@ function WornLook({
           onPress={openLook}
         />
       )}
+      {note}
 
-      <View style={[styles.actions, compact && styles.stackedActions]}>
-        <View style={compact ? undefined : styles.flex}>
-          <Button
-            icon="shuffle"
-            decorated={false}
-            label={t('outfits.day.change')}
-            onPress={onSoon}
-          />
-        </View>
-        <View style={compact ? undefined : styles.flex}>
-          <Button
-            variant="outline"
-            icon="calendar-outline"
-            label={t('outfits.day.move')}
-            onPress={onSoon}
-          />
-        </View>
-      </View>
+      {planned ? (
+        <>
+          <View style={[styles.actions, compact && styles.stackedActions]}>
+            <View style={compact ? undefined : styles.flex}>
+              <Button
+                icon="shuffle"
+                decorated={false}
+                label={t('outfits.day.change')}
+                loading={regenerate.isPending}
+                onPress={() => regenerate.mutate(day)}
+              />
+            </View>
+            <View style={compact ? undefined : styles.flex}>
+              <Button
+                variant="outline"
+                icon="calendar-outline"
+                label={t('outfits.day.move')}
+                onPress={() => setMoving(true)}
+              />
+            </View>
+          </View>
+          {day <= today() && (
+            <Button
+              variant="secondary"
+              icon="checkmark-circle-outline"
+              decorated={false}
+              label={t('outfits.planning.wearPlanned')}
+              loading={wear.isPending}
+              onPress={() => wear.mutate(day)}
+            />
+          )}
+        </>
+      ) : (
+        <Button
+          icon="eye-outline"
+          decorated={false}
+          label={t('outfits.mine.see')}
+          onPress={openLook}
+        />
+      )}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('outfits.day.remove')}
@@ -308,25 +387,109 @@ function WornLook({
       </Pressable>
       <FormError
         message={
-          remove.error
-            ? t(errorMessageKey(remove.error) as 'apiErrors.unknown')
-            : null
+          error ? t(errorMessageKey(error) as 'apiErrors.unknown') : null
         }
       />
       <ConfirmDialog
         visible={confirm}
         icon="trash-outline"
-        title={t('outfits.day.removeTitle')}
-        message={t('outfits.day.removeBody')}
+        title={
+          planned
+            ? t('outfits.planning.removeTitle')
+            : t('outfits.day.removeTitle')
+        }
+        message={
+          planned
+            ? t('outfits.planning.removeBody')
+            : t('outfits.day.removeBody')
+        }
         confirmLabel={t('outfits.day.remove')}
         cancelLabel={t('outfits.day.cancel')}
         loading={remove.isPending}
         onCancel={() => setConfirm(false)}
         onConfirm={() =>
-          remove.mutate(wear.id, { onSettled: () => setConfirm(false) })
+          planned
+            ? removePlan.mutate(day, { onSettled: () => setConfirm(false) })
+            : removeWear.mutate(wearId!, {
+                onSettled: () => setConfirm(false),
+              })
         }
       />
+      {planned && (
+        <DayPickerSheet
+          visible={moving}
+          title={t('outfits.planning.moveTitle')}
+          overline={t('outfits.planning.moveOverline')}
+          confirmLabel={t('outfits.planning.moveConfirm')}
+          exclude={day}
+          loading={move.isPending}
+          error={
+            move.error
+              ? t(errorMessageKey(move.error) as 'apiErrors.unknown')
+              : null
+          }
+          onClose={() => setMoving(false)}
+          onConfirm={(toDay) =>
+            move.mutate(
+              { day, toDay },
+              {
+                onSuccess: () => {
+                  setMoving(false);
+                  onMoved?.(toDay);
+                },
+              },
+            )
+          }
+        />
+      )}
     </View>
+  );
+}
+
+/** "Notes" of the day: shown, then edited in place. */
+function DayNoteRow({ day }: { day: string }) {
+  const { t } = useTranslation();
+  const note = useDayNote(day);
+  const save = useSaveDayNote(day);
+  const [draft, setDraft] = useState<string | null>(null);
+  const scrollIntoView = useContext(ScrollToFocusedInputContext);
+  const text = note.data?.text ?? null;
+
+  if (draft !== null) {
+    return (
+      <View style={[styles.row, styles.noteEdit]}>
+        <AppText style={styles.rowLabel}>{t('outfits.planning.notes')}</AppText>
+        <TextInput
+          multiline
+          autoFocus
+          value={draft}
+          onChangeText={setDraft}
+          maxLength={DAY_NOTE_MAX}
+          placeholder={t('outfits.planning.notePlaceholder')}
+          placeholderTextColor={colors.placeholder}
+          accessibilityLabel={t('outfits.planning.notes')}
+          onFocus={() => scrollIntoView?.()}
+          style={styles.noteInput}
+        />
+        <Button
+          variant="secondary"
+          decorated={false}
+          label={t('outfits.planning.saveNote')}
+          loading={save.isPending}
+          onPress={() =>
+            save.mutate(draft, { onSuccess: () => setDraft(null) })
+          }
+        />
+      </View>
+    );
+  }
+  return (
+    <InfoRow
+      icon="file-document-outline"
+      label={t('outfits.planning.notes')}
+      text={text ?? t('outfits.planning.noteEmpty')}
+      onPress={() => setDraft(text ?? '')}
+    />
   );
 }
 
@@ -537,4 +700,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   removeText: { fontFamily: fonts.serif, fontSize: 17, color: colors.link },
+  noteEdit: { flexDirection: 'column', alignItems: 'stretch' },
+  noteInput: {
+    minHeight: 72,
+    padding: spacing.sm,
+    textAlignVertical: 'top',
+    borderRadius: radii.input,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+    fontFamily: fonts.serifRegular,
+    fontSize: 15,
+    color: colors.body,
+  },
 });

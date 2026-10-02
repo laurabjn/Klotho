@@ -7,6 +7,7 @@ import type { CityGeocoder } from '../../domain/weather/ports/city-geocoder';
 import type { WeatherProvider } from '../../domain/weather/ports/weather-provider';
 import {
   coarsen,
+  type DailyForecast,
   type Weather,
 } from '../../domain/weather/value-objects/weather';
 
@@ -31,6 +32,18 @@ const currentWeatherResponse = z.object({
   name: z.string().optional(),
 });
 
+// 5 days, every 3 hours; `city.timezone` is the offset of the place in seconds.
+const forecastResponse = z.object({
+  list: z.array(
+    z.object({
+      dt: z.number(),
+      main: z.object({ temp: z.number() }),
+      weather: z.array(z.object({ id: z.number().int() })).min(1),
+    }),
+  ),
+  city: z.object({ timezone: z.number().int() }),
+});
+
 const geocodingResponse = z.array(
   z.object({
     name: z.string(),
@@ -51,9 +64,70 @@ function toCondition(id: number): WeatherCondition {
   return id === 800 ? 'clear' : 'cloudy';
 }
 
+/** On a tie, the condition that matters most for clothes wins. */
+const SEVERITY: readonly WeatherCondition[] = [
+  'storm',
+  'snow',
+  'rain',
+  'fog',
+  'cloudy',
+  'clear',
+];
+
+/** Local hours that tell the weather of the day (8:00 to 20:00 slots). */
+const DAYTIME_FROM = 8;
+const DAYTIME_TO = 20;
+
+function dominant(conditions: WeatherCondition[]): WeatherCondition {
+  const counts = new Map<WeatherCondition, number>();
+  for (const condition of conditions)
+    counts.set(condition, (counts.get(condition) ?? 0) + 1);
+  return [...counts.entries()].sort(
+    ([a, countA], [b, countB]) =>
+      countB - countA || SEVERITY.indexOf(a) - SEVERITY.indexOf(b),
+  )[0]![0];
+}
+
+/**
+ * Groups the 3-hour slots by local day: the warmest temperature of the day
+ * (what the user dresses for), rounded, and the most frequent condition of
+ * the daytime slots (every slot when the day has none, e.g. late tonight).
+ */
+export function toDailyForecasts(
+  answer: z.output<typeof forecastResponse>,
+): DailyForecast[] {
+  const days = new Map<
+    string,
+    {
+      temperatures: number[];
+      all: WeatherCondition[];
+      daytime: WeatherCondition[];
+    }
+  >();
+  for (const slot of answer.list) {
+    const local = new Date((slot.dt + answer.city.timezone) * 1000);
+    const day = local.toISOString().slice(0, 10);
+    const entry = days.get(day) ?? { temperatures: [], all: [], daytime: [] };
+    const condition = toCondition(slot.weather[0]!.id);
+    entry.temperatures.push(slot.main.temp);
+    entry.all.push(condition);
+    const hour = local.getUTCHours();
+    if (hour >= DAYTIME_FROM && hour <= DAYTIME_TO)
+      entry.daytime.push(condition);
+    days.set(day, entry);
+  }
+  return [...days.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, entry]) => ({
+      day,
+      temperature: Math.round(Math.max(...entry.temperatures)),
+      condition: dominant(entry.daytime.length ? entry.daytime : entry.all),
+    }));
+}
+
 const oneDecimal = (value: number) => Math.round(value * 10) / 10;
 
-/** Current weather and city search, with the free OpenWeatherMap APIs. */
+/** Current weather, forecast and city search, with the free OpenWeatherMap APIs. */
 export class OpenWeatherMapClient implements WeatherProvider, CityGeocoder {
   private readonly logger = new Logger(OpenWeatherMapClient.name);
 
@@ -83,6 +157,18 @@ export class OpenWeatherMapClient implements WeatherProvider, CityGeocoder {
       locationName: answer.name || null,
       observedAt: new Date(answer.dt * 1000),
     };
+  }
+
+  async getDailyForecast(
+    latitude: number,
+    longitude: number,
+  ): Promise<DailyForecast[]> {
+    const answer = await this.get('/data/2.5/forecast', forecastResponse, {
+      lat: String(latitude),
+      lon: String(longitude),
+      units: 'metric',
+    });
+    return toDailyForecasts(answer);
   }
 
   async search(query: string, language: 'fr' | 'en'): Promise<City[]> {

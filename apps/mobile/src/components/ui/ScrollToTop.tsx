@@ -1,17 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Keyboard,
+  KeyboardAvoidingView,
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
+  type HostInstance,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type ScrollViewProps,
 } from 'react-native';
 
 import { colors, radii, spacing } from '@/theme/tokens';
+
+import { ScrollToFocusedInputContext } from './useScrollToFocusedInput';
 
 /** Shown once the page has scrolled more than this (dp). */
 const SHOW_AFTER = 500;
@@ -102,18 +108,58 @@ export function ScrollPage({ onScroll, ...props }: ScrollViewProps) {
     showTop,
     scrollToTop,
   } = useScrollToTop<ScrollView>();
+
+  // A field of the page (a note…) stays visible above the keyboard.
+  const frameRef = useRef<View>(null);
+  const offset = useRef(0);
+  const scrollToFocused = useCallback(() => {
+    const input =
+      TextInput.State.currentlyFocusedInput() as HostInstance | null;
+    const frame = frameRef.current;
+    if (!input || !frame) return;
+    frame.measureInWindow((_fx, frameY) =>
+      input.measureInWindow((_x, inputY) =>
+        scrollRef.current?.scrollTo({
+          y: Math.max(0, offset.current + inputY - frameY - FOCUSED_TOP_MARGIN),
+          animated: true,
+        }),
+      ),
+    );
+  }, [scrollRef]);
+  useEffect(() => {
+    const subscription = Keyboard.addListener(
+      'keyboardDidShow',
+      scrollToFocused,
+    );
+    return () => subscription.remove();
+  }, [scrollToFocused]);
+  const onFieldFocus = useCallback(() => {
+    if (Keyboard.isVisible()) scrollToFocused();
+  }, [scrollToFocused]);
+
   return (
-    <View style={styles.page}>
-      <ScrollView
-        {...props}
-        ref={scrollRef}
-        scrollEventThrottle={100}
-        onScroll={(event) => {
-          track(event);
-          onScroll?.(event);
-        }}
-      />
+    <KeyboardAvoidingView style={styles.page} behavior="padding">
+      <View ref={frameRef} collapsable={false} style={styles.page}>
+        <ScrollView
+          {...props}
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={100}
+          onScroll={(event) => {
+            offset.current = event.nativeEvent.contentOffset.y;
+            track(event);
+            onScroll?.(event);
+          }}
+        >
+          <ScrollToFocusedInputContext value={onFieldFocus}>
+            {props.children}
+          </ScrollToFocusedInputContext>
+        </ScrollView>
+      </View>
       <ScrollToTopButton visible={showTop} onPress={scrollToTop} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
+
+/** Space kept above the focused field once scrolled. */
+const FOCUSED_TOP_MARGIN = 96;

@@ -25,6 +25,8 @@ import { USER_REPOSITORY } from '../domain/users/ports/user.repository';
 import { WARDROBE_PHOTO_REPOSITORY } from '../domain/wardrobe/ports/wardrobe-photo.repository';
 import { WARDROBE_REPOSITORY } from '../domain/wardrobe/ports/wardrobe.repository';
 import { OUTFIT_REPOSITORY } from '../domain/outfits/ports/outfit.repository';
+import { DAY_NOTE_REPOSITORY } from '../domain/planning/ports/day-note.repository';
+import { OUTFIT_PLAN_REPOSITORY } from '../domain/planning/ports/outfit-plan.repository';
 import { CITY_GEOCODER } from '../domain/weather/ports/city-geocoder';
 import { WEATHER_PROVIDER } from '../domain/weather/ports/weather-provider';
 import { WEATHER_SETTINGS_REPOSITORY } from '../domain/weather/ports/weather-settings.repository';
@@ -36,9 +38,11 @@ import { JwtAccessTokenService } from './auth/jwt-access-token.service';
 import { BrevoMailer } from './mail/brevo-mailer';
 import { ConsoleMailer } from './mail/console-mailer';
 import { PrismaService } from './prisma/prisma.service';
+import { PrismaDayNoteRepository } from './prisma/repositories/prisma-day-note.repository';
 import { PrismaEmailChangeTokenRepository } from './prisma/repositories/prisma-email-change-token.repository';
 import { PrismaKpiSource } from './prisma/repositories/prisma-kpi.source';
 import { PrismaPasswordResetTokenRepository } from './prisma/repositories/prisma-password-reset-token.repository';
+import { PrismaOutfitPlanRepository } from './prisma/repositories/prisma-outfit-plan.repository';
 import { PrismaOutfitRepository } from './prisma/repositories/prisma-outfit.repository';
 import { PrismaRefreshTokenRepository } from './prisma/repositories/prisma-refresh-token.repository';
 import { PrismaStyleProfileRepository } from './prisma/repositories/prisma-style-profile.repository';
@@ -101,6 +105,8 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     },
     { provide: CITY_GEOCODER, useExisting: OPENWEATHERMAP_CLIENT },
     { provide: OUTFIT_REPOSITORY, useClass: PrismaOutfitRepository },
+    { provide: OUTFIT_PLAN_REPOSITORY, useClass: PrismaOutfitPlanRepository },
+    { provide: DAY_NOTE_REPOSITORY, useClass: PrismaDayNoteRepository },
     { provide: KPI_SOURCE, useClass: PrismaKpiSource },
     { provide: IMAGE_PROCESSOR, useClass: SharpImageProcessor },
     {
@@ -199,6 +205,8 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     STYLE_PROFILE_REPOSITORY,
     WARDROBE_PHOTO_REPOSITORY,
     OUTFIT_REPOSITORY,
+    OUTFIT_PLAN_REPOSITORY,
+    DAY_NOTE_REPOSITORY,
     KPI_SOURCE,
     WEATHER_SETTINGS_REPOSITORY,
     WEATHER_PROVIDER,

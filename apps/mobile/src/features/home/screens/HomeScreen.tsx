@@ -39,6 +39,8 @@ import { useCurrentWeather } from '@/features/weather/hooks/useCurrentWeather';
 import { useManualTemperature } from '@/features/weather/store/manual-temperature.store';
 import { errorMessageKey } from '@/lib/api/errors';
 import { styleIcons } from '@/theme/icons';
+import { usePlans } from '@/features/calendar/hooks/usePlans';
+import { toDay } from '@/lib/days';
 import { photos } from '@/theme/photos';
 import { useCompactLayout } from '@/theme/useCompactLayout';
 import { colors, radii, spacing } from '@/theme/tokens';
@@ -106,9 +108,16 @@ function useOutfitOfTheDay() {
   const manual = useManualTemperature();
   const current = weather.status === 'ready' ? weather.weather : null;
 
+  const day = toDay(new Date());
+  // The look planned for today comes first ("Planifier ma semaine").
+  const planned = usePlans(day, day).data?.[0]?.outfit;
   const today = (recent.data ?? []).filter(isToday);
   const lookIn = (style: Style | null) =>
-    style ? today.find((outfit) => outfit.style === style) : today[0];
+    style
+      ? planned?.style === style
+        ? planned
+        : today.find((outfit) => outfit.style === style)
+      : (planned ?? today[0]);
   const outfit = lookIn(daily) ?? null;
 
   /** Called when a style is picked: prepares a look if there is none yet. */

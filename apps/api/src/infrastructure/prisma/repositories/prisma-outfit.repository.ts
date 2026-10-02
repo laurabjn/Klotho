@@ -404,4 +404,24 @@ export class PrismaOutfitRepository implements OutfitRepository {
       return true;
     });
   }
+
+  async delete(
+    userId: string,
+    id: string,
+  ): Promise<'deleted' | 'notFound' | 'worn'> {
+    return this.prisma.$transaction(async (tx) => {
+      const outfit = await tx.outfit.findFirst({
+        where: { id, userId },
+        select: { _count: { select: { wears: true } } },
+      });
+      if (!outfit) return 'notFound';
+      if (outfit._count.wears > 0) return 'worn';
+      // Pieces, opinion and plans go with it (cascade); a wear added
+      // meanwhile makes the delete match nothing.
+      const { count } = await tx.outfit.deleteMany({
+        where: { id, userId, wears: { none: {} } },
+      });
+      return count === 1 ? 'deleted' : 'worn';
+    });
+  }
 }

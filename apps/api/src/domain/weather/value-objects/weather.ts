@@ -12,6 +12,13 @@ export interface Weather {
   observedAt: Date;
 }
 
+/** Forecast of a local day (YYYY-MM-DD at the place). Temperature in °C, rounded. */
+export interface DailyForecast {
+  day: string;
+  temperature: number;
+  condition: WeatherCondition;
+}
+
 export interface Coordinates {
   latitude: number;
   longitude: number;
