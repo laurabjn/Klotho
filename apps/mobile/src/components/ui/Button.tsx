@@ -10,8 +10,11 @@ import {
 
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
-/** "outline": thin blush border and dark text ("Passer pour l'instant"). */
-type Variant = 'primary' | 'secondary' | 'outline' | 'link';
+/**
+ * "outline": thin blush border and dark text ("Passer pour l'instant").
+ * "danger": filled red, for what cannot be undone.
+ */
+type Variant = 'primary' | 'secondary' | 'outline' | 'link' | 'danger';
 
 interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   label: string;
@@ -33,7 +36,7 @@ export function Button({
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const textColor =
-    variant === 'primary'
+    variant === 'primary' || variant === 'danger'
       ? colors.onPrimary
       : variant === 'link'
         ? colors.link
@@ -52,7 +55,11 @@ export function Button({
         styles.base,
         styles[variant],
         pressed && variant === 'primary' && styles.primaryPressed,
-        pressed && variant !== 'primary' && styles.pressed,
+        pressed && variant === 'danger' && styles.dangerPressed,
+        pressed &&
+          variant !== 'primary' &&
+          variant !== 'danger' &&
+          styles.pressed,
         isDisabled && !loading && styles.disabled,
       ]}
       {...props}
@@ -102,6 +109,13 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   primaryPressed: { backgroundColor: colors.primaryPressed },
+  danger: {
+    minHeight: 54,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.error,
+  },
+  dangerPressed: { backgroundColor: '#97362F' },
   secondary: {
     minHeight: 52,
     borderRadius: radii.pill,

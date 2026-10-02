@@ -126,7 +126,8 @@ export function useDeleteWardrobeItem(id: string) {
 
 /**
  * Creates the piece, then uploads its photos one by one. A photo that fails
- * does not cancel the piece: the number of failures is returned instead.
+ * does not cancel the piece: the failed ones are returned instead, to be
+ * sent again onto the `existing` piece.
  */
 export function useCreateWardrobeItemWithPhotos() {
   const queryClient = useQueryClient();
@@ -134,13 +135,21 @@ export function useCreateWardrobeItemWithPhotos() {
     mutationFn: async ({
       body,
       photos,
+      existing,
+      onProgress,
     }: {
       body: CreateWardrobeItemInput;
       photos: LocalPhoto[];
+      existing?: WardrobeItem;
+      onProgress?: (share: number) => void;
     }) => {
-      const created = await wardrobeApi.create(body);
-      const { item, failed } = await addPhotos(created.id, photos);
-      return { item: item ?? created, failed };
+      const created = existing ?? (await wardrobeApi.create(body));
+      const { item, failed, failedPhotos } = await addPhotos(
+        created.id,
+        photos,
+        onProgress,
+      );
+      return { item: item ?? created, failed, failedPhotos };
     },
     onSuccess: ({ item }) => {
       queryClient.setQueryData(wardrobeKeys.item(item.id), item);

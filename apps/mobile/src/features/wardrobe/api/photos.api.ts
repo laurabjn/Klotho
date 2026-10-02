@@ -37,20 +37,36 @@ export const photosApi = {
     }),
 };
 
-/** Upload then attach, one photo after the other (order = display order). */
+/**
+ * Upload then attach, one photo after the other (order = display order).
+ * `onProgress` gets the share done, from 0 to 1, after each step.
+ */
 export async function addPhotos(
   itemId: string,
   photos: LocalPhoto[],
-): Promise<{ item: WardrobeItem | null; failed: number }> {
+  onProgress?: (share: number) => void,
+): Promise<{
+  item: WardrobeItem | null;
+  failed: number;
+  /** To send again. */
+  failedPhotos: LocalPhoto[];
+}> {
   let item: WardrobeItem | null = null;
-  let failed = 0;
-  for (const photo of photos) {
+  const failedPhotos: LocalPhoto[] = [];
+  const steps = photos.length * 2;
+  let done = 0;
+  const step = () => onProgress?.(++done / steps);
+  for (const [index, photo] of photos.entries()) {
     try {
       const { key } = await photosApi.upload(photo);
+      step();
       item = await photosApi.attach(itemId, key);
+      step();
     } catch {
-      failed += 1;
+      failedPhotos.push(photo);
+      done = (index + 1) * 2;
+      onProgress?.(done / steps);
     }
   }
-  return { item, failed };
+  return { item, failed: failedPhotos.length, failedPhotos };
 }

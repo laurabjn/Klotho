@@ -4,6 +4,7 @@ import { outfitsFr } from './outfits.fr';
 import { notificationsFr } from './notifications.fr';
 import { privacyFr } from './privacy.fr';
 import { settingsFr } from './settings.fr';
+import { statesFr } from './states.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -102,6 +103,7 @@ export const fr = {
   privacy: privacyFr,
   notifications: notificationsFr,
   settings: settingsFr,
+  states: statesFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',

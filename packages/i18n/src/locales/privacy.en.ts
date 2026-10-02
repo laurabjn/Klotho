@@ -44,7 +44,8 @@ export const privacyEn: TranslationResource['privacy'] = {
     confirmBody:
       'This cannot be undone. Enter your password to confirm the deletion of all your data.',
     password: 'Password',
-    confirm: 'Delete for good',
+    warning: 'This cannot be undone.',
+    confirm: 'Yes, delete my account',
     cancel: 'Cancel',
   },
 };

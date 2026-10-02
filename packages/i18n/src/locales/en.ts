@@ -5,6 +5,7 @@ import { outfitsEn } from './outfits.en';
 import { notificationsEn } from './notifications.en';
 import { privacyEn } from './privacy.en';
 import { settingsEn } from './settings.en';
+import { statesEn } from './states.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -101,6 +102,7 @@ export const en: TranslationResource = {
   privacy: privacyEn,
   notifications: notificationsEn,
   settings: settingsEn,
+  states: statesEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',

@@ -20,20 +20,23 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { ChipGroup } from '@/components/ui/ChipGroup';
 import { FormError } from '@/components/ui/FormError';
+import { OfflineState } from '@/components/ui/OfflineState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { TemperatureSlider } from '@/components/ui/TemperatureSlider';
 import { ScrollPage } from '@/components/ui/ScrollToTop';
+import { StateView } from '@/components/ui/StateView';
 import { useDailyStyle } from '@/features/home/store/daily-style.store';
 import { useStyleProfile } from '@/features/preferences/hooks/useStyleProfile';
 import { useWardrobeList } from '@/features/wardrobe/hooks/useWardrobe';
 import { useCurrentWeather } from '@/features/weather/hooks/useCurrentWeather';
 import { useManualTemperature } from '@/features/weather/store/manual-temperature.store';
-import { errorMessageKey } from '@/lib/api/errors';
+import { ApiError, errorMessageKey, NetworkError } from '@/lib/api/errors';
 import { occasionIcons, styleIcons, type IconName } from '@/theme/icons';
-import { occasionPhotos } from '@/theme/photos';
+import { occasionPhotos, statePhotos } from '@/theme/photos';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
+import { GeneratingModal } from '../components/GeneratingModal';
 import { OutfitItemTile } from '../components/OutfitItemTile';
 import { useGenerateOutfits } from '../hooks/useOutfits';
 import {
@@ -134,6 +137,45 @@ export function OutfitGeneratorScreen() {
         }),
     });
   };
+
+  const noOutfit =
+    generate.error instanceof ApiError &&
+    generate.error.code === 'outfits.noOutfitPossible';
+  const offline = generate.error instanceof NetworkError;
+
+  if (noOutfit || offline) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollPage contentContainerStyle={styles.content}>
+          <AppHeader />
+          {noOutfit ? (
+            <StateView
+              image={statePhotos.noOutfit}
+              title={t('states.noOutfit.title')}
+              body={t('states.noOutfit.body')}
+              primary={{
+                label: t('states.noOutfit.adjust'),
+                onPress: () => generate.reset(),
+              }}
+              secondary={{
+                label: t('states.noOutfit.all'),
+                onPress: () => {
+                  generate.reset();
+                  router.push('/my-outfits');
+                },
+              }}
+            />
+          ) : (
+            <OfflineState
+              onRetry={submit}
+              onContinue={() => generate.reset()}
+            />
+          )}
+        </ScrollPage>
+        <GeneratingModal visible={generate.isPending} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -298,6 +340,7 @@ export function OutfitGeneratorScreen() {
           onPress={submit}
         />
       </View>
+      <GeneratingModal visible={generate.isPending} />
     </SafeAreaView>
   );
 }

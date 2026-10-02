@@ -13,6 +13,7 @@ import {
   type PermissionAnswer,
 } from '../lib/device-position';
 import { CitySearch } from './CitySearch';
+import { LocationBlockedScreen } from './LocationBlockedScreen';
 
 export interface LocationChoice {
   locationMode: LocationMode | null;
@@ -35,6 +36,7 @@ export function LocationSetup({ value, onChange }: LocationSetupProps) {
     'granted'
   > | null>(null);
   const [asking, setAsking] = useState(false);
+  const [blockedVisible, setBlockedVisible] = useState(false);
 
   const chooseDevice = async () => {
     setAsking(true);
@@ -46,6 +48,7 @@ export function LocationSetup({ value, onChange }: LocationSetupProps) {
       onChange({ ...value, locationMode: 'device' });
     } else {
       setRefusal(answer);
+      setBlockedVisible(answer === 'blocked');
       onChange({ ...value, locationMode: 'city' });
     }
   };
@@ -94,6 +97,10 @@ export function LocationSetup({ value, onChange }: LocationSetupProps) {
           onChange={(city) => onChange({ ...value, city })}
         />
       )}
+      <LocationBlockedScreen
+        visible={blockedVisible}
+        onManual={() => setBlockedVisible(false)}
+      />
     </View>
   );
 }

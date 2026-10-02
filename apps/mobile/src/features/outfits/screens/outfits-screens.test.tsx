@@ -6,7 +6,7 @@ import { preferencesApi } from '@/features/preferences/api/preferences.api';
 import { EMPTY_STYLE_PROFILE } from '@/features/preferences/hooks/useStyleProfile';
 import { wardrobeApi } from '@/features/wardrobe/api/wardrobe.api';
 import { weatherApi } from '@/features/weather/api/weather.api';
-import { ApiError } from '@/lib/api/errors';
+import { ApiError, NetworkError } from '@/lib/api/errors';
 import { today } from '@/lib/days';
 import { renderWithProviders } from '@/testing/render';
 
@@ -178,8 +178,66 @@ describe('OutfitGeneratorScreen', () => {
     await press('Générer 5 tenues');
 
     expect(
-      await screen.findByText(/Pas assez de pièces adaptées/),
+      await screen.findByText('Aucune tenue compatible pour le moment'),
     ).toBeOnTheScreen();
+    await press('Voir toutes les tenues');
+    expect(router.push).toHaveBeenCalledWith('/my-outfits');
+  });
+
+  it('goes back to the criteria to adjust them', async () => {
+    api.generate.mockRejectedValue(
+      new ApiError(422, 'outfits.noOutfitPossible'),
+    );
+    await renderWithProviders(<OutfitGeneratorScreen />);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Travail' }));
+    await press('Générer 5 tenues');
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Ajuster mes critères' }),
+    );
+
+    expect(
+      (await screen.findByRole('radio', { name: 'Travail' })).props
+        .accessibilityState,
+    ).toMatchObject({ selected: true });
+  });
+
+  it('shows the steps while the looks are created', async () => {
+    let finish: (outfits: Outfit[]) => void = () => undefined;
+    api.generate.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    await renderWithProviders(<OutfitGeneratorScreen />);
+
+    await press('Générer 5 tenues');
+
+    expect(
+      await screen.findByText('Klotho crée tes tenues…'),
+    ).toBeOnTheScreen();
+    expect(screen.getByText('Analyse de ton dressing')).toBeOnTheScreen();
+    finish([outfit('o1')]);
+    await waitFor(() => expect(router.push).toHaveBeenCalled());
+    expect(screen.queryByText('Klotho crée tes tenues…')).not.toBeOnTheScreen();
+  });
+
+  it('offers to try again without connection', async () => {
+    api.generate
+      .mockRejectedValueOnce(new NetworkError())
+      .mockResolvedValue([outfit('o1')]);
+    await renderWithProviders(<OutfitGeneratorScreen />);
+
+    await press('Générer 5 tenues');
+    expect(await screen.findByText('Problème de connexion')).toBeOnTheScreen();
+    await press('Réessayer');
+
+    await waitFor(() =>
+      expect(router.push).toHaveBeenCalledWith({
+        pathname: '/outfits/results',
+        params: { ids: 'o1' },
+      }),
+    );
   });
 });
 

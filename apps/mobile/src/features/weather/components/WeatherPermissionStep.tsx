@@ -16,6 +16,7 @@ import {
   type PermissionAnswer,
 } from '../lib/device-position';
 import { CitySearch } from './CitySearch';
+import { LocationBlockedScreen } from './LocationBlockedScreen';
 import type { LocationChoice } from './LocationSetup';
 
 const CLEAR = 'rgba(251, 247, 242, 0)';
@@ -44,6 +45,7 @@ export function WeatherPermissionStep({
     'granted'
   > | null>(null);
   const [asking, setAsking] = useState(false);
+  const [blockedVisible, setBlockedVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
   const choosingCity = value.locationMode === 'city';
 
@@ -58,6 +60,7 @@ export function WeatherPermissionStep({
       onFinish(choice);
     } else {
       setRefusal(answer);
+      setBlockedVisible(answer === 'blocked');
       onChange({ ...value, locationMode: 'city' });
     }
   };
@@ -143,6 +146,10 @@ export function WeatherPermissionStep({
           </View>
         </View>
       </View>
+      <LocationBlockedScreen
+        visible={blockedVisible}
+        onManual={() => setBlockedVisible(false)}
+      />
       <ConfirmDialog
         visible={privacyVisible}
         icon="lock-closed-outline"
