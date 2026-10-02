@@ -13,6 +13,7 @@ import {
 import {
   CreateOutfitsUseCase,
   CreateOutfitVariantUseCase,
+  DeleteOutfitUseCase,
   GetOutfitUseCase,
   ListOutfitAlternativesUseCase,
   OutfitWorkshop,
@@ -47,6 +48,7 @@ const logger = new Logger('OutfitEngine');
 const useCases = [
   CreateOutfitsUseCase,
   GetOutfitUseCase,
+  DeleteOutfitUseCase,
   ListOutfitsUseCase,
   ListOutfitAlternativesUseCase,
   ReplaceOutfitItemUseCase,
@@ -98,5 +100,7 @@ const useCases = [
       useFactory: (workshop: OutfitWorkshop) => new UseCase(workshop),
     })),
   ],
+  // The planning reuses the looks and their presentation.
+  exports: [OutfitWorkshop],
 })
 export class OutfitsModule {}

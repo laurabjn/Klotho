@@ -17,7 +17,14 @@ import {
 import { OutfitCollage } from './OutfitCollage';
 
 /** A worn look in the history: day, weather, words, "Portée". */
-export function WornOutfitRow({ wear }: { wear: OutfitWear }) {
+export function WornOutfitRow({
+  wear,
+  badge,
+}: {
+  wear: OutfitWear;
+  /** "Portée" by default; "Prévue" for a planned look. */
+  badge?: string;
+}) {
   const { t, i18n } = useTranslation();
   const { outfit } = wear;
   const date = formatDay(wear.wornOn, i18n.language);
@@ -43,7 +50,7 @@ export function WornOutfitRow({ wear }: { wear: OutfitWear }) {
               color={colors.primary}
             />
             <AppText style={styles.badgeText}>
-              {t('outfits.history.worn')}
+              {badge ?? t('outfits.history.worn')}
             </AppText>
           </View>
         </View>

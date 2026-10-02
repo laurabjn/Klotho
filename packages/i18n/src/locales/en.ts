@@ -191,6 +191,10 @@ export const en: TranslationResource = {
       day: 'Invalid date',
       period: 'The end date must follow the start date',
     },
+    plans: {
+      range: 'Period too long (two months at most)',
+      note: '500 characters maximum',
+    },
     weather: {
       coordinates: 'Invalid location',
       locationMode: 'Unknown location choice',
@@ -245,6 +249,11 @@ export const en: TranslationResource = {
       imposedItemUnavailable:
         'This piece is not available today (in the wash, lent…).',
       wearNotFound: 'This outfit is no longer in your history.',
+      worn: 'This outfit is in your history: it cannot be deleted.',
+    },
+    plans: {
+      notFound: 'No outfit is planned on that day.',
+      pastDay: 'This day is already over.',
     },
     weather: {
       unavailable: 'The weather is unavailable right now. Try again later.',

@@ -103,6 +103,64 @@ describe('OpenWeatherMapClient', () => {
     });
   });
 
+  describe('getDailyForecast', () => {
+    // Paris in summer time (UTC+2); 2026-10-05 00:00 local = 2026-10-04 22:00 UTC.
+    const localDay = Date.UTC(2026, 9, 4, 22) / 1000;
+    const slot = (hours: number, temp: number, id: number) => ({
+      dt: localDay + hours * 3600,
+      main: { temp },
+      weather: [{ id }],
+    });
+    const forecast = {
+      list: [
+        slot(-3, 9.6, 500), // 21:00 the day before
+        slot(2, 8.1, 500), // night rain, not the day's weather
+        slot(8, 11, 800),
+        slot(11, 15.4, 801),
+        slot(14, 16.6, 800),
+        slot(17, 13, 800),
+        slot(20, 10, 500),
+        slot(32, 12, 500), // next day 8:00
+        slot(35, 14, 800),
+      ],
+      city: { timezone: 7200 },
+    };
+
+    it('asks the 5-day forecast in metric values at the position', async () => {
+      fetchMock.mockReturnValue(json(forecast));
+
+      await client().getDailyForecast(45.76, 4.84);
+
+      const url = requestedUrl();
+      expect(url.pathname).toBe('/data/2.5/forecast');
+      expect(Object.fromEntries(url.searchParams)).toEqual({
+        lat: '45.76',
+        lon: '4.84',
+        units: 'metric',
+        appid: 'secret-key',
+      });
+    });
+
+    it('groups the slots by local day: warmest value, daytime condition', async () => {
+      fetchMock.mockReturnValue(json(forecast));
+
+      await expect(client().getDailyForecast(45.76, 4.84)).resolves.toEqual([
+        { day: '2026-10-04', temperature: 10, condition: 'rain' },
+        { day: '2026-10-05', temperature: 17, condition: 'clear' },
+        // A tie: the rain wins.
+        { day: '2026-10-06', temperature: 14, condition: 'rain' },
+      ]);
+    });
+
+    it('reports a failure as unavailable weather', async () => {
+      fetchMock.mockReturnValue(json({ list: 'nope' }));
+
+      await expect(
+        client().getDailyForecast(45.76, 4.84),
+      ).rejects.toBeInstanceOf(WeatherUnavailableError);
+    });
+  });
+
   describe('search', () => {
     const lyon = {
       name: 'Lyon',

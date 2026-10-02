@@ -9,6 +9,7 @@ export * from './preferences/schemas';
 export * from './weather/schemas';
 export * from './outfits/taxonomy';
 export * from './outfits/schemas';
+export * from './outfits/planning';
 
 export type HealthStatus = 'ok';
 

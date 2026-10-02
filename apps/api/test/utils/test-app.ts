@@ -17,6 +17,7 @@ import { InMemoryFileStorage } from '../../src/testing/storage-fakes';
 import {
   FakeCityGeocoder,
   FakeWeatherProvider,
+  FORECAST,
   SUNNY,
 } from '../../src/testing/weather-fakes';
 
@@ -76,7 +77,9 @@ export async function createTestApp(
       storage.deleted.length = 0;
       storage.failing = false;
       weather.calls.length = 0;
+      weather.forecastCalls.length = 0;
       weather.weather = SUNNY;
+      weather.forecast = FORECAST;
       weather.failing = false;
     },
   };

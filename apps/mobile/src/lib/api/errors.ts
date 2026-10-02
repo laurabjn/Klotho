@@ -47,6 +47,9 @@ const KNOWN_CODES = new Set([
   'outfits.imposedItemNotFound',
   'outfits.imposedItemUnavailable',
   'outfits.wearNotFound',
+  'outfits.worn',
+  'plans.notFound',
+  'plans.pastDay',
 ]);
 
 /** i18n key of the message to show for any error thrown by the API client. */

@@ -1,5 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import type { OutfitWear } from '@klotho/shared';
+import type { Outfit, OutfitPlan, OutfitWear } from '@klotho/shared';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,13 @@ import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { OutfitCollage } from '@/features/outfits/components/OutfitCollage';
 import { useWornLooks } from '@/features/outfits/hooks/useOutfits';
+import {
+  weatherChoiceOf,
+  WEATHER_ICONS,
+} from '@/features/outfits/lib/outfit-labels';
+import { useDailyStyle } from '@/features/home/store/daily-style.store';
+import { WornOutfitRow } from '@/features/outfits/components/WornOutfitRow';
+import { errorMessageKey } from '@/lib/api/errors';
 import { WeatherTile } from '@/features/weather/components/WeatherTile';
 import {
   addDays,
@@ -30,6 +37,8 @@ import { occasionIcons } from '@/theme/icons';
 import { useCompactLayout } from '@/theme/useCompactLayout';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
+import { plansByDay, usePlanWeek, usePlans } from '../hooks/usePlans';
+
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 /** Worn looks by day (the first one of a day stands for it). */
@@ -40,11 +49,27 @@ function byDay(wears: OutfitWear[] | undefined): Map<string, OutfitWear> {
   return days;
 }
 
-/** "Calendrier" tab: the month of worn looks and the week's outfits. */
+type View_ = 'week' | 'month' | 'list';
+const VIEWS: View_[] = ['week', 'month', 'list'];
+
+/** What a day shows: the look worn, else the look planned. */
+function useDays(from: string, to: string) {
+  const worn = byDay(useWornLooks({ from, to }).data);
+  const planned = plansByDay(usePlans(from, to).data);
+  return { worn, planned };
+}
+
+/**
+ * "Calendrier" tab: the week, the month or the list of planned looks, and
+ * "Planifier ma semaine".
+ */
 export function CalendarScreen() {
   const { t } = useTranslation();
   const compact = useCompactLayout();
-  const [soon, setSoon] = useState(false);
+  const [view, setView] = useState<View_>('month');
+  const planWeek = usePlanWeek();
+  const daily = useDailyStyle();
+  const [result, setResult] = useState<OutfitPlan[] | null>(null);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -63,22 +88,57 @@ export function CalendarScreen() {
           </View>
         </View>
 
-        <Month />
-        <Week />
+        <Segmented
+          value={view}
+          onChange={setView}
+          label={(value) => t(`outfits.planning.views.${value}`)}
+        />
 
+        {view === 'month' && (
+          <>
+            <Month />
+            <Week />
+          </>
+        )}
+        {view === 'week' && <Week navigable />}
+        {view === 'list' && <Upcoming />}
+
+        {planWeek.error && (
+          <AppText variant="hint" center style={styles.error}>
+            {t(errorMessageKey(planWeek.error) as 'apiErrors.unknown')}
+          </AppText>
+        )}
         <Button
           label={t('outfits.calendar.plan')}
-          onPress={() => setSoon(true)}
+          loading={planWeek.isPending}
+          onPress={() =>
+            planWeek.mutate(
+              { from: today(), style: daily },
+              { onSuccess: setResult },
+            )
+          }
         />
       </ScrollPage>
       <ConfirmDialog
-        visible={soon}
-        icon="sparkles-outline"
-        title={t('outfits.soon.title')}
-        message={t('outfits.soon.body')}
-        confirmLabel={t('outfits.soon.ok')}
-        onConfirm={() => setSoon(false)}
-        onCancel={() => setSoon(false)}
+        visible={result !== null}
+        icon="checkmark-circle-outline"
+        title={
+          result?.length
+            ? t('outfits.planning.doneTitle')
+            : t('outfits.calendar.plan')
+        }
+        message={
+          result?.length
+            ? t('outfits.planning.doneBody')
+            : t('outfits.planning.weekFull')
+        }
+        confirmLabel={t('outfits.planning.seeCalendar')}
+        cancelLabel={t('outfits.planning.close')}
+        onConfirm={() => {
+          setResult(null);
+          setView('week');
+        }}
+        onCancel={() => setResult(null)}
       />
     </SafeAreaView>
   );
@@ -88,7 +148,7 @@ function Month() {
   const { t, i18n } = useTranslation();
   const now = today();
   const [month, setMonth] = useState(startOfMonth(now));
-  const worn = byDay(useWornLooks({ from: month, to: endOfMonth(month) }).data);
+  const { worn, planned } = useDays(month, endOfMonth(month));
   const title = formatDay(month, i18n.language, {
     month: 'long',
     year: 'numeric',
@@ -124,6 +184,7 @@ function Month() {
             const inMonth = day.startsWith(month.slice(0, 7));
             const isToday = day === now;
             const hasLook = worn.has(day);
+            const isPlanned = !hasLook && planned.has(day);
             return (
               <Pressable
                 key={day}
@@ -132,7 +193,9 @@ function Month() {
                   date: formatDay(day, i18n.language),
                   state: hasLook
                     ? t('outfits.calendar.dayWorn')
-                    : t('outfits.calendar.dayEmpty'),
+                    : isPlanned
+                      ? t('outfits.planning.planned')
+                      : t('outfits.calendar.dayEmpty'),
                 })}
                 onPress={() => router.push(`/calendar/${day}`)}
                 style={styles.dayCell}
@@ -141,6 +204,7 @@ function Month() {
                   style={[
                     styles.dayCircle,
                     hasLook && styles.dayWorn,
+                    isPlanned && styles.dayPlanned,
                     isToday && styles.dayToday,
                   ]}
                 >
@@ -155,7 +219,13 @@ function Month() {
                     {String(Number(day.slice(8)))}
                   </AppText>
                 </View>
-                <View style={[styles.dot, hasLook && styles.dotOn]} />
+                <View
+                  style={[
+                    styles.dot,
+                    hasLook && styles.dotOn,
+                    isPlanned && styles.dotPlanned,
+                  ]}
+                />
               </Pressable>
             );
           })}
@@ -165,22 +235,44 @@ function Month() {
   );
 }
 
-/** "Tenues de la semaine": Monday to Sunday of this week. */
-function Week() {
+/**
+ * "Tenues de la semaine": Monday to Sunday, the look worn or planned each
+ * day; `navigable` adds the arrows to change week (the "Semaine" view).
+ */
+function Week({ navigable = false }: { navigable?: boolean }) {
   const { t, i18n } = useTranslation();
-  const monday = startOfWeek(today());
+  const [monday, setMonday] = useState(startOfWeek(today()));
   const sunday = addDays(monday, 6);
-  const worn = byDay(useWornLooks({ from: monday, to: sunday }).data);
+  const { worn, planned } = useDays(monday, sunday);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  const short = { day: 'numeric', month: 'short' } as const;
 
   return (
     <View style={styles.section}>
-      <SectionTitle
-        variant="heading"
-        title={t('outfits.calendar.week')}
-        aside={t('outfits.calendar.seeAll')}
-        onAside={() => router.push('/history')}
-      />
+      {navigable ? (
+        <View style={[styles.card, styles.monthHeader]}>
+          <RoundButton
+            icon="chevron-back"
+            label={t('outfits.calendar.previous')}
+            onPress={() => setMonday(addDays(monday, -7))}
+          />
+          <AppText variant="heading" center style={styles.monthTitle}>
+            {`${formatDay(monday, i18n.language, short)} – ${formatDay(sunday, i18n.language, short)}`}
+          </AppText>
+          <RoundButton
+            icon="chevron-forward"
+            label={t('outfits.calendar.next')}
+            onPress={() => setMonday(addDays(monday, 7))}
+          />
+        </View>
+      ) : (
+        <SectionTitle
+          variant="heading"
+          title={t('outfits.calendar.week')}
+          aside={t('outfits.calendar.seeAll')}
+          onAside={() => router.push('/history')}
+        />
+      )}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -189,7 +281,11 @@ function Week() {
       >
         {days.map((day, index) => {
           const wear = worn.get(day);
-          const occasion = wear?.outfit.occasion;
+          const plan = planned.get(day);
+          const outfit: Outfit | undefined = wear?.outfit ?? plan?.outfit;
+          const occasion = outfit?.occasion;
+          const forecast = plan?.forecast;
+          const choice = forecast ? weatherChoiceOf(forecast.condition) : null;
           return (
             <Pressable
               key={day}
@@ -198,7 +294,9 @@ function Week() {
                 date: formatDay(day, i18n.language),
                 state: wear
                   ? t('outfits.calendar.dayWorn')
-                  : t('outfits.calendar.dayEmpty'),
+                  : plan
+                    ? t('outfits.planning.planned')
+                    : t('outfits.calendar.dayEmpty'),
               })}
               onPress={() => router.push(`/calendar/${day}`)}
               style={({ pressed }) => [
@@ -220,9 +318,25 @@ function Week() {
                   month: 'short',
                 })}
               </AppText>
-              <View style={styles.weekLook}>
-                {wear ? (
-                  <OutfitCollage pieces={wear.outfit.pieces} />
+              {forecast ? (
+                <View style={styles.forecast}>
+                  {choice && (
+                    <MaterialCommunityIcons
+                      name={WEATHER_ICONS[choice]}
+                      size={14}
+                      color={colors.muted}
+                    />
+                  )}
+                  <AppText variant="hint" maxFontSizeMultiplier={1}>
+                    {`${forecast.temperature}°C`}
+                  </AppText>
+                </View>
+              ) : (
+                <View style={styles.forecastSpace} />
+              )}
+              <View style={[styles.weekLook, !wear && plan && styles.planned]}>
+                {outfit ? (
+                  <OutfitCollage pieces={outfit.pieces} />
                 ) : (
                   <View style={styles.weekEmpty}>
                     <MaterialCommunityIcons
@@ -260,6 +374,65 @@ function Week() {
           );
         })}
       </ScrollView>
+    </View>
+  );
+}
+
+/** "Liste": the planned looks of the next weeks. */
+function Upcoming() {
+  const { t } = useTranslation();
+  const from = today();
+  const plans = usePlans(from, addDays(from, 30));
+  const list = plans.data ?? [];
+
+  return (
+    <View style={styles.section}>
+      <AppText variant="heading">{t('outfits.planning.upcoming')}</AppText>
+      {plans.isSuccess && list.length === 0 && (
+        <AppText variant="hint">{t('outfits.planning.upcomingEmpty')}</AppText>
+      )}
+      {list.map((plan) => (
+        <WornOutfitRow
+          key={plan.id}
+          wear={{ id: plan.id, wornOn: plan.day, outfit: plan.outfit }}
+          badge={t('outfits.planning.planned')}
+        />
+      ))}
+    </View>
+  );
+}
+
+function Segmented({
+  value,
+  onChange,
+  label,
+}: {
+  value: View_;
+  onChange: (value: View_) => void;
+  label: (value: View_) => string;
+}) {
+  return (
+    <View style={styles.segmented} accessibilityRole="tablist">
+      {VIEWS.map((option) => {
+        const selected = option === value;
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            accessibilityLabel={label(option)}
+            onPress={() => onChange(option)}
+            style={[styles.segment, selected && styles.segmentOn]}
+          >
+            <AppText
+              maxFontSizeMultiplier={1.1}
+              style={[styles.segmentText, selected && styles.segmentTextOn]}
+            >
+              {label(option)}
+            </AppText>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -337,6 +510,8 @@ const styles = StyleSheet.create({
   },
   dayWorn: { backgroundColor: colors.primaryLight },
   dayToday: { backgroundColor: colors.primary },
+  // A planned (not yet worn) day: a rose ring.
+  dayPlanned: { borderWidth: 1.5, borderColor: colors.primary },
   dayNumber: {
     fontFamily: fonts.serif,
     fontSize: 17,
@@ -347,6 +522,7 @@ const styles = StyleSheet.create({
   dayNumberToday: { color: colors.onPrimary },
   dot: { width: 5, height: 5, borderRadius: 2.5, marginTop: 2 },
   dotOn: { backgroundColor: colors.primary },
+  dotPlanned: { borderWidth: 1, borderColor: colors.primary },
   section: { gap: spacing.md },
   bleed: { marginHorizontal: -spacing.xl },
   weekLine: { gap: spacing.sm, paddingHorizontal: spacing.xl },
@@ -367,6 +543,26 @@ const styles = StyleSheet.create({
     color: colors.title,
   },
   weekDate: { fontSize: 12, lineHeight: 16 },
+  forecast: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  forecastSpace: { height: 16 },
+  planned: { opacity: 0.85 },
+  error: { color: colors.link },
+  segmented: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: radii.pill,
+    backgroundColor: colors.input,
+  },
+  segment: {
+    flex: 1,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radii.pill,
+  },
+  segmentOn: { backgroundColor: colors.primary },
+  segmentText: { fontFamily: fonts.serif, fontSize: 16, color: colors.title },
+  segmentTextOn: { color: colors.onPrimary },
   weekLook: { alignSelf: 'stretch', marginVertical: spacing.xs },
   weekEmpty: {
     aspectRatio: 1,

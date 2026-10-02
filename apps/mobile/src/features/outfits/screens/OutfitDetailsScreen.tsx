@@ -2,6 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Outfit } from '@klotho/shared';
 import type { TFunction } from 'i18next';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -16,11 +17,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FormError } from '@/components/ui/FormError';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { errorMessageKey } from '@/lib/api/errors';
-import { today } from '@/lib/days';
+import { DayPickerSheet } from '@/features/calendar/components/DayPickerSheet';
+import { usePlanOutfit } from '@/features/calendar/hooks/usePlans';
+import { formatDay, today } from '@/lib/days';
 import { occasionIcons, styleIcons, type IconName } from '@/theme/icons';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
@@ -29,6 +33,11 @@ import { OutfitItemTile } from '../components/OutfitItemTile';
 import { itemTitle } from '@/features/wardrobe/labels';
 import { OutfitFeedbackBar } from '../components/OutfitFeedbackBar';
 import {
+  QuickActionsSheet,
+  type QuickAction,
+} from '../components/QuickActionsSheet';
+import {
+  useDeleteOutfit,
   useMarkWorn,
   useOutfit,
   useToggleOutfitFavorite,
@@ -73,6 +82,32 @@ function Details({ outfit }: { outfit: Outfit }) {
   const wear = useMarkWorn(outfit.id);
   const conditionKey = weatherChoiceOf(outfit.condition);
   const wornToday = outfit.lastWornOn === today();
+  const { i18n } = useTranslation();
+  const [sheet, setSheet] = useState<'actions' | 'plan' | 'delete' | null>(
+    null,
+  );
+  const [plannedOn, setPlannedOn] = useState<string | null>(null);
+  const plan = usePlanOutfit();
+  const remove = useDeleteOutfit(outfit.id);
+
+  // The sheet closes first: two modals never open at once.
+  const then = (next: typeof sheet) => {
+    setSheet(null);
+    setTimeout(() => setSheet(next), MODAL_CLOSE_MS);
+  };
+  const onAction = (action: QuickAction) => {
+    if (action === 'variant') {
+      setSheet(null);
+      router.push(`/outfits/${outfit.id}/variant`);
+    } else if (action === 'plan') then('plan');
+    else if (action === 'share') {
+      setSheet(null);
+      void share(t, outfit);
+    } else if (action === 'favorite') {
+      setSheet(null);
+      favorite.mutate(!outfit.isFavorite);
+    } else then('delete');
+  };
 
   return (
     <>
@@ -102,11 +137,15 @@ function Details({ outfit }: { outfit: Outfit }) {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={t('outfits.details.share')}
-                onPress={() => void share(t, outfit)}
+                accessibilityLabel={t('outfits.planning.quick.more')}
+                onPress={() => setSheet('actions')}
                 style={styles.round}
               >
-                <Ionicons name="share-outline" size={22} color={colors.title} />
+                <Ionicons
+                  name="ellipsis-horizontal"
+                  size={22}
+                  color={colors.title}
+                />
               </Pressable>
             </View>
           }
@@ -232,9 +271,89 @@ function Details({ outfit }: { outfit: Outfit }) {
           />
         )}
       </View>
+      <QuickActionsSheet
+        visible={sheet === 'actions'}
+        isFavorite={outfit.isFavorite}
+        onAction={onAction}
+        onClose={() => setSheet(null)}
+      />
+      <DayPickerSheet
+        visible={sheet === 'plan'}
+        title={t('outfits.planning.quick.plan')}
+        overline={t('outfits.planning.chooseDay')}
+        confirmLabel={t('outfits.planning.confirm')}
+        loading={plan.isPending}
+        error={
+          plan.error
+            ? t(errorMessageKey(plan.error) as 'apiErrors.unknown')
+            : null
+        }
+        onClose={() => setSheet(null)}
+        onConfirm={(day) =>
+          plan.mutate(
+            { day, outfitId: outfit.id },
+            {
+              onSuccess: () => {
+                setSheet(null);
+                setPlannedOn(day);
+              },
+            },
+          )
+        }
+      />
+      <ConfirmDialog
+        visible={plannedOn !== null}
+        icon="checkmark-circle-outline"
+        title={t('outfits.planning.doneTitle')}
+        message={t('outfits.planning.doneOne', {
+          date: plannedOn
+            ? formatDay(plannedOn, i18n.language, {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })
+            : '',
+        })}
+        confirmLabel={t('outfits.planning.seeCalendar')}
+        cancelLabel={t('outfits.planning.close')}
+        onConfirm={() => {
+          const day = plannedOn;
+          setPlannedOn(null);
+          if (day) router.push(`/calendar/${day}`);
+        }}
+        onCancel={() => setPlannedOn(null)}
+      />
+      <ConfirmDialog
+        visible={sheet === 'delete'}
+        icon="trash-outline"
+        title={t('outfits.planning.quick.deleteTitle')}
+        message={
+          remove.error
+            ? t(errorMessageKey(remove.error) as 'apiErrors.unknown')
+            : t('outfits.planning.quick.deleteBody')
+        }
+        confirmLabel={t('outfits.planning.quick.delete')}
+        cancelLabel={t('outfits.planning.quick.cancel')}
+        loading={remove.isPending}
+        onCancel={() => {
+          setSheet(null);
+          remove.reset();
+        }}
+        onConfirm={() =>
+          remove.mutate(undefined, {
+            onSuccess: () => {
+              setSheet(null);
+              router.back();
+            },
+          })
+        }
+      />
     </>
   );
 }
+
+/** Duration of the closing animation of our sheets and dialogs. */
+const MODAL_CLOSE_MS = 350;
 
 /** Width of a piece tile: about five on a line, as on the mockup. */
 const PIECE_WIDTH = 72;

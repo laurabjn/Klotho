@@ -194,6 +194,10 @@ export const fr = {
       day: 'Date invalide',
       period: 'La date de fin doit suivre la date de début',
     },
+    plans: {
+      range: 'Période trop longue (deux mois au plus)',
+      note: '500 caractères maximum',
+    },
     weather: {
       coordinates: 'Position invalide',
       locationMode: 'Choix de localisation inconnu',
@@ -250,6 +254,11 @@ export const fr = {
       imposedItemUnavailable:
         'Cette pièce n’est pas disponible aujourd’hui (au lavage, prêtée…).',
       wearNotFound: 'Cette tenue n’est déjà plus dans ton historique.',
+      worn: 'Cette tenue est dans ton historique : elle ne peut pas être supprimée.',
+    },
+    plans: {
+      notFound: 'Aucune tenue n’est prévue ce jour-là.',
+      pastDay: 'Ce jour est déjà passé.',
     },
     weather: {
       unavailable:

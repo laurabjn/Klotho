@@ -53,4 +53,19 @@ describe('CachedWeatherProvider', () => {
     await cached.getCurrentWeather(1, 1);
     expect(inner.calls).toHaveLength(4);
   });
+
+  it('caches the forecast apart from the current weather', async () => {
+    await cached.getCurrentWeather(45.76, 4.84);
+    await cached.getDailyForecast(45.76, 4.84);
+    clock.advance(9 * MINUTE);
+    await expect(cached.getDailyForecast(45.76, 4.84)).resolves.toEqual(
+      inner.forecast,
+    );
+    expect(inner.forecastCalls).toHaveLength(1);
+
+    clock.advance(2 * MINUTE);
+    await cached.getDailyForecast(45.76, 4.84);
+    expect(inner.forecastCalls).toHaveLength(2);
+    expect(inner.calls).toHaveLength(1);
+  });
 });

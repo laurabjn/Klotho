@@ -3,6 +3,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { signIn } from '@/features/auth/store/auth.store';
+import { plansApi } from '@/features/calendar/api/plans.api';
 import { outfitsApi } from '@/features/outfits/api/outfits.api';
 import { preferencesApi } from '@/features/preferences/api/preferences.api';
 import { EMPTY_STYLE_PROFILE } from '@/features/preferences/hooks/useStyleProfile';
@@ -15,6 +16,7 @@ import { HomeScreen } from './HomeScreen';
 
 jest.mock('@/features/auth/api/auth.api');
 jest.mock('@/features/outfits/api/outfits.api');
+jest.mock('@/features/calendar/api/plans.api');
 jest.mock('@/features/preferences/api/preferences.api');
 jest.mock('@/features/wardrobe/api/wardrobe.api');
 jest.mock('@/features/weather/api/weather.api');
@@ -56,6 +58,7 @@ describe('HomeScreen', () => {
     } as StyleProfile);
     jest.mocked(wardrobeApi.list).mockResolvedValue(page([PIECE]));
     jest.mocked(outfitsApi.recent).mockResolvedValue([]);
+    jest.mocked(plansApi.list).mockResolvedValue([]);
   });
 
   it('greets the user and shows the weather', async () => {

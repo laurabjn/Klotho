@@ -41,7 +41,12 @@ import {
   NoOutfitPossibleError,
   OutfitNotFoundError,
   OutfitWearNotFoundError,
+  OutfitWornError,
 } from '../../../domain/outfits/errors';
+import {
+  PastDayError,
+  PlanNotFoundError,
+} from '../../../domain/planning/errors';
 import {
   WeatherLocationMissingError,
   WeatherUnavailableError,
@@ -73,6 +78,9 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [InvalidReplacementError, HttpStatus.BAD_REQUEST],
   [ImposedItemNotFoundError, HttpStatus.BAD_REQUEST],
   [ImposedItemUnavailableError, HttpStatus.CONFLICT],
+  [OutfitWornError, HttpStatus.CONFLICT],
+  [PlanNotFoundError, HttpStatus.NOT_FOUND],
+  [PastDayError, HttpStatus.BAD_REQUEST],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {

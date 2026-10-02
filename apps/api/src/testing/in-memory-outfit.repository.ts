@@ -252,4 +252,14 @@ export class InMemoryOutfitRepository implements OutfitRepository {
     }
     return Promise.resolve(true);
   }
+
+  delete(userId: string, id: string): Promise<'deleted' | 'notFound' | 'worn'> {
+    const outfit = this.owned(userId, id);
+    if (!outfit) return Promise.resolve('notFound');
+    if (this.wears.some((wear) => wear.outfitId === id))
+      return Promise.resolve('worn');
+    this.outfits.splice(this.outfits.indexOf(outfit), 1);
+    this.feedbacks.delete(id);
+    return Promise.resolve('deleted');
+  }
 }

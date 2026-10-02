@@ -35,6 +35,9 @@ export const outfitsApi = {
   recent: async (limit: number) =>
     (await outfitsApi.list({ filter: 'generated', pageSize: limit })).items,
   get: (id: string) => request<Outfit>(`/outfits/${id}`, { auth: true }),
+  /** "Supprimer de mes tenues" (refused for a look already worn). */
+  remove: (id: string) =>
+    request<void>(`/outfits/${id}`, { method: 'DELETE', auth: true }),
   alternatives: (id: string, role: OutfitRole) =>
     request<OutfitAlternative[]>(`/outfits/${id}/alternatives?role=${role}`, {
       auth: true,

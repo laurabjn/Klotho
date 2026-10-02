@@ -21,6 +21,7 @@ import {
   InvalidReplacementError,
   NoOutfitPossibleError,
   OutfitNotFoundError,
+  OutfitWornError,
 } from '../../domain/outfits/errors';
 import type {
   OutfitConditions,
@@ -77,15 +78,33 @@ export class OutfitWorkshop {
       this.feedbackSignals(userId, items),
     ]);
     const profile = stored ?? styleProfileSchema.parse({});
-    const wet =
-      conditions.condition === 'rain' || conditions.condition === 'storm';
+    return this.withConditions(
+      {
+        precipitation: 0,
+        windSpeed: 0,
+        profile,
+        today: this.clock.now(),
+        feedback,
+      },
+      conditions,
+    );
+  }
+
+  /** The same tastes and opinions under other conditions (another day). */
+  withConditions(
+    context: Omit<OutfitContext, keyof OutfitConditions>,
+    // Often a stored look: only its conditions are read.
+    { style, occasion, temperature, condition }: OutfitConditions,
+  ): OutfitContext {
+    const wet = condition === 'rain' || condition === 'storm';
     return {
-      ...conditions,
+      ...context,
+      style,
+      occasion,
+      temperature,
+      condition,
       precipitation: wet ? 2 : 0,
       windSpeed: 0,
-      profile,
-      today: this.clock.now(),
-      feedback,
     };
   }
 
@@ -270,6 +289,20 @@ export class GetOutfitUseCase {
   async execute(userId: string, id: string): Promise<OutfitDto> {
     const outfit = await this.workshop.ownedOutfit(userId, id);
     return this.workshop.presentOne(userId, outfit);
+  }
+}
+
+/**
+ * "Supprimer de mes tenues": the look, its plans and its opinion. A look
+ * worn at least once stays, so that the history remains true.
+ */
+export class DeleteOutfitUseCase {
+  constructor(private readonly workshop: OutfitWorkshop) {}
+
+  async execute(userId: string, id: string): Promise<void> {
+    const result = await this.workshop.outfits.delete(userId, id);
+    if (result === 'notFound') throw new OutfitNotFoundError();
+    if (result === 'worn') throw new OutfitWornError();
   }
 }
 

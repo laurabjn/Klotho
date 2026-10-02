@@ -14,6 +14,7 @@ import { HttpExceptionFilter } from './interfaces/http/errors/http-exception.fil
 import { HealthController } from './interfaces/http/health/health.controller';
 import { requestLogger } from './interfaces/http/logging/request-logger.middleware';
 import { OutfitsModule } from './interfaces/http/outfits/outfits.module';
+import { PlanningModule } from './interfaces/http/planning/planning.module';
 import { RateLimitModule } from './interfaces/http/rate-limit/rate-limit.module';
 import { PreferencesModule } from './interfaces/http/preferences/preferences.module';
 import { UsersModule } from './interfaces/http/users/users.module';
@@ -37,6 +38,7 @@ import { WeatherModule } from './interfaces/http/weather/weather.module';
     WardrobeModule,
     WeatherModule,
     OutfitsModule,
+    PlanningModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: HttpExceptionFilter }],

@@ -24,10 +24,11 @@ export function outfitWorkshop() {
   const clock = new FixedClock();
   const wardrobe = new InMemoryWardrobeRepository(clock);
   const outfits = new InMemoryOutfitRepository(clock, wardrobe);
+  const profiles = new InMemoryStyleProfileRepository(clock);
   const workshop = new OutfitWorkshop(
     wardrobe,
     outfits,
-    new InMemoryStyleProfileRepository(clock),
+    profiles,
     new OutfitGeneratorService(),
     new InMemoryFileStorage(),
     clock,
@@ -92,5 +93,5 @@ export function outfitWorkshop() {
 
   const item = (id: string) => wardrobe.items.find((i) => i.id === id)!;
 
-  return { clock, wardrobe, outfits, workshop, add, save, item };
+  return { clock, wardrobe, outfits, profiles, workshop, add, save, item };
 }
