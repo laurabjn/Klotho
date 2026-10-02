@@ -30,6 +30,15 @@ export interface WardrobeRepository {
     id: string,
     favorite: boolean,
   ): Promise<WardrobeItem | null>;
+  /**
+   * AVAILABLE pieces not worn since `before` (never worn: added before it),
+   * least recently worn first: never worn ones first, oldest added first.
+   */
+  findForgotten(
+    userId: string,
+    before: Date,
+    limit: number,
+  ): Promise<WardrobeItem[]>;
   /** Returns false when the item does not exist or belongs to someone else. */
   deleteOwned(userId: string, id: string): Promise<boolean>;
 }

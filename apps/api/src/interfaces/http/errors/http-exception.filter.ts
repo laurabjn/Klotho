@@ -43,6 +43,7 @@ import {
   OutfitWearNotFoundError,
   OutfitWornError,
 } from '../../../domain/outfits/errors';
+import { NotificationNotFoundError } from '../../../domain/notifications/errors';
 import {
   PastDayError,
   PlanNotFoundError,
@@ -81,6 +82,7 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [OutfitWornError, HttpStatus.CONFLICT],
   [PlanNotFoundError, HttpStatus.NOT_FOUND],
   [PastDayError, HttpStatus.BAD_REQUEST],
+  [NotificationNotFoundError, HttpStatus.NOT_FOUND],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {

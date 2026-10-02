@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { App } from 'supertest/types';
 
 import { AppModule } from '../../src/app.module';
+import { CLOCK, type Clock } from '../../src/domain/shared/ports/clock';
 import { FILE_STORAGE } from '../../src/domain/storage/ports/file-storage';
 import { MAILER } from '../../src/domain/notifications/ports/mailer';
 import { PrismaService } from '../../src/infrastructure/prisma/prisma.service';
@@ -21,12 +22,30 @@ import {
   SUNNY,
 } from '../../src/testing/weather-fakes';
 
+/** The real time, unless a test moves it (the database keeps its own `now()`). */
+export class TestClock implements Clock {
+  private offsetMs = 0;
+
+  now(): Date {
+    return new Date(Date.now() + this.offsetMs);
+  }
+
+  advance(ms: number): void {
+    this.offsetMs += ms;
+  }
+
+  reset(): void {
+    this.offsetMs = 0;
+  }
+}
+
 export interface TestApp {
   app: INestApplication<App>;
   prisma: PrismaService;
   mailer: SpyMailer;
   storage: InMemoryFileStorage;
   weather: FakeWeatherProvider;
+  clock: TestClock;
   /** Empties every table (the database name is guaranteed to end with _test). */
   reset(): Promise<void>;
 }
@@ -42,6 +61,7 @@ export async function createTestApp(
   const mailer = new SpyMailer();
   const storage = new InMemoryFileStorage();
   const weather = new FakeWeatherProvider();
+  const clock = new TestClock();
   let builder = Test.createTestingModule({ imports: [AppModule] });
   if (options.rateLimits) {
     builder = builder
@@ -57,6 +77,8 @@ export async function createTestApp(
     .useValue(weather)
     .overrideProvider(CITY_GEOCODER)
     .useValue(new FakeCityGeocoder())
+    .overrideProvider(CLOCK)
+    .useValue(clock)
     .compile();
 
   const app = moduleRef.createNestApplication<INestApplication<App>>();
@@ -69,6 +91,7 @@ export async function createTestApp(
     mailer,
     storage,
     weather,
+    clock,
     async reset() {
       await prisma.$executeRawUnsafe('TRUNCATE TABLE "User" CASCADE');
       mailer.passwordResets.length = 0;
@@ -81,6 +104,7 @@ export async function createTestApp(
       weather.weather = SUNNY;
       weather.forecast = FORECAST;
       weather.failing = false;
+      clock.reset();
     },
   };
 }

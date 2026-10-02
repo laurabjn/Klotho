@@ -13,6 +13,7 @@ import { AuthModule } from './interfaces/http/auth/auth.module';
 import { HttpExceptionFilter } from './interfaces/http/errors/http-exception.filter';
 import { HealthController } from './interfaces/http/health/health.controller';
 import { requestLogger } from './interfaces/http/logging/request-logger.middleware';
+import { NotificationsModule } from './interfaces/http/notifications/notifications.module';
 import { OutfitsModule } from './interfaces/http/outfits/outfits.module';
 import { PlanningModule } from './interfaces/http/planning/planning.module';
 import { RateLimitModule } from './interfaces/http/rate-limit/rate-limit.module';
@@ -39,6 +40,7 @@ import { WeatherModule } from './interfaces/http/weather/weather.module';
     WeatherModule,
     OutfitsModule,
     PlanningModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: HttpExceptionFilter }],

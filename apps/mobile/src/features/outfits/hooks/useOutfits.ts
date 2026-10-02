@@ -15,6 +15,8 @@ import {
   type QueryClient,
 } from '@tanstack/react-query';
 
+import { showToast } from '@/components/ui/Toast';
+import i18n from '@/i18n';
 import { patchCached } from '@/lib/query-patch';
 
 import { outfitsApi } from '../api/outfits.api';
@@ -148,7 +150,11 @@ export function useToggleOutfitFavorite(id: string) {
       }),
     }),
     onError: (_error, _favorite, context) => context?.undo(),
-    onSuccess: (outfit) => remember(queryClient, [outfit]),
+    onSuccess: (outfit) => {
+      if (outfit.isFavorite)
+        showToast(i18n.t('notifications.toast.favoriteOutfit'));
+      remember(queryClient, [outfit]);
+    },
   });
 }
 

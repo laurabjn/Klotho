@@ -2,6 +2,7 @@ import type { TranslationResource } from './fr';
 import { onboardingEn, preferencesEn } from './preferences.en';
 import { wardrobeEn } from './wardrobe.en';
 import { outfitsEn } from './outfits.en';
+import { notificationsEn } from './notifications.en';
 import { privacyEn } from './privacy.en';
 import { settingsEn } from './settings.en';
 import { weatherEn } from './weather.en';
@@ -98,6 +99,7 @@ export const en: TranslationResource = {
   weather: weatherEn,
   outfits: outfitsEn,
   privacy: privacyEn,
+  notifications: notificationsEn,
   settings: settingsEn,
   profile: {
     title: 'My profile',
@@ -191,6 +193,9 @@ export const en: TranslationResource = {
       day: 'Invalid date',
       period: 'The end date must follow the start date',
     },
+    notifications: {
+      time: 'Invalid time',
+    },
     plans: {
       range: 'Period too long (two months at most)',
       note: '500 characters maximum',
@@ -249,6 +254,9 @@ export const en: TranslationResource = {
       imposedItemUnavailable:
         'This piece is not available today (in the wash, lent…).',
       wearNotFound: 'This outfit is no longer in your history.',
+    },
+    notifications: {
+      notFound: 'This notification no longer exists.',
       worn: 'This outfit is in your history: it cannot be deleted.',
     },
     plans: {

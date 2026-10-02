@@ -14,6 +14,7 @@ import {
   useSaveWeatherSettings,
   useWeatherSettings,
 } from '@/features/weather/hooks/useWeatherSettings';
+import { NotificationSwitches } from '@/features/notifications/components/NotificationSwitches';
 import { useWeatherSyncStore } from '@/features/weather/store/weather-sync.store';
 import { setLanguage } from '@/lib/language';
 import { colors, spacing } from '@/theme/tokens';
@@ -132,29 +133,11 @@ export function SettingsScreen() {
           />
         </SettingsCard>
 
-        {/* Notifications come with a later sprint: shown, off, "Bientôt". */}
         <SettingsCard
           title={t('settings.notifications.title')}
           overline={t('settings.notifications.overline')}
         >
-          <ToggleRow
-            icon="bell-outline"
-            label={t('settings.notifications.tips')}
-            disabled
-            onPress={() => setDialog('soon')}
-          />
-          <ToggleRow
-            icon="hanger"
-            label={t('settings.notifications.reminders')}
-            disabled
-            onPress={() => setDialog('soon')}
-          />
-          <ToggleRow
-            icon="email-outline"
-            label={t('settings.notifications.news')}
-            disabled
-            onPress={() => setDialog('soon')}
-          />
+          <NotificationSwitches full />
         </SettingsCard>
 
         <SettingsCard

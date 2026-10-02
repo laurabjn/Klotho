@@ -34,6 +34,7 @@ import { highlightsOf } from '../../domain/outfits/scoring/highlights';
 import { scoreOutfit } from '../../domain/outfits/scoring/outfit-score';
 import { filterCandidates } from '../../domain/outfits/services/outfit-candidate-filter';
 import { ROLE_OF } from '../../domain/outfits/services/outfit-combination-builder';
+import type { Notifier } from '../../domain/notifications/ports/notifier';
 import type { StyleProfileRepository } from '../../domain/preferences/ports/style-profile.repository';
 import type { Clock } from '../../domain/shared/ports/clock';
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
@@ -251,7 +252,10 @@ export class OutfitWorkshop {
 
 /** POST /outfits/generate: the 5 looks, saved and ready to explore. */
 export class CreateOutfitsUseCase {
-  constructor(private readonly workshop: OutfitWorkshop) {}
+  constructor(
+    private readonly workshop: OutfitWorkshop,
+    private readonly notifier: Notifier,
+  ) {}
 
   async execute(
     userId: string,
@@ -279,6 +283,11 @@ export class CreateOutfitsUseCase {
     });
     if (generated.length === 0) throw new NoOutfitPossibleError();
     const saved = await this.workshop.save(userId, conditions, generated);
+    // Best first.
+    await this.notifier.outfitsGenerated(userId, {
+      count: saved.length,
+      outfitId: saved[0]!.id,
+    });
     return this.workshop.present(saved, items);
   }
 }

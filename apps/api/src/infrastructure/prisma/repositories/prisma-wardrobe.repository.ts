@@ -154,6 +154,31 @@ export class PrismaWardrobeRepository implements WardrobeRepository {
     }
   }
 
+  async findForgotten(
+    userId: string,
+    before: Date,
+    limit: number,
+  ): Promise<WardrobeItem[]> {
+    const rows = await this.prisma.wardrobeItem.findMany({
+      where: {
+        userId,
+        status: 'AVAILABLE',
+        OR: [
+          { lastWornAt: { lt: before } },
+          { lastWornAt: null, createdAt: { lt: before } },
+        ],
+      },
+      include,
+      orderBy: [
+        { lastWornAt: { sort: 'asc', nulls: 'first' } },
+        { createdAt: 'asc' },
+        { id: 'asc' },
+      ],
+      take: limit,
+    });
+    return rows.map(toDomain);
+  }
+
   async deleteOwned(userId: string, id: string): Promise<boolean> {
     const { count } = await this.prisma.wardrobeItem.deleteMany({
       where: { id, userId },

@@ -14,6 +14,10 @@ import {
   SaveDayNoteUseCase,
 } from '../../../application/planning/planning.use-cases';
 import {
+  NOTIFIER,
+  type Notifier,
+} from '../../../domain/notifications/ports/notifier';
+import {
   DAY_NOTE_REPOSITORY,
   type DayNoteRepository,
 } from '../../../domain/planning/ports/day-note.repository';
@@ -30,6 +34,7 @@ import {
   WEATHER_SETTINGS_REPOSITORY,
   type WeatherSettingsRepository,
 } from '../../../domain/weather/ports/weather-settings.repository';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { OutfitsModule } from '../outfits/outfits.module';
 import { DayNotesController, PlansController } from './planning.controller';
 
@@ -39,11 +44,10 @@ const planUseCases = [
   DeletePlanUseCase,
   MovePlanUseCase,
   RegeneratePlanUseCase,
-  PlanWeekUseCase,
 ];
 
 @Module({
-  imports: [OutfitsModule],
+  imports: [OutfitsModule, NotificationsModule],
   controllers: [PlansController, DayNotesController],
   providers: [
     {
@@ -74,6 +78,12 @@ const planUseCases = [
       inject: [Planner],
       useFactory: (planner: Planner) => new UseCase(planner),
     })),
+    {
+      provide: PlanWeekUseCase,
+      inject: [Planner, NOTIFIER],
+      useFactory: (planner: Planner, notifier: Notifier) =>
+        new PlanWeekUseCase(planner, notifier),
+    },
     ...[GetDayNoteUseCase, SaveDayNoteUseCase].map((UseCase) => ({
       provide: UseCase,
       inject: [DAY_NOTE_REPOSITORY],

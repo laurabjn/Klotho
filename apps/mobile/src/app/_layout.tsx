@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { restoreSession, useAuthStore } from '@/features/auth/store/auth.store';
 import { restoreWeatherSync } from '@/features/weather/store/weather-sync.store';
 import { restoreLanguage } from '@/lib/language';
+import { Toast } from '@/components/ui/Toast';
 import { initMonitoring, wrapRoot } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
 import { useAppFonts } from '@/theme/fonts';
@@ -61,6 +62,8 @@ function RootLayout() {
         {/* Opened from the confirmation e-mail, signed in or not. */}
         <Stack.Screen name="confirm-email" />
       </Stack>
+      {/* Short confirmations ("Tenue ajoutée aux favoris"), above every screen. */}
+      <Toast />
       <StatusBar style="dark" />
     </QueryClientProvider>
   );

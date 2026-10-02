@@ -13,6 +13,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { showToast } from '@/components/ui/Toast';
+import i18n from '@/i18n';
 import { patchCached } from '@/lib/query-patch';
 
 import { addPhotos } from '../api/photos.api';
@@ -103,6 +105,8 @@ export function useToggleItemFavorite(id: string) {
     },
     onError: (_error, _favorite, context) => context?.undo(),
     onSuccess: (item) => {
+      if (item.isFavorite)
+        showToast(i18n.t('notifications.toast.favoritePiece'));
       queryClient.setQueryData(wardrobeKeys.item(id), item);
       return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });
     },

@@ -10,6 +10,7 @@ export * from './weather/schemas';
 export * from './outfits/taxonomy';
 export * from './outfits/schemas';
 export * from './outfits/planning';
+export * from './notifications/schemas';
 
 export type HealthStatus = 'ok';
 

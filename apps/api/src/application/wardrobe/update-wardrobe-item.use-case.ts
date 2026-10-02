@@ -8,15 +8,20 @@ import {
   InvalidTemperatureRangeError,
   WardrobeItemNotFoundError,
 } from '../../domain/wardrobe/errors';
+import type { Notifier } from '../../domain/notifications/ports/notifier';
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
 import type { WardrobeRepository } from '../../domain/wardrobe/ports/wardrobe.repository';
 import { toWardrobeItemDto } from './wardrobe-item.mapper';
 
-/** Partial update (PATCH): omitted fields are left untouched. */
+/**
+ * Partial update (PATCH): omitted fields are left untouched. A favourite
+ * piece back to AVAILABLE (from the wash, lent…) is notified.
+ */
 export class UpdateWardrobeItemUseCase {
   constructor(
     private readonly wardrobe: WardrobeRepository,
     private readonly storage: FileStorage,
+    private readonly notifier: Notifier,
   ) {}
 
   async execute(
@@ -38,6 +43,15 @@ export class UpdateWardrobeItemUseCase {
 
     const updated = await this.wardrobe.updateOwned(userId, id, changes);
     if (!updated) throw new WardrobeItemNotFoundError();
+    if (
+      updated.isFavorite &&
+      current.status !== 'AVAILABLE' &&
+      updated.status === 'AVAILABLE'
+    )
+      await this.notifier.pieceAvailable(userId, {
+        itemId: updated.id,
+        itemName: updated.name,
+      });
     return toWardrobeItemDto(updated, this.storage);
   }
 }

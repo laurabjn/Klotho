@@ -19,17 +19,20 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  refreshTokens       RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
-  emailChangeToken    EmailChangeToken?
-  wardrobeItems       WardrobeItem[]
-  styleProfile        StyleProfile?
-  weatherSettings     WeatherSettings?
-  outfits             Outfit[]
-  outfitFeedbacks     OutfitFeedback[]
-  outfitWears         OutfitWear[]
-  outfitPlans         OutfitPlan[]
-  dayNotes            DayNote[]
+  refreshTokens        RefreshToken[]
+  passwordResetTokens  PasswordResetToken[]
+  emailChangeToken     EmailChangeToken?
+  wardrobeItems        WardrobeItem[]
+  styleProfile         StyleProfile?
+  weatherSettings      WeatherSettings?
+  outfits              Outfit[]
+  outfitFeedbacks      OutfitFeedback[]
+  outfitWears          OutfitWear[]
+  outfitPlans          OutfitPlan[]
+  dayNotes             DayNote[]
+  notifications        Notification[]
+  notificationSettings NotificationSettings?
+  notificationMarkers  NotificationMarker[]
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -290,4 +293,48 @@ model DayNote {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, day])
+}
+
+/// A notification of the in-app centre. Only its kind and data are stored:
+/// the app writes the text in its language, and photo URLs are signed when read.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  /// A NOTIFICATION_KINDS key of packages/shared.
+  kind      String
+  /// NotificationData without imageUrl.
+  data      Json
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+/// The switches of "Notifications" in Paramètres; none stored means the defaults.
+model NotificationSettings {
+  userId       String   @id
+  tips         Boolean  @default(true)
+  reminders    Boolean  @default(true)
+  news         Boolean  @default(false)
+  /// HH:MM, on the phone's own clock.
+  reminderTime String   @default("08:00")
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// When a time-based notification kind was last created for a user (and
+/// about what), so that it is not created again too soon, even once deleted.
+model NotificationMarker {
+  userId    String
+  kind      String
+  createdAt DateTime
+  /// The piece of the last forgottenPiece, never notified twice in a row.
+  ref       String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, kind])
 }

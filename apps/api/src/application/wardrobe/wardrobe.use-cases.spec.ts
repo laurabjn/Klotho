@@ -9,6 +9,7 @@ import {
   WardrobeItemNotFoundError,
 } from '../../domain/wardrobe/errors';
 import { FixedClock, MINUTE } from '../../testing/fakes';
+import { SpyNotifier } from '../../testing/in-memory-notification.repositories';
 import { InMemoryWardrobeRepository } from '../../testing/in-memory-wardrobe.repository';
 import { InMemoryFileStorage } from '../../testing/storage-fakes';
 import { CreateWardrobeItemUseCase } from './create-wardrobe-item.use-case';
@@ -31,6 +32,7 @@ describe('Wardrobe use cases', () => {
   let update: UpdateWardrobeItemUseCase;
   let remove: DeleteWardrobeItemUseCase;
   let favorite: SetWardrobeFavoriteUseCase;
+  let notifier: SpyNotifier;
 
   /** Goes through the shared schema, like the HTTP layer does. */
   const add = (userId: string, input: CreateWardrobeItemInput) => {
@@ -43,10 +45,11 @@ describe('Wardrobe use cases', () => {
     clock = new FixedClock();
     repository = new InMemoryWardrobeRepository(clock);
     storage = new InMemoryFileStorage();
+    notifier = new SpyNotifier();
     create = new CreateWardrobeItemUseCase(repository, storage);
     list = new ListWardrobeItemsUseCase(repository, storage);
     get = new GetWardrobeItemUseCase(repository, storage);
-    update = new UpdateWardrobeItemUseCase(repository, storage);
+    update = new UpdateWardrobeItemUseCase(repository, storage, notifier);
     remove = new DeleteWardrobeItemUseCase(repository, storage);
     favorite = new SetWardrobeFavoriteUseCase(repository, storage);
   });
@@ -186,6 +189,27 @@ describe('Wardrobe use cases', () => {
         status: 'WASHING',
         primaryColor: 'ecru',
       });
+    });
+
+    it('notifies a favourite piece available again, only then', async () => {
+      await update.execute(LAURA, itemId, { status: 'WASHING' });
+      await update.execute(LAURA, itemId, { status: 'AVAILABLE' });
+      expect(notifier.calls).toEqual([]);
+
+      await favorite.execute(LAURA, itemId, true);
+      await update.execute(LAURA, itemId, { name: 'Blouse' });
+      await update.execute(LAURA, itemId, { status: 'LENT' });
+      await update.execute(LAURA, itemId, { status: 'ARCHIVED' });
+      await update.execute(LAURA, itemId, { status: 'AVAILABLE' });
+      await update.execute(LAURA, itemId, { status: 'AVAILABLE' });
+
+      expect(notifier.calls).toEqual([
+        {
+          kind: 'pieceAvailable',
+          userId: LAURA,
+          data: { itemId, itemName: 'Blouse' },
+        },
+      ]);
     });
 
     it('refuses a change that inverts the temperature range', async () => {
