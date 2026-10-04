@@ -36,6 +36,9 @@ const PACKAGES = new Map(
   ].map((p) => [p.product.identifier, p]),
 );
 
+/** Only the store gives this price: its products are loaded, buttons on. */
+const storeLoaded = () => screen.findByText('1,99 €');
+
 const press = (name: string | RegExp) =>
   fireEvent.press(screen.getByRole('button', { name }));
 
@@ -76,9 +79,10 @@ describe('PremiumScreen', () => {
       }),
     );
     await renderWithProviders(<PremiumScreen />);
+    await storeLoaded();
 
     await fireEvent.press(
-      await screen.findByRole('radio', { name: /Founders, 39,99 €/ }),
+      screen.getByRole('radio', { name: /Founders, 39,99 €/ }),
     );
     await press('Continuer');
 
@@ -92,7 +96,7 @@ describe('PremiumScreen', () => {
   it('changes nothing when the store sheet is closed', async () => {
     jest.mocked(buy).mockResolvedValue(false);
     await renderWithProviders(<PremiumScreen />);
-    await screen.findByRole('radio', { name: /Annuel, 32,99 €/ });
+    await storeLoaded();
 
     await press('Continuer');
 
@@ -104,7 +108,7 @@ describe('PremiumScreen', () => {
     jest.mocked(buy).mockResolvedValue(true);
     api.sync.mockResolvedValue(billingStatus());
     await renderWithProviders(<PremiumScreen />);
-    await screen.findByText('1,99 €');
+    await storeLoaded();
 
     await fireEvent.press(
       screen.getAllByRole('button', { name: 'Acheter' })[1]!,
