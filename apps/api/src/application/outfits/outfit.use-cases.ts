@@ -36,6 +36,7 @@ import { filterCandidates } from '../../domain/outfits/services/outfit-candidate
 import { ROLE_OF } from '../../domain/outfits/services/outfit-combination-builder';
 import type { Notifier } from '../../domain/notifications/ports/notifier';
 import type { StyleProfileRepository } from '../../domain/preferences/ports/style-profile.repository';
+import { NO_LIMITS, type PlanGate } from '../../domain/billing/ports/plan-gate';
 import type { Clock } from '../../domain/shared/ports/clock';
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
 import type { WardrobeItem } from '../../domain/wardrobe/entities/wardrobe-item.entity';
@@ -255,12 +256,14 @@ export class CreateOutfitsUseCase {
   constructor(
     private readonly workshop: OutfitWorkshop,
     private readonly notifier: Notifier,
+    private readonly plans: PlanGate = NO_LIMITS,
   ) {}
 
   async execute(
     userId: string,
     request: GenerateOutfitsRequest,
   ): Promise<OutfitDto[]> {
+    await this.plans.assertCanGenerate(userId);
     const conditions: OutfitConditions = {
       style: request.style,
       occasion: request.occasion,
@@ -283,6 +286,7 @@ export class CreateOutfitsUseCase {
     });
     if (generated.length === 0) throw new NoOutfitPossibleError();
     const saved = await this.workshop.save(userId, conditions, generated);
+    await this.plans.generationDone(userId);
     // Best first.
     await this.notifier.outfitsGenerated(userId, {
       count: saved.length,

@@ -98,6 +98,9 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | POST   | `/uploads/wardrobe`                          | no     | 201 `UploadedPhoto` (multipart, field `file`) · 413 · 415                                                               |
 | POST   | `/wardrobe/:id/photos`                       | no     | 201 item · 400 unknown upload · 409 limit (5)                                                                           |
 | GET    | `/ai/credits`                                | no     | `AiCredits` (`enabled: false` without the AI key)                                                                       |
+| GET    | `/billing/status`                            | no     | `BillingStatus` (plan, limits, usage, AI credits)                                                                       |
+| POST   | `/billing/sync`                              | no     | `BillingStatus`, after asking RevenueCat (after a purchase or a restore) · 503                                          |
+| POST   | `/billing/revenuecat`                        | yes\*  | RevenueCat webhook (`Authorization` = `REVENUECAT_WEBHOOK_AUTH`) · 401 · 503 (retried)                                  |
 | POST   | `/ai/wardrobe-photo?language=fr`             | no     | 201 `WardrobePhotoAnalysis` (multipart, field `file`) · 402 quota · 413 · 415 · 422 no piece · 503                      |
 | PATCH  | `/wardrobe/:id/photos/:photoId/main`         | no     | item (this photo becomes the main one)                                                                                  |
 | DELETE | `/wardrobe/:id/photos/:photoId`              | no     | item (next photo becomes main)                                                                                          |
@@ -224,6 +227,29 @@ user, feature) to follow the cost. Every account gets
 `AI_FREE_PHOTO_ANALYSES` analyses (3); a photo without any piece and a
 failed call are not counted. Without `AI_API_KEY`, the feature is off
 and the app does not offer it.
+
+### Plans and payments
+
+Free, Premium (monthly or yearly subscription) or Founders (lifetime, with 30
+AI credits); AI credit packs of 25 and 75. Purchases go through Google Play /
+the App Store, managed by RevenueCat (product and entitlement ids in
+`packages/shared/src/billing/billing.ts`: entitlements `premium` and
+`founders`).
+
+- The app buys with the RevenueCat SDK (the store customer is the Klotho user
+  id), then calls `POST /billing/sync`; RevenueCat also calls
+  `POST /billing/revenuecat` on every change (renewal, cancellation, expiry,
+  refund…). Both ask RevenueCat's REST API for the customer and copy it:
+  the active plan in `Entitlement`, each one-time purchase once in
+  `CreditGrant` (unique store transaction).
+- Free plan limits (`FREE_PIECES`, `FREE_GENERATIONS_PER_WEEK` over the last
+  7 days, `FREE_HISTORY_DAYS`) answer 402 `billing.pieceLimit` /
+  `billing.generationLimit`. Generations are counted in `UsageEvent`.
+- AI analyses: the free ones (`AI_FREE_PHOTO_ANALYSES`) plus bought and
+  founders credits form a balance that never expires; Premium adds
+  `PREMIUM_MONTHLY_ANALYSES` each calendar month, used first.
+- `BILLING_ENABLED=false` (default, beta): no limit except the AI balance,
+  and the app hides Premium.
 
 Local storage: `npm run db:up` also starts RustFS on port 9010
 (credentials in `.env.example`); the bucket is created at start-up when

@@ -14,6 +14,7 @@ import type { GarmentAnalyzer } from '../../domain/ai/ports/garment-analyzer';
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
 import type { ImageProcessor } from '../../domain/storage/ports/image-processor';
 import { storeWardrobePhoto } from '../wardrobe/photos/upload-wardrobe-photo.use-case';
+import type { PlanService } from '../billing/plan.service';
 import type { AiSettings } from './ai-settings';
 
 /** Enough to recognise a piece, about 3 times cheaper than the stored photo. */
@@ -21,16 +22,11 @@ const AI_IMAGE_SIDE = 800;
 
 /** Photo analyses left to the user. */
 export class GetAiCreditsUseCase {
-  constructor(
-    private readonly usage: AiUsageRepository,
-    private readonly settings: AiSettings,
-  ) {}
+  constructor(private readonly plans: PlanService) {}
 
   async execute(userId: string): Promise<AiCredits> {
-    const quota = this.settings.freePhotoAnalyses;
-    if (!this.settings.enabled) return { enabled: false, remaining: 0, quota };
-    const used = await this.usage.countCharged(userId, 'photoAnalysis');
-    return { enabled: true, remaining: Math.max(quota - used, 0), quota };
+    const { pool: _pool, ...credits } = await this.plans.credits(userId);
+    return credits;
   }
 }
 
@@ -46,6 +42,7 @@ export class AnalyzeWardrobePhotoUseCase {
     private readonly analyzer: GarmentAnalyzer,
     private readonly usage: AiUsageRepository,
     private readonly settings: AiSettings,
+    private readonly plans: PlanService,
   ) {}
 
   async execute(
@@ -54,9 +51,8 @@ export class AnalyzeWardrobePhotoUseCase {
     language: 'fr' | 'en',
   ): Promise<WardrobePhotoAnalysis> {
     if (!this.settings.enabled) throw new AiUnavailableError();
-    const quota = this.settings.freePhotoAnalyses;
-    const used = await this.usage.countCharged(userId, 'photoAnalysis');
-    if (used >= quota) throw new AiQuotaExceededError();
+    const { pool, ...credits } = await this.plans.credits(userId);
+    if (!pool) throw new AiQuotaExceededError();
 
     const image = await this.images.normalize(file);
     const analysis = await this.analyzer.analyze(
@@ -68,7 +64,7 @@ export class AnalyzeWardrobePhotoUseCase {
       userId,
       feature: 'photoAnalysis',
       ...analysis.usage,
-      charged: analysis.isGarment,
+      pool: analysis.isGarment ? pool : null,
     });
     if (!analysis.isGarment) throw new NoGarmentError();
 
@@ -76,11 +72,7 @@ export class AnalyzeWardrobePhotoUseCase {
     return {
       photo,
       suggestion: garmentSuggestionSchema.parse(analysis.attributes),
-      credits: {
-        enabled: true,
-        remaining: Math.max(quota - used - 1, 0),
-        quota,
-      },
+      credits: { ...credits, remaining: credits.remaining - 1 },
     };
   }
 }

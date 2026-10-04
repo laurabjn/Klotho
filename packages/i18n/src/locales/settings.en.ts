@@ -175,6 +175,10 @@ export const settingsEn: TranslationResource['settings'] = {
         title: 'Beta version',
         body: 'Klotho is a beta: features may change, be unavailable or contain errors. Your feedback helps us improve it.',
       },
+      paid: {
+        title: 'Klotho Premium and purchases',
+        body: 'Klotho can be used for free, with limits. Klotho Premium (monthly or yearly subscription), the Founders offer (one-time purchase, for life) and AI analysis credits are paid through Google Play or the App Store, at the prices shown in the app. The subscription renews automatically; you can cancel it at any time from your Google Play or App Store account, at least 24 hours before the renewal. Refunds follow the rules of these stores. Bought credits never expire, but cannot be refunded or transferred once used.',
+      },
       content: {
         title: 'Your content',
         body: 'You keep ownership of the photos and information you add. You only allow us to store and process them to provide the service. Do not add photos you have no rights to, nor unlawful content.',

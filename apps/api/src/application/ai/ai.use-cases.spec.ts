@@ -18,6 +18,9 @@ import {
   AnalyzeWardrobePhotoUseCase,
   GetAiCreditsUseCase,
 } from './analyze-wardrobe-photo.use-case';
+import { FixedClock } from '../../testing/fakes';
+import { InMemoryBillingRepository } from '../../testing/billing-fakes';
+import { PlanService } from '../billing/plan.service';
 import type { AiSettings } from './ai-settings';
 
 const LAURA = 'user-laura';
@@ -28,23 +31,43 @@ describe('AI photo analysis', () => {
   let analyzer: FakeGarmentAnalyzer;
   let usage: InMemoryAiUsageRepository;
 
+  let clock: FixedClock;
+  let billing: InMemoryBillingRepository;
+
   const setup = (
     settings: AiSettings = { enabled: true, freePhotoAnalyses: 2 },
-  ) => ({
-    analyze: new AnalyzeWardrobePhotoUseCase(
-      new FakeImageProcessor(),
-      storage,
-      analyzer,
+  ) => {
+    const plans = new PlanService(
+      billing,
       usage,
+      {
+        enabled: true,
+        free: { pieces: 50, generationsPerWeek: 10, historyDays: 7 },
+        premiumMonthlyAnalyses: 3,
+      },
       settings,
-    ),
-    credits: new GetAiCreditsUseCase(usage, settings),
-  });
+      clock,
+    );
+    return {
+      analyze: new AnalyzeWardrobePhotoUseCase(
+        new FakeImageProcessor(),
+        storage,
+        analyzer,
+        usage,
+        settings,
+        plans,
+      ),
+      credits: new GetAiCreditsUseCase(plans),
+    };
+  };
 
   beforeEach(() => {
+    clock = new FixedClock();
     storage = new InMemoryFileStorage();
     analyzer = new FakeGarmentAnalyzer();
     usage = new InMemoryAiUsageRepository();
+    usage.now = clock.now();
+    billing = new InMemoryBillingRepository(clock);
   });
 
   it('proposes the attributes and stores the photo, ready to attach', async () => {
@@ -86,14 +109,14 @@ describe('AI photo analysis', () => {
 
     await analyze.execute(LAURA, fakeImage(), 'fr');
 
-    expect(usage.records).toEqual([
+    expect(usage.records).toMatchObject([
       {
         userId: LAURA,
         feature: 'photoAnalysis',
         model: 'claude-test',
         inputTokens: 900,
         outputTokens: 120,
-        charged: true,
+        pool: 'balance',
       },
     ]);
   });
@@ -124,7 +147,7 @@ describe('AI photo analysis', () => {
     ).rejects.toBeInstanceOf(NoGarmentError);
 
     expect(storage.files.size).toBe(0);
-    expect(usage.records).toMatchObject([{ charged: false }]);
+    expect(usage.records).toMatchObject([{ pool: null }]);
     expect(await credits.execute(LAURA)).toMatchObject({ remaining: 2 });
   });
 
@@ -164,5 +187,60 @@ describe('AI photo analysis', () => {
       analyze.execute(LAURA, fakeImage(), 'fr'),
     ).rejects.toBeInstanceOf(AiUnavailableError);
     expect(analyzer.calls).toHaveLength(0);
+  });
+
+  it('adds the bought credits to the free analyses', async () => {
+    const { analyze, credits } = setup();
+    await billing.grantCredits(LAURA, {
+      amount: 25,
+      productId: 'klotho_credits_25',
+      transactionId: 'GPA.1',
+    });
+
+    expect(await credits.execute(LAURA)).toEqual({
+      enabled: true,
+      remaining: 27,
+      quota: 27,
+    });
+    await analyze.execute(LAURA, fakeImage(), 'fr');
+    expect(await credits.execute(LAURA)).toMatchObject({ remaining: 26 });
+  });
+
+  it('takes Premium analyses from the month first, then the balance', async () => {
+    const { analyze, credits } = setup();
+    billing.entitlements.set(LAURA, {
+      plan: 'premium',
+      productId: 'klotho_premium_monthly',
+      expiresAt: new Date('2026-11-01T00:00:00Z'),
+    });
+    // 3 a month in this setup, plus the 2 free ones.
+    expect(await credits.execute(LAURA)).toMatchObject({ remaining: 5 });
+
+    for (let i = 0; i < 4; i += 1)
+      await analyze.execute(LAURA, fakeImage(), 'fr');
+
+    expect(usage.records.map((r) => r.pool)).toEqual([
+      'monthly',
+      'monthly',
+      'monthly',
+      'balance',
+    ]);
+    expect(await credits.execute(LAURA)).toMatchObject({ remaining: 1 });
+  });
+
+  it('gives the monthly analyses again the next month', async () => {
+    const { analyze, credits } = setup();
+    billing.entitlements.set(LAURA, {
+      plan: 'premium',
+      productId: 'klotho_premium_annual',
+      expiresAt: new Date('2027-10-01T00:00:00Z'),
+    });
+    for (let i = 0; i < 3; i += 1)
+      await analyze.execute(LAURA, fakeImage(), 'fr');
+    expect(await credits.execute(LAURA)).toMatchObject({ remaining: 2 });
+
+    clock.advance(31 * 24 * 60 * 60 * 1000);
+
+    expect(await credits.execute(LAURA)).toMatchObject({ remaining: 5 });
   });
 });

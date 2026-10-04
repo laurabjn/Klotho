@@ -18,6 +18,11 @@ import { FormScrollView } from '@/components/ui/FormScrollView';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { StepIndicator } from '@/components/ui/StepIndicator';
 import { AiPhotoCard } from '@/features/ai/components/AiPhotoCard';
+import {
+  isPlanLimit,
+  PremiumLimit,
+} from '@/features/billing/components/PremiumLimit';
+import { useBillingStatus } from '@/features/billing/hooks/useBilling';
 import { applySuggestion } from '@/features/ai/lib/apply-suggestion';
 import { errorMessageKey, NetworkError } from '@/lib/api/errors';
 import { colors, radii, spacing } from '@/theme/tokens';
@@ -55,6 +60,7 @@ export function AddWardrobeItemScreen() {
   const { t } = useTranslation();
   const form = useWardrobeItemForm();
   const create = useCreateWardrobeItemWithPhotos();
+  const billing = useBillingStatus();
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [upload, setUpload] = useState<Upload | null>(null);
@@ -139,6 +145,25 @@ export function AddWardrobeItemScreen() {
     setUpload(null);
     create.reset();
   };
+
+  const limit = billing.data?.limits.pieces ?? null;
+  const full =
+    (limit !== null && (billing.data?.usage.pieces ?? 0) >= limit) ||
+    isPlanLimit(create.error, 'billing.pieceLimit');
+  if (full && !upload) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <FormScrollView contentStyle={styles.form}>
+          <AppHeader />
+          <PremiumLimit
+            title={t('billing.limits.piecesTitle')}
+            body={t('billing.limits.piecesBody', { count: limit ?? 0 })}
+            onLater={() => router.back()}
+          />
+        </FormScrollView>
+      </SafeAreaView>
+    );
+  }
 
   if (upload) {
     return (

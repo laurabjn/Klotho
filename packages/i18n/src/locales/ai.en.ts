@@ -7,7 +7,8 @@ export const aiEn: TranslationResource['ai'] = {
     action: 'Analyse my photo',
     remaining_one: '{{count}} analysis left',
     remaining_other: '{{count}} analyses left',
-    none: 'You have used all your free analyses. You can fill in the details yourself.',
+    none: 'You have used all your analyses. You can fill in the details yourself, or get more analyses.',
+    more: 'Get more analyses',
     privacy:
       'Your photo is sent to our AI provider (Groq) only for this analysis.',
   },

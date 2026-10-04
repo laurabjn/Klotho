@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import type {
   AiFeature,
+  AiPool,
   AiUsageRecord,
   AiUsageRepository,
 } from '../../../domain/ai/ports/ai-usage.repository';
@@ -15,9 +16,19 @@ export class PrismaAiUsageRepository implements AiUsageRepository {
     await this.prisma.aiUsage.create({ data: usage });
   }
 
-  countCharged(userId: string, feature: AiFeature): Promise<number> {
+  countCharged(
+    userId: string,
+    feature: AiFeature,
+    pool: AiPool,
+    since?: Date,
+  ): Promise<number> {
     return this.prisma.aiUsage.count({
-      where: { userId, feature, charged: true },
+      where: {
+        userId,
+        feature,
+        pool,
+        ...(since && { createdAt: { gte: since } }),
+      },
     });
   }
 }

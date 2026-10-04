@@ -1,5 +1,6 @@
 import type { CreateWardrobeItem, WardrobeItem } from '@klotho/shared';
 
+import { NO_LIMITS, type PlanGate } from '../../domain/billing/ports/plan-gate';
 import type { FileStorage } from '../../domain/storage/ports/file-storage';
 import type { WardrobeRepository } from '../../domain/wardrobe/ports/wardrobe.repository';
 import { toWardrobeItemDto } from './wardrobe-item.mapper';
@@ -8,6 +9,7 @@ export class CreateWardrobeItemUseCase {
   constructor(
     private readonly wardrobe: WardrobeRepository,
     private readonly storage: FileStorage,
+    private readonly plans: PlanGate = NO_LIMITS,
   ) {}
 
   /** The owner is always the authenticated user, never taken from the body. */
@@ -15,6 +17,7 @@ export class CreateWardrobeItemUseCase {
     userId: string,
     input: CreateWardrobeItem,
   ): Promise<WardrobeItem> {
+    await this.plans.assertCanAddPiece(userId);
     const item = await this.wardrobe.create(userId, {
       name: input.name ?? null,
       category: input.category,

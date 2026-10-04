@@ -33,6 +33,7 @@ import {
   useSaveStyleProfile,
   useStyleProfile,
 } from '@/features/preferences/hooks/useStyleProfile';
+import { useBillingStatus } from '@/features/billing/hooks/useBilling';
 import { useFavoriteOutfitCount } from '@/features/outfits/hooks/useOutfits';
 import { NotificationSwitches } from '@/features/notifications/components/NotificationSwitches';
 import { MetalPicker } from '@/features/preferences/components/MetalPicker';
@@ -51,6 +52,7 @@ const STATS_MIN_WIDTH = 236;
 /** "Moi" tab, as on the "Mon profil" mockup. */
 export function MeScreen() {
   const { t } = useTranslation();
+  const billing = useBillingStatus();
   const user = useAuthStore((state) => state.user);
   const profile = useStyleProfile();
   const saveProfile = useSaveStyleProfile();
@@ -314,6 +316,16 @@ export function MeScreen() {
           </AppText>
           <NotificationSwitches />
         </Card>
+
+        {billing.data?.enabled && (
+          <Card style={styles.menu}>
+            <MenuRow
+              icon="crown-outline"
+              label={`${t('billing.open')} · ${t(`billing.plan.${billing.data.plan}`)}`}
+              onPress={() => router.push('/premium')}
+            />
+          </Card>
+        )}
 
         <Card style={styles.menu}>
           <MenuRow

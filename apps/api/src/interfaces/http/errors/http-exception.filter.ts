@@ -21,6 +21,11 @@ import {
   AiUnavailableError,
   NoGarmentError,
 } from '../../../domain/ai/errors';
+import {
+  GenerationLimitReachedError,
+  PieceLimitReachedError,
+  StoreUnavailableError,
+} from '../../../domain/billing/errors';
 import { DomainError } from '../../../domain/shared/domain-error';
 import {
   EmailAlreadyUsedError,
@@ -91,6 +96,9 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [AiUnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
   [AiQuotaExceededError, HttpStatus.PAYMENT_REQUIRED],
   [NoGarmentError, HttpStatus.UNPROCESSABLE_ENTITY],
+  [PieceLimitReachedError, HttpStatus.PAYMENT_REQUIRED],
+  [GenerationLimitReachedError, HttpStatus.PAYMENT_REQUIRED],
+  [StoreUnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {

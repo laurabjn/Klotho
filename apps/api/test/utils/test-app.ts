@@ -4,6 +4,12 @@ import { App } from 'supertest/types';
 
 import { AppModule } from '../../src/app.module';
 import { AI_SETTINGS } from '../../src/application/ai/ai-settings';
+import {
+  BILLING_SETTINGS,
+  type BillingSettings,
+} from '../../src/application/billing/plan.service';
+import { STORE_CUSTOMERS } from '../../src/domain/billing/ports/store-customers';
+import { FakeStoreCustomers } from '../../src/testing/billing-fakes';
 import { GARMENT_ANALYZER } from '../../src/domain/ai/ports/garment-analyzer';
 import { FakeGarmentAnalyzer } from '../../src/testing/ai-fakes';
 import { CLOCK, type Clock } from '../../src/domain/shared/ports/clock';
@@ -49,6 +55,7 @@ export interface TestApp {
   storage: InMemoryFileStorage;
   weather: FakeWeatherProvider;
   analyzer: FakeGarmentAnalyzer;
+  store: FakeStoreCustomers;
   clock: TestClock;
   /** Empties every table (the database name is guaranteed to end with _test). */
   reset(): Promise<void>;
@@ -57,6 +64,8 @@ export interface TestApp {
 export interface TestAppOptions {
   /** Rate limiting is off in e2e tests (setup-env.ts) unless given here. */
   rateLimits?: RateLimitSettings;
+  /** Payments are off (beta) unless given here. */
+  billing?: BillingSettings;
 }
 
 export async function createTestApp(
@@ -66,12 +75,18 @@ export async function createTestApp(
   const storage = new InMemoryFileStorage();
   const weather = new FakeWeatherProvider();
   const analyzer = new FakeGarmentAnalyzer();
+  const store = new FakeStoreCustomers();
   const clock = new TestClock();
   let builder = Test.createTestingModule({ imports: [AppModule] });
   if (options.rateLimits) {
     builder = builder
       .overrideProvider(RATE_LIMIT_SETTINGS)
       .useValue(options.rateLimits);
+  }
+  if (options.billing) {
+    builder = builder
+      .overrideProvider(BILLING_SETTINGS)
+      .useValue(options.billing);
   }
   const moduleRef = await builder
     .overrideProvider(MAILER)
@@ -87,6 +102,8 @@ export async function createTestApp(
     // As if a key were set: 2 analyses each, to test the quota quickly.
     .overrideProvider(AI_SETTINGS)
     .useValue({ enabled: true, freePhotoAnalyses: 2 })
+    .overrideProvider(STORE_CUSTOMERS)
+    .useValue(store)
     .overrideProvider(CLOCK)
     .useValue(clock)
     .compile();
@@ -102,6 +119,7 @@ export async function createTestApp(
     storage,
     weather,
     analyzer,
+    store,
     clock,
     async reset() {
       await prisma.$executeRawUnsafe('TRUNCATE TABLE "User" CASCADE');
@@ -116,6 +134,7 @@ export async function createTestApp(
       weather.forecast = FORECAST;
       weather.failing = false;
       analyzer.reset();
+      store.reset();
       clock.reset();
     },
   };

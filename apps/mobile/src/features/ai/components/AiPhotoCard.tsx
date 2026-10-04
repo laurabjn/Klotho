@@ -11,12 +11,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { router } from 'expo-router';
+
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
 import type { LocalPhoto } from '@/features/wardrobe/photos/pick-photo';
 import { errorMessageKey } from '@/lib/api/errors';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
+
+import { useBillingStatus } from '@/features/billing/hooks/useBilling';
 
 import { useAiCredits, useAnalyzePhoto } from '../hooks/useAi';
 
@@ -34,6 +38,7 @@ export function AiPhotoCard({
   const { t } = useTranslation();
   const credits = useAiCredits();
   const analyze = useAnalyzePhoto();
+  const billing = useBillingStatus();
 
   if (!credits.data?.enabled) return null;
   const { remaining } = credits.data;
@@ -63,6 +68,15 @@ export function AiPhotoCard({
             : null
         }
       />
+      {remaining === 0 && billing.data?.enabled && (
+        <Button
+          variant="secondary"
+          icon="sparkles-outline"
+          decorated={false}
+          label={t('ai.card.more')}
+          onPress={() => router.push('/premium')}
+        />
+      )}
       {remaining > 0 && (
         <>
           <Button

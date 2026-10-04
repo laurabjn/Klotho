@@ -1,6 +1,7 @@
 import { AiUnavailableError } from '../domain/ai/errors';
 import type {
   AiFeature,
+  AiPool,
   AiUsageRecord,
   AiUsageRepository,
 } from '../domain/ai/ports/ai-usage.repository';
@@ -11,17 +12,28 @@ import type {
 import type { ProcessedImage } from '../domain/storage/ports/image-processor';
 
 export class InMemoryAiUsageRepository implements AiUsageRepository {
-  readonly records: AiUsageRecord[] = [];
+  readonly records: (AiUsageRecord & { at?: Date })[] = [];
+  /** Date given to the next records (the real time otherwise). */
+  now: Date | undefined;
 
   record(usage: AiUsageRecord): Promise<void> {
-    this.records.push(usage);
+    this.records.push({ ...usage, at: this.now ?? new Date() });
     return Promise.resolve();
   }
 
-  countCharged(userId: string, feature: AiFeature): Promise<number> {
+  countCharged(
+    userId: string,
+    feature: AiFeature,
+    pool: AiPool,
+    since?: Date,
+  ): Promise<number> {
     return Promise.resolve(
       this.records.filter(
-        (r) => r.userId === userId && r.feature === feature && r.charged,
+        (r) =>
+          r.userId === userId &&
+          r.feature === feature &&
+          r.pool === pool &&
+          (!since || (r.at ?? new Date()) >= since),
       ).length,
     );
   }

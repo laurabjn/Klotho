@@ -10,6 +10,8 @@ import { ApiError, NetworkError } from '@/lib/api/errors';
 import { today } from '@/lib/days';
 import { renderWithProviders } from '@/testing/render';
 
+import { billingApi } from '@/features/billing/api/billing.api';
+import { billingStatus } from '@/features/billing/testing';
 import { plansApi } from '@/features/calendar/api/plans.api';
 
 import { outfitsApi } from '../api/outfits.api';
@@ -37,6 +39,7 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('../api/outfits.api');
 jest.mock('@/features/calendar/api/plans.api');
+jest.mock('@/features/billing/api/billing.api');
 jest.mock('@/features/preferences/api/preferences.api');
 jest.mock('@/features/wardrobe/api/wardrobe.api');
 jest.mock('@/features/weather/api/weather.api');
@@ -87,6 +90,12 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockParams = {};
   useGenerationDraftStore.getState().setMandatoryItem(null);
+  jest.mocked(billingApi.status).mockResolvedValue(
+    billingStatus({
+      enabled: false,
+      limits: { pieces: null, generationsPerWeek: null, historyDays: null },
+    }),
+  );
   jest.mocked(preferencesApi.get).mockResolvedValue({
     ...EMPTY_STYLE_PROFILE,
     preferredStyles: ['boho'],
@@ -220,6 +229,34 @@ describe('OutfitGeneratorScreen', () => {
     finish([outfit('o1')]);
     await waitFor(() => expect(router.push).toHaveBeenCalled());
     expect(screen.queryByText('Klotho crée tes tenues…')).not.toBeOnTheScreen();
+  });
+
+  it('tells how many generations are left this week', async () => {
+    jest
+      .mocked(billingApi.status)
+      .mockResolvedValue(
+        billingStatus({ usage: { pieces: 3, generationsThisWeek: 9 } }),
+      );
+    await renderWithProviders(<OutfitGeneratorScreen />);
+
+    expect(
+      await screen.findByText('1 génération restante cette semaine'),
+    ).toBeOnTheScreen();
+  });
+
+  it('offers Premium once the free generations are used', async () => {
+    api.generate.mockRejectedValue(
+      new ApiError(402, 'billing.generationLimit'),
+    );
+    await renderWithProviders(<OutfitGeneratorScreen />);
+
+    await press('Générer 5 tenues');
+
+    expect(
+      await screen.findByText('Plus de tenues cette semaine'),
+    ).toBeOnTheScreen();
+    await press('Passer à Premium');
+    expect(router.push).toHaveBeenCalledWith('/premium');
   });
 
   it('offers to try again without connection', async () => {

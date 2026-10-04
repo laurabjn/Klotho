@@ -174,6 +174,10 @@ export const settingsFr = {
         title: 'Version bêta',
         body: 'Klotho est en version bêta : des fonctionnalités peuvent évoluer, être indisponibles ou comporter des erreurs. Tes retours nous aident à l’améliorer.',
       },
+      paid: {
+        title: 'Klotho Premium et achats',
+        body: 'Klotho reste utilisable gratuitement, avec des limites. Klotho Premium (abonnement mensuel ou annuel), l’offre Founders (achat unique, à vie) et les crédits d’analyse IA sont payés via Google Play ou l’App Store, aux prix affichés dans l’application. L’abonnement se renouvelle automatiquement ; tu peux le résilier à tout moment depuis ton compte Google Play ou App Store, au plus tard 24 h avant le renouvellement. Les remboursements suivent les règles de ces stores. Les crédits achetés n’expirent pas, mais ne sont ni remboursables ni transférables une fois utilisés.',
+      },
       content: {
         title: 'Tes contenus',
         body: 'Tu restes propriétaire des photos et informations que tu ajoutes. Tu nous autorises uniquement à les stocker et à les traiter pour te fournir le service. N’ajoute pas de photos dont tu n’as pas les droits ni de contenus illicites.',

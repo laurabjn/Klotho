@@ -36,6 +36,12 @@ import { occasionIcons, styleIcons, type IconName } from '@/theme/icons';
 import { occasionPhotos, statePhotos } from '@/theme/photos';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
+import {
+  isPlanLimit,
+  PremiumLimit,
+} from '@/features/billing/components/PremiumLimit';
+import { useBillingStatus } from '@/features/billing/hooks/useBilling';
+
 import { GeneratingModal } from '../components/GeneratingModal';
 import { OutfitItemTile } from '../components/OutfitItemTile';
 import { useGenerateOutfits } from '../hooks/useOutfits';
@@ -81,6 +87,7 @@ export function OutfitGeneratorScreen() {
   const weather = useCurrentWeather();
   const manual = useManualTemperature();
   const generate = useGenerateOutfits();
+  const billing = useBillingStatus();
   const mandatoryItem = useGenerationDraftStore((s) => s.mandatoryItem);
   const setMandatoryItem = useGenerationDraftStore((s) => s.setMandatoryItem);
   const wardrobe = useWardrobeList({ status: ['AVAILABLE'] });
@@ -142,6 +149,26 @@ export function OutfitGeneratorScreen() {
     generate.error instanceof ApiError &&
     generate.error.code === 'outfits.noOutfitPossible';
   const offline = generate.error instanceof NetworkError;
+  const weekly = billing.data?.limits.generationsPerWeek ?? null;
+  const generationsLeft =
+    weekly === null
+      ? null
+      : Math.max(weekly - (billing.data?.usage.generationsThisWeek ?? 0), 0);
+
+  if (isPlanLimit(generate.error, 'billing.generationLimit')) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollPage contentContainerStyle={styles.content}>
+          <AppHeader />
+          <PremiumLimit
+            title={t('billing.limits.generationsTitle')}
+            body={t('billing.limits.generationsBody', { count: weekly ?? 0 })}
+            onLater={() => generate.reset()}
+          />
+        </ScrollPage>
+      </SafeAreaView>
+    );
+  }
 
   if (noOutfit || offline) {
     return (
@@ -334,6 +361,11 @@ export function OutfitGeneratorScreen() {
               : null
           }
         />
+        {generationsLeft !== null && (
+          <AppText variant="hint" center>
+            {t('billing.limits.generationsLeft', { count: generationsLeft })}
+          </AppText>
+        )}
         <Button
           label={t('outfits.generator.submit')}
           loading={generate.isPending}

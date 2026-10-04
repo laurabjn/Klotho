@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/brand/AppHeader';
 import { AppText } from '@/components/ui/AppText';
+import { Button } from '@/components/ui/Button';
+import { useBillingStatus } from '@/features/billing/hooks/useBilling';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ScrollToTopButton, useScrollToTop } from '@/components/ui/ScrollToTop';
@@ -41,6 +43,8 @@ type Row =
 export function OutfitHistoryScreen() {
   const { t } = useTranslation();
   const history = useWearHistory();
+  const billing = useBillingStatus();
+  const historyDays = billing.data?.limits.historyDays ?? null;
   const [collapsed, setCollapsed] = useState<HistoryPeriod[]>([]);
   const { scrollRef, onScroll, showTop, scrollToTop } =
     useScrollToTop<FlatList<Row>>();
@@ -129,6 +133,18 @@ export function OutfitHistoryScreen() {
           ListFooterComponent={
             history.isFetchingNextPage ? (
               <ActivityIndicator color={colors.primary} />
+            ) : historyDays !== null && wears.length > 0 ? (
+              <View style={styles.premium}>
+                <AppText center>
+                  {t('billing.limits.history', { count: historyDays })}
+                </AppText>
+                <Button
+                  variant="link"
+                  decorated={false}
+                  label={t('billing.limits.upgrade')}
+                  onPress={() => router.push('/premium')}
+                />
+              </View>
             ) : null
           }
           onEndReachedThreshold={0.5}
@@ -145,6 +161,13 @@ export function OutfitHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
+  premium: {
+    gap: spacing.xs,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radii.card,
+    backgroundColor: colors.primaryLight,
+  },
   safe: { flex: 1, backgroundColor: colors.background },
   page: { flex: 1 },
   header: { gap: spacing.lg, marginBottom: spacing.xs },

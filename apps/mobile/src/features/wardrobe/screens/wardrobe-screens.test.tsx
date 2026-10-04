@@ -8,6 +8,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Linking } from 'react-native';
 
 import { aiApi } from '@/features/ai/api/ai.api';
+import { billingApi } from '@/features/billing/api/billing.api';
+import { billingStatus } from '@/features/billing/testing';
 import { useGenerationDraftStore } from '@/features/outfits/store/generation-draft.store';
 import { ApiError, NetworkError } from '@/lib/api/errors';
 import { renderWithProviders } from '@/testing/render';
@@ -24,6 +26,7 @@ import { WardrobeScreen } from './WardrobeScreen';
 
 jest.mock('../api/wardrobe.api');
 jest.mock('@/features/ai/api/ai.api');
+jest.mock('@/features/billing/api/billing.api');
 jest.mock('../photos/pick-photo', () => ({
   pickPhoto: jest.fn(),
   permissionState: jest.fn(),
@@ -49,6 +52,13 @@ beforeEach(() => {
   jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
   // Permission already granted unless a test says otherwise.
   jest.mocked(permissionState).mockResolvedValue('granted');
+  // Payments off (beta) unless a test says otherwise.
+  jest.mocked(billingApi.status).mockResolvedValue(
+    billingStatus({
+      enabled: false,
+      limits: { pieces: null, generationsPerWeek: null, historyDays: null },
+    }),
+  );
   // No AI on the server unless a test says otherwise.
   jest
     .mocked(aiApi.credits)
@@ -532,7 +542,7 @@ describe('AddWardrobeItemScreen', () => {
       await addPhoto();
 
       expect(
-        await screen.findByText(/Tu as utilisé toutes tes analyses offertes/),
+        await screen.findByText(/Tu as utilisé toutes tes analyses/),
       ).toBeOnTheScreen();
       expect(
         screen.queryByRole('button', { name: 'Analyser ma photo' }),
@@ -554,6 +564,28 @@ describe('AddWardrobeItemScreen', () => {
         screen.queryByText('Remplir avec Klotho IA'),
       ).not.toBeOnTheScreen();
     });
+  });
+
+  it('says the wardrobe is full before the form', async () => {
+    jest
+      .mocked(billingApi.status)
+      .mockResolvedValue(
+        billingStatus({ usage: { pieces: 50, generationsThisWeek: 0 } }),
+      );
+    await renderWithProviders(<AddWardrobeItemScreen />);
+
+    expect(await screen.findByText('Ton dressing est plein')).toBeOnTheScreen();
+    await press('Passer à Premium');
+    expect(router.push).toHaveBeenCalledWith('/premium');
+  });
+
+  it('says it too when the server refuses the piece', async () => {
+    api.create.mockRejectedValue(new ApiError(402, 'billing.pieceLimit'));
+    await renderWithProviders(<AddWardrobeItemScreen />);
+    await toColorsStep();
+    await finishWithBlack();
+
+    expect(await screen.findByText('Ton dressing est plein')).toBeOnTheScreen();
   });
 
   it('creates a piece through all the steps', async () => {

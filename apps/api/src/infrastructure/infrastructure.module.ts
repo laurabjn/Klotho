@@ -37,6 +37,24 @@ import { GARMENT_ANALYZER } from '../domain/ai/ports/garment-analyzer';
 import { AnthropicGarmentAnalyzer } from './ai/anthropic-garment-analyzer';
 import { OpenAiCompatibleGarmentAnalyzer } from './ai/openai-compatible-garment-analyzer';
 import { PrismaAiUsageRepository } from './prisma/repositories/prisma-ai-usage.repository';
+import {
+  BILLING_SETTINGS,
+  PlanService,
+  type BillingSettings,
+} from '../application/billing/plan.service';
+import {
+  AI_USAGE_REPOSITORY as AI_USAGE,
+  type AiUsageRepository,
+} from '../domain/ai/ports/ai-usage.repository';
+import {
+  BILLING_REPOSITORY,
+  type BillingRepository,
+} from '../domain/billing/ports/billing.repository';
+import { PLAN_GATE } from '../domain/billing/ports/plan-gate';
+import { STORE_CUSTOMERS } from '../domain/billing/ports/store-customers';
+import type { Clock as ClockPort } from '../domain/shared/ports/clock';
+import { RevenueCatCustomers } from './billing/revenuecat-customers';
+import { PrismaBillingRepository } from './prisma/repositories/prisma-billing.repository';
 import { WEATHER_SETTINGS_REPOSITORY } from '../domain/weather/ports/weather-settings.repository';
 import type { Clock } from '../domain/shared/ports/clock';
 import type { Env } from '../config/env';
@@ -147,6 +165,51 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
       }),
     },
     { provide: AI_USAGE_REPOSITORY, useClass: PrismaAiUsageRepository },
+    { provide: BILLING_REPOSITORY, useClass: PrismaBillingRepository },
+    {
+      provide: BILLING_SETTINGS,
+      inject: [ConfigService],
+      useFactory: (config: Config): BillingSettings => ({
+        enabled: config.get('BILLING_ENABLED', { infer: true }),
+        free: {
+          pieces: config.get('FREE_PIECES', { infer: true }),
+          generationsPerWeek: config.get('FREE_GENERATIONS_PER_WEEK', {
+            infer: true,
+          }),
+          historyDays: config.get('FREE_HISTORY_DAYS', { infer: true }),
+        },
+        premiumMonthlyAnalyses: config.get('PREMIUM_MONTHLY_ANALYSES', {
+          infer: true,
+        }),
+      }),
+    },
+    {
+      provide: PlanService,
+      inject: [
+        BILLING_REPOSITORY,
+        AI_USAGE,
+        BILLING_SETTINGS,
+        AI_SETTINGS,
+        CLOCK,
+      ],
+      useFactory: (
+        billing: BillingRepository,
+        aiUsage: AiUsageRepository,
+        settings: BillingSettings,
+        ai: AiSettings,
+        clock: ClockPort,
+      ) => new PlanService(billing, aiUsage, settings, ai, clock),
+    },
+    { provide: PLAN_GATE, useExisting: PlanService },
+    {
+      provide: STORE_CUSTOMERS,
+      inject: [ConfigService],
+      useFactory: (config: Config) =>
+        new RevenueCatCustomers({
+          secretKey: config.get('REVENUECAT_SECRET_KEY', { infer: true }),
+          timeoutMs: 10000,
+        }),
+    },
     { provide: OUTFIT_REPOSITORY, useClass: PrismaOutfitRepository },
     { provide: OUTFIT_PLAN_REPOSITORY, useClass: PrismaOutfitPlanRepository },
     { provide: DAY_NOTE_REPOSITORY, useClass: PrismaDayNoteRepository },
@@ -267,6 +330,11 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     GARMENT_ANALYZER,
     AI_SETTINGS,
     AI_USAGE_REPOSITORY,
+    BILLING_REPOSITORY,
+    BILLING_SETTINGS,
+    PlanService,
+    PLAN_GATE,
+    STORE_CUSTOMERS,
     IMAGE_PROCESSOR,
     FILE_STORAGE,
     PHOTO_SETTINGS,

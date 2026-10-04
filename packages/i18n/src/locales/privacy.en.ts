@@ -21,7 +21,7 @@ export const privacyEn: TranslationResource['privacy'] = {
     },
     partners: {
       title: 'Service providers',
-      body: 'API hosting: Koyeb (French company, servers in the European Union). Database: Neon (servers in Frankfurt, Germany). Photos: Cloudflare R2 (data stored in the European Union). Password reset e-mails: Brevo (French company). Weather: OpenWeatherMap (only receives approximate coordinates, without your identity). Crash reporting: Sentry (servers in the European Union, technical reports without e-mail or name). AI photo analysis: Groq (United States), only when you ask for an analysis; the photo is sent without your name or e-mail.',
+      body: 'API hosting: Koyeb (French company, servers in the European Union). Database: Neon (servers in Frankfurt, Germany). Photos: Cloudflare R2 (data stored in the European Union). Password reset e-mails: Brevo (French company). Weather: OpenWeatherMap (only receives approximate coordinates, without your identity). Crash reporting: Sentry (servers in the European Union, technical reports without e-mail or name). Payments: Google Play or the App Store take your purchases (Klotho never sees your bank details); RevenueCat (United States) receives your Klotho id and your purchases to manage the subscription. AI photo analysis: Groq (United States), only when you ask for an analysis; the photo is sent without your name or e-mail.',
     },
     retention: {
       title: 'Retention',

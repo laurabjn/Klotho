@@ -6,6 +6,7 @@ import { privacyFr } from './privacy.fr';
 import { settingsFr } from './settings.fr';
 import { statesFr } from './states.fr';
 import { aiFr } from './ai.fr';
+import { billingFr } from './billing.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -106,6 +107,7 @@ export const fr = {
   settings: settingsFr,
   states: statesFr,
   ai: aiFr,
+  billing: billingFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',
@@ -271,6 +273,14 @@ export const fr = {
     plans: {
       notFound: 'Aucune tenue n’est prévue ce jour-là.',
       pastDay: 'Ce jour est déjà passé.',
+    },
+    billing: {
+      pieceLimit:
+        'Ton dressing a atteint la limite de la version gratuite. Passe à Premium pour ajouter d’autres pièces.',
+      generationLimit:
+        'Tu as utilisé toutes tes générations gratuites de la semaine.',
+      storeUnavailable:
+        'Impossible de vérifier ton achat pour le moment. Réessaie dans un instant.',
     },
     ai: {
       unavailable:

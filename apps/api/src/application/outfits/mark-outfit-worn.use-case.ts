@@ -1,5 +1,6 @@
 import type { OutfitHistoryQuery, OutfitWear, Page } from '@klotho/shared';
 
+import { NO_LIMITS, type PlanGate } from '../../domain/billing/ports/plan-gate';
 import {
   OutfitNotFoundError,
   OutfitWearNotFoundError,
@@ -27,17 +28,24 @@ export class MarkOutfitWornUseCase {
 
 /** "Historique de mes tenues" and the calendar: last worn first. */
 export class ListOutfitHistoryUseCase {
-  constructor(private readonly workshop: OutfitWorkshop) {}
+  constructor(
+    private readonly workshop: OutfitWorkshop,
+    private readonly plans: PlanGate = NO_LIMITS,
+  ) {}
 
   async execute(
     userId: string,
     query: OutfitHistoryQuery,
   ): Promise<Page<OutfitWear>> {
     const { page, pageSize } = query;
-    const { items, total } = await this.workshop.outfits.listWears(
-      userId,
-      query,
-    );
+    // The free plan only shows the last days.
+    const first = await this.plans.historyFrom(userId);
+    const from =
+      first && (!query.from || query.from < first) ? first : query.from;
+    const { items, total } = await this.workshop.outfits.listWears(userId, {
+      ...query,
+      from,
+    });
     return {
       items: await this.workshop.presentWears(userId, items),
       total,

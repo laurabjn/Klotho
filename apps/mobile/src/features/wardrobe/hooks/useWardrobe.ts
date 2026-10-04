@@ -153,6 +153,7 @@ export function useCreateWardrobeItemWithPhotos() {
     },
     onSuccess: ({ item }) => {
       queryClient.setQueryData(wardrobeKeys.item(item.id), item);
+      void queryClient.invalidateQueries({ queryKey: ['billing'] });
       return queryClient.invalidateQueries({ queryKey: ['wardrobe', 'list'] });
     },
   });

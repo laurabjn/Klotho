@@ -54,6 +54,9 @@ const KNOWN_CODES = new Set([
   'ai.unavailable',
   'ai.quotaExceeded',
   'ai.noGarment',
+  'billing.pieceLimit',
+  'billing.generationLimit',
+  'billing.storeUnavailable',
 ]);
 
 /** i18n key of the message to show for any error thrown by the API client. */
