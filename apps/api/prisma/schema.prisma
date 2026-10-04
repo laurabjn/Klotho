@@ -33,6 +33,7 @@ model User {
   notifications        Notification[]
   notificationSettings NotificationSettings?
   notificationMarkers  NotificationMarker[]
+  aiUsages             AiUsage[]
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -337,4 +338,22 @@ model NotificationMarker {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, kind])
+}
+
+/// One call to a paid AI service: cost follow-up per user and feature, and quotas.
+model AiUsage {
+  id           String   @id @default(cuid())
+  userId       String
+  /// photoAnalysis
+  feature      String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  /// Counted in the user's quota (an analysis that found no piece is not).
+  charged      Boolean
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, feature])
 }

@@ -51,6 +51,9 @@ const KNOWN_CODES = new Set([
   'plans.notFound',
   'plans.pastDay',
   'notifications.notFound',
+  'ai.unavailable',
+  'ai.quotaExceeded',
+  'ai.noGarment',
 ]);
 
 /** i18n key of the message to show for any error thrown by the API client. */

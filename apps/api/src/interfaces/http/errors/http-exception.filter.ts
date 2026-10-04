@@ -16,6 +16,11 @@ import {
   InvalidRefreshTokenError,
   InvalidResetTokenError,
 } from '../../../domain/auth/errors';
+import {
+  AiQuotaExceededError,
+  AiUnavailableError,
+  NoGarmentError,
+} from '../../../domain/ai/errors';
 import { DomainError } from '../../../domain/shared/domain-error';
 import {
   EmailAlreadyUsedError,
@@ -83,6 +88,9 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [PlanNotFoundError, HttpStatus.NOT_FOUND],
   [PastDayError, HttpStatus.BAD_REQUEST],
   [NotificationNotFoundError, HttpStatus.NOT_FOUND],
+  [AiUnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
+  [AiQuotaExceededError, HttpStatus.PAYMENT_REQUIRED],
+  [NoGarmentError, HttpStatus.UNPROCESSABLE_ENTITY],
 ]);
 
 const HTTP_STATUS_CODE: Partial<Record<number, string>> = {

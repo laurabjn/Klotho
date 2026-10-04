@@ -77,4 +77,13 @@ describe('SharpImageProcessor', () => {
     expect(metadata.orientation).toBeUndefined();
     expect(result).toMatchObject({ width: 300, height: 400 });
   });
+
+  it('shrinks a copy for the AI, never enlarges it', async () => {
+    const stored = await processor.normalize(await image('jpeg', 1600, 1200));
+
+    const small = await processor.shrink(stored, 800);
+    expect(small).toMatchObject({ width: 800, height: 600 });
+    expect((await sharp(small.bytes).metadata()).width).toBe(800);
+    expect(await processor.shrink(small, 1000)).toBe(small);
+  });
 });

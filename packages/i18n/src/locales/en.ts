@@ -6,6 +6,7 @@ import { notificationsEn } from './notifications.en';
 import { privacyEn } from './privacy.en';
 import { settingsEn } from './settings.en';
 import { statesEn } from './states.en';
+import { aiEn } from './ai.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -103,6 +104,7 @@ export const en: TranslationResource = {
   notifications: notificationsEn,
   settings: settingsEn,
   states: statesEn,
+  ai: aiEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',
@@ -264,6 +266,13 @@ export const en: TranslationResource = {
     plans: {
       notFound: 'No outfit is planned on that day.',
       pastDay: 'This day is already over.',
+    },
+    ai: {
+      unavailable:
+        'The analysis is not available right now. Try again later or fill in the details yourself.',
+      quotaExceeded: 'You have used all your free analyses.',
+      noGarment:
+        'Klotho cannot see any clothing on this photo. Try a photo where the piece is clearly visible.',
     },
     weather: {
       unavailable: 'The weather is unavailable right now. Try again later.',

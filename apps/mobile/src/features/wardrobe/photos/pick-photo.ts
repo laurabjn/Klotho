@@ -8,6 +8,8 @@ export interface LocalPhoto {
   uri: string;
   width: number;
   height: number;
+  /** Already on the server (sent for the AI analysis): attached as is. */
+  key?: string;
 }
 
 export type PickResult =

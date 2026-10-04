@@ -97,6 +97,8 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 | DELETE | `/wardrobe/:id/favorite`                     | no     | `WardrobeItem` with `isFavorite: false` (idempotent) · 404                                                              |
 | POST   | `/uploads/wardrobe`                          | no     | 201 `UploadedPhoto` (multipart, field `file`) · 413 · 415                                                               |
 | POST   | `/wardrobe/:id/photos`                       | no     | 201 item · 400 unknown upload · 409 limit (5)                                                                           |
+| GET    | `/ai/credits`                                | no     | `AiCredits` (`enabled: false` without the AI key)                                                                       |
+| POST   | `/ai/wardrobe-photo?language=fr`             | no     | 201 `WardrobePhotoAnalysis` (multipart, field `file`) · 402 quota · 413 · 415 · 422 no piece · 503                      |
 | PATCH  | `/wardrobe/:id/photos/:photoId/main`         | no     | item (this photo becomes the main one)                                                                                  |
 | DELETE | `/wardrobe/:id/photos/:photoId`              | no     | item (next photo becomes main)                                                                                          |
 
@@ -205,6 +207,24 @@ the RustFS container locally). Items expose their photos through signed URLs
 valid `PHOTO_URL_TTL_SECONDS` (1 hour); the app caches them by photo id.
 Deleting a photo or an item deletes the files.
 
+### AI photo analysis
+
+`POST /ai/wardrobe-photo` stores the picture like `POST /uploads/wardrobe`
+(same key, to attach afterwards) and asks a vision model what the piece is.
+`AI_PROVIDER` picks the service, `AI_API_KEY` is its key: `groq` (default,
+free plan, Qwen 3.8), `gemini` (free plan, Gemini 2.5 Flash), `mistral`
+(Mistral Small) or `anthropic` (Claude Haiku 4.5, paid). A copy bounded to 800 px is sent, without any user data. Every provider gets the
+same instructions (`infrastructure/ai/garment-prompt.ts`); the answer is
+forced into our vocabulary (tool call with enums), then checked field by
+field: an unknown value is dropped, not an error.
+
+"Analyse once, reuse always": the attributes go into the piece, the outfit
+engine never calls the AI. Each call is recorded in `AiUsage` (model, tokens,
+user, feature) to follow the cost. Every account gets
+`AI_FREE_PHOTO_ANALYSES` analyses (3); a photo without any piece and a
+failed call are not counted. Without `AI_API_KEY`, the feature is off
+and the app does not offer it.
+
 Local storage: `npm run db:up` also starts RustFS on port 9010
 (credentials in `.env.example`); the bucket is created at start-up when
 `STORAGE_CREATE_BUCKET=true`. On a phone, set `STORAGE_PUBLIC_ENDPOINT` to
@@ -272,7 +292,7 @@ header (seconds).
 | `POST /auth/forgot-password`, `POST /users/me/email` (sends an e-mail)                    | `RATE_LIMIT_FORGOT_PASSWORD` | `5/900` (15 min.)   |
 | `POST /auth/reset-password`, `POST /auth/confirm-email`                                   | `RATE_LIMIT_RESET_PASSWORD`  | `10/900`            |
 | `POST /auth/refresh`                                                                      | `RATE_LIMIT_REFRESH`         | `30/60`             |
-| `POST /uploads/wardrobe` (per IP and per account)                                         | `RATE_LIMIT_UPLOADS`         | `30/60`             |
+| `POST /uploads/wardrobe`, `POST /ai/wardrobe-photo` (per IP and per account)              | `RATE_LIMIT_UPLOADS`         | `30/60`             |
 
 Values are `<requests>/<seconds>`. `RATE_LIMIT_ENABLED=false` turns it off
 (e2e tests do, except `rate-limit.e2e-spec.ts`). Behind a reverse proxy, set

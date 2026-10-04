@@ -31,6 +31,12 @@ import { DAY_NOTE_REPOSITORY } from '../domain/planning/ports/day-note.repositor
 import { OUTFIT_PLAN_REPOSITORY } from '../domain/planning/ports/outfit-plan.repository';
 import { CITY_GEOCODER } from '../domain/weather/ports/city-geocoder';
 import { WEATHER_PROVIDER } from '../domain/weather/ports/weather-provider';
+import { AI_SETTINGS, type AiSettings } from '../application/ai/ai-settings';
+import { AI_USAGE_REPOSITORY } from '../domain/ai/ports/ai-usage.repository';
+import { GARMENT_ANALYZER } from '../domain/ai/ports/garment-analyzer';
+import { AnthropicGarmentAnalyzer } from './ai/anthropic-garment-analyzer';
+import { OpenAiCompatibleGarmentAnalyzer } from './ai/openai-compatible-garment-analyzer';
+import { PrismaAiUsageRepository } from './prisma/repositories/prisma-ai-usage.repository';
 import { WEATHER_SETTINGS_REPOSITORY } from '../domain/weather/ports/weather-settings.repository';
 import type { Clock } from '../domain/shared/ports/clock';
 import type { Env } from '../config/env';
@@ -108,6 +114,39 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
         }),
     },
     { provide: CITY_GEOCODER, useExisting: OPENWEATHERMAP_CLIENT },
+    {
+      provide: GARMENT_ANALYZER,
+      inject: [ConfigService],
+      useFactory: (config: Config) => {
+        const provider = config.get('AI_PROVIDER', { infer: true });
+        const apiKey = config.get('AI_API_KEY', { infer: true });
+        const model = config.get('AI_MODEL', { infer: true });
+        const timeoutMs = config.get('AI_TIMEOUT_MS', { infer: true });
+        return provider === 'anthropic'
+          ? new AnthropicGarmentAnalyzer({
+              apiKey,
+              model: model ?? 'claude-haiku-4-5',
+              timeoutMs,
+            })
+          : new OpenAiCompatibleGarmentAnalyzer({
+              provider,
+              apiKey,
+              model,
+              timeoutMs,
+            });
+      },
+    },
+    {
+      provide: AI_SETTINGS,
+      inject: [ConfigService],
+      useFactory: (config: Config): AiSettings => ({
+        enabled: !!config.get('AI_API_KEY', { infer: true }),
+        freePhotoAnalyses: config.get('AI_FREE_PHOTO_ANALYSES', {
+          infer: true,
+        }),
+      }),
+    },
+    { provide: AI_USAGE_REPOSITORY, useClass: PrismaAiUsageRepository },
     { provide: OUTFIT_REPOSITORY, useClass: PrismaOutfitRepository },
     { provide: OUTFIT_PLAN_REPOSITORY, useClass: PrismaOutfitPlanRepository },
     { provide: DAY_NOTE_REPOSITORY, useClass: PrismaDayNoteRepository },
@@ -225,6 +264,9 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
     WEATHER_SETTINGS_REPOSITORY,
     WEATHER_PROVIDER,
     CITY_GEOCODER,
+    GARMENT_ANALYZER,
+    AI_SETTINGS,
+    AI_USAGE_REPOSITORY,
     IMAGE_PROCESSOR,
     FILE_STORAGE,
     PHOTO_SETTINGS,

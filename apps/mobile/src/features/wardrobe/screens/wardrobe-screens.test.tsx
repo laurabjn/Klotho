@@ -7,6 +7,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { Linking } from 'react-native';
 
+import { aiApi } from '@/features/ai/api/ai.api';
 import { useGenerationDraftStore } from '@/features/outfits/store/generation-draft.store';
 import { ApiError, NetworkError } from '@/lib/api/errors';
 import { renderWithProviders } from '@/testing/render';
@@ -22,6 +23,7 @@ import { WardrobeItemDetailsScreen } from './WardrobeItemDetailsScreen';
 import { WardrobeScreen } from './WardrobeScreen';
 
 jest.mock('../api/wardrobe.api');
+jest.mock('@/features/ai/api/ai.api');
 jest.mock('../photos/pick-photo', () => ({
   pickPhoto: jest.fn(),
   permissionState: jest.fn(),
@@ -47,6 +49,10 @@ beforeEach(() => {
   jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
   // Permission already granted unless a test says otherwise.
   jest.mocked(permissionState).mockResolvedValue('granted');
+  // No AI on the server unless a test says otherwise.
+  jest
+    .mocked(aiApi.credits)
+    .mockResolvedValue({ enabled: false, remaining: 0, quota: 3 });
 });
 
 describe('WardrobeScreen', () => {
@@ -399,6 +405,155 @@ describe('AddWardrobeItemScreen', () => {
     expect(pickPhoto).not.toHaveBeenCalled();
     await press('Ouvrir les réglages');
     expect(Linking.openSettings).toHaveBeenCalled();
+  });
+
+  describe('with Klotho AI', () => {
+    const SUGGESTION = {
+      name: 'Blouse romantique',
+      category: 'TOP' as const,
+      subcategory: 'blouse',
+      primaryColor: 'white' as const,
+      secondaryColors: [],
+      pattern: 'plain' as const,
+      material: 'Coton',
+      styles: ['romantic' as const],
+      seasons: ['spring' as const, 'summer' as const],
+      minTemperature: 16,
+      maxTemperature: 28,
+      warmthLevel: 2,
+      formalityLevel: null,
+    };
+
+    beforeEach(() => {
+      jest
+        .mocked(aiApi.credits)
+        .mockResolvedValue({ enabled: true, remaining: 3, quota: 3 });
+      jest
+        .mocked(pickPhoto)
+        .mockResolvedValue({ status: 'picked', photo: localPhoto(1) });
+    });
+
+    async function addPhoto() {
+      await press('Ajouter une photo');
+      await press('Prendre une photo');
+      await screen.findByRole('button', { name: /Photo 1 sur 1/ });
+    }
+
+    it('fills the piece in from the photo, then attaches the analysed photo', async () => {
+      jest.mocked(aiApi.analyzePhoto).mockResolvedValue({
+        photo: {
+          key: 'users/u/photos/analysed.jpg',
+          width: 1200,
+          height: 1600,
+        },
+        suggestion: SUGGESTION,
+        credits: { enabled: true, remaining: 2, quota: 3 },
+      });
+      api.create.mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+      const upload = jest.spyOn(photosApi, 'upload');
+      const attach = jest
+        .spyOn(photosApi, 'attach')
+        .mockResolvedValue(wardrobeItem({ id: 'new-item' }));
+      await renderWithProviders(<AddWardrobeItemScreen />);
+      await addPhoto();
+
+      expect(await screen.findByText('3 analyses restantes')).toBeOnTheScreen();
+      await press('Analyser ma photo');
+
+      // Straight to the details, filled in.
+      expect(await screen.findByLabelText('Étape 2/5')).toBeOnTheScreen();
+      expect(
+        screen.getByText(
+          'Pré-rempli par Klotho IA : vérifie et corrige si besoin.',
+        ),
+      ).toBeOnTheScreen();
+      expect(aiApi.analyzePhoto).toHaveBeenCalledWith(localPhoto(1), 'fr');
+      expect(
+        screen.getByRole('radio', { name: 'Haut' }).props.accessibilityState,
+      ).toMatchObject({ selected: true });
+      expect(screen.getByLabelText('Ex. : Blouse fleurie').props.value).toBe(
+        'Blouse romantique',
+      );
+
+      for (const next of ['Étape 3/5', 'Étape 4/5', 'Étape 5/5']) {
+        await press('Continuer');
+        await screen.findByLabelText(next);
+      }
+      await press('Ajouter à ma garde-robe');
+
+      expect(await screen.findByText('Photo ajoutée !')).toBeOnTheScreen();
+      expect(api.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Blouse romantique',
+          category: 'TOP',
+          subcategory: 'blouse',
+          primaryColor: 'white',
+          pattern: 'plain',
+          material: 'Coton',
+          styles: ['romantic'],
+          seasons: ['spring', 'summer'],
+          minTemperature: 16,
+          maxTemperature: 28,
+          warmthLevel: 2,
+        }),
+      );
+      // Already on the server: attached without a second upload.
+      expect(upload).not.toHaveBeenCalled();
+      expect(attach).toHaveBeenCalledWith(
+        'new-item',
+        'users/u/photos/analysed.jpg',
+      );
+    });
+
+    it('explains why the analysis failed, and the form stays free', async () => {
+      jest
+        .mocked(aiApi.analyzePhoto)
+        .mockRejectedValue(new ApiError(422, 'ai.noGarment'));
+      await renderWithProviders(<AddWardrobeItemScreen />);
+      await addPhoto();
+
+      await fireEvent.press(
+        await screen.findByRole('button', { name: 'Analyser ma photo' }),
+      );
+
+      expect(
+        await screen.findByText(/Klotho ne reconnaît pas de vêtement/),
+      ).toBeOnTheScreen();
+      expect(screen.getByLabelText('Étape 1/5')).toBeOnTheScreen();
+      await press('Continuer');
+      expect(await screen.findByLabelText('Étape 2/5')).toBeOnTheScreen();
+    });
+
+    it('says when every free analysis is used', async () => {
+      jest
+        .mocked(aiApi.credits)
+        .mockResolvedValue({ enabled: true, remaining: 0, quota: 3 });
+      await renderWithProviders(<AddWardrobeItemScreen />);
+      await addPhoto();
+
+      expect(
+        await screen.findByText(/Tu as utilisé toutes tes analyses offertes/),
+      ).toBeOnTheScreen();
+      expect(
+        screen.queryByRole('button', { name: 'Analyser ma photo' }),
+      ).not.toBeOnTheScreen();
+    });
+
+    it('is not offered without a photo, nor without AI on the server', async () => {
+      await renderWithProviders(<AddWardrobeItemScreen />);
+      expect(
+        screen.queryByText('Remplir avec Klotho IA'),
+      ).not.toBeOnTheScreen();
+
+      jest
+        .mocked(aiApi.credits)
+        .mockResolvedValue({ enabled: false, remaining: 0, quota: 3 });
+      await renderWithProviders(<AddWardrobeItemScreen />);
+      await addPhoto();
+      expect(
+        screen.queryByText('Remplir avec Klotho IA'),
+      ).not.toBeOnTheScreen();
+    });
   });
 
   it('creates a piece through all the steps', async () => {

@@ -1,4 +1,9 @@
-import type { CreateWardrobeItemInput, WardrobeItem } from '@klotho/shared';
+import { Ionicons } from '@expo/vector-icons';
+import type {
+  CreateWardrobeItemInput,
+  WardrobeItem,
+  WardrobePhotoAnalysis,
+} from '@klotho/shared';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,13 +11,16 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppHeader } from '@/components/brand/AppHeader';
+import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
 import { FormScrollView } from '@/components/ui/FormScrollView';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { StepIndicator } from '@/components/ui/StepIndicator';
+import { AiPhotoCard } from '@/features/ai/components/AiPhotoCard';
+import { applySuggestion } from '@/features/ai/lib/apply-suggestion';
 import { errorMessageKey, NetworkError } from '@/lib/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { colors, radii, spacing } from '@/theme/tokens';
 
 import {
   SECTION_FIELDS,
@@ -50,6 +58,8 @@ export function AddWardrobeItemScreen() {
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [upload, setUpload] = useState<Upload | null>(null);
+  /** The form was filled in by the photo analysis. */
+  const [prefilled, setPrefilled] = useState(false);
 
   const key = STEPS[step]!;
   const isLast = step === STEPS.length - 1;
@@ -106,9 +116,25 @@ export function AddWardrobeItemScreen() {
     );
   };
 
+  /** The analysed photo is already on the server: it keeps its key. */
+  const onAnalyzed = (
+    analysed: LocalPhoto,
+    { photo, suggestion }: WardrobePhotoAnalysis,
+  ) => {
+    applySuggestion(form.setValue, suggestion);
+    setPhotos((current) =>
+      current.map((p) =>
+        p.uri === analysed.uri ? { ...p, key: photo.key } : p,
+      ),
+    );
+    setPrefilled(true);
+    setStep(1);
+  };
+
   const addAnother = () => {
     form.reset();
     setPhotos([]);
+    setPrefilled(false);
     setStep(0);
     setUpload(null);
     create.reset();
@@ -186,9 +212,27 @@ export function AddWardrobeItemScreen() {
       </View>
       <FormScrollView contentStyle={styles.form}>
         {Section ? (
-          <Section form={form} />
+          <>
+            {prefilled && (
+              <View style={styles.prefilled} accessibilityLiveRegion="polite">
+                <Ionicons name="sparkles" size={18} color={colors.primary} />
+                <AppText style={styles.prefilledText}>
+                  {t('ai.prefilled')}
+                </AppText>
+              </View>
+            )}
+            <Section form={form} />
+          </>
         ) : (
-          <LocalPhotoGrid photos={photos} onChange={setPhotos} />
+          <>
+            <LocalPhotoGrid photos={photos} onChange={setPhotos} />
+            {photos[0] && !photos.some((p) => p.key) && (
+              <AiPhotoCard
+                photo={photos[0]}
+                onAnalyzed={(analysis) => onAnalyzed(photos[0]!, analysis)}
+              />
+            )}
+          </>
         )}
       </FormScrollView>
       <View style={styles.footer}>
@@ -219,6 +263,16 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   form: { gap: spacing.xxl, padding: spacing.xl },
+  prefilled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    marginBottom: -spacing.md,
+    borderRadius: radii.input,
+    backgroundColor: colors.primaryLight,
+  },
+  prefilledText: { flex: 1, fontSize: 15, lineHeight: 20, color: colors.title },
   footer: {
     gap: spacing.md,
     paddingHorizontal: spacing.xl,
