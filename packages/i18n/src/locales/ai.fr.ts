@@ -6,7 +6,8 @@ export const aiFr = {
     action: 'Analyser ma photo',
     remaining_one: '{{count}} analyse restante',
     remaining_other: '{{count}} analyses restantes',
-    none: 'Tu as utilisé toutes tes analyses offertes. Tu peux remplir la fiche toi-même.',
+    none: 'Tu as utilisé toutes tes analyses. Tu peux remplir la fiche toi-même, ou obtenir plus d’analyses.',
+    more: 'Obtenir plus d’analyses',
     privacy:
       'Ta photo est envoyée à notre prestataire d’IA (Groq) uniquement pour cette analyse.',
   },

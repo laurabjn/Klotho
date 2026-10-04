@@ -1,3 +1,8 @@
+import { PlanService } from '../../../application/billing/plan.service';
+import {
+  PLAN_GATE,
+  type PlanGate,
+} from '../../../domain/billing/ports/plan-gate';
 import {
   AI_SETTINGS,
   type AiSettings,
@@ -62,7 +67,6 @@ import { WardrobeController } from './wardrobe.controller';
 /** Item use cases only need the repository and the storage (for photo URLs). */
 const itemUseCases = [
   ListWardrobeItemsUseCase,
-  CreateWardrobeItemUseCase,
   GetWardrobeItemUseCase,
   DeleteWardrobeItemUseCase,
   SetWardrobeFavoriteUseCase,
@@ -127,6 +131,15 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
       ) => new AddWardrobePhotoUseCase(wardrobe, photos, storage, settings),
     },
     {
+      provide: CreateWardrobeItemUseCase,
+      inject: [WARDROBE_REPOSITORY, FILE_STORAGE, PLAN_GATE],
+      useFactory: (
+        wardrobe: WardrobeRepository,
+        storage: FileStorage,
+        plans: PlanGate,
+      ) => new CreateWardrobeItemUseCase(wardrobe, storage, plans),
+    },
+    {
       provide: AnalyzeWardrobePhotoUseCase,
       inject: [
         IMAGE_PROCESSOR,
@@ -134,6 +147,7 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
         GARMENT_ANALYZER,
         AI_USAGE_REPOSITORY,
         AI_SETTINGS,
+        PlanService,
       ],
       useFactory: (
         images: ImageProcessor,
@@ -141,6 +155,7 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
         analyzer: GarmentAnalyzer,
         usage: AiUsageRepository,
         settings: AiSettings,
+        plans: PlanService,
       ) =>
         new AnalyzeWardrobePhotoUseCase(
           images,
@@ -148,13 +163,13 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
           analyzer,
           usage,
           settings,
+          plans,
         ),
     },
     {
       provide: GetAiCreditsUseCase,
-      inject: [AI_USAGE_REPOSITORY, AI_SETTINGS],
-      useFactory: (usage: AiUsageRepository, settings: AiSettings) =>
-        new GetAiCreditsUseCase(usage, settings),
+      inject: [PlanService],
+      useFactory: (plans: PlanService) => new GetAiCreditsUseCase(plans),
     },
     {
       provide: UploadWardrobePhotoUseCase,

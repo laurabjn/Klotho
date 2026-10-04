@@ -10,6 +10,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { logFormat, validateEnv, type Env } from './config/env';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthModule } from './interfaces/http/auth/auth.module';
+import { BillingModule } from './interfaces/http/billing/billing.module';
 import { HttpExceptionFilter } from './interfaces/http/errors/http-exception.filter';
 import { HealthController } from './interfaces/http/health/health.controller';
 import { requestLogger } from './interfaces/http/logging/request-logger.middleware';
@@ -41,6 +42,7 @@ import { WeatherModule } from './interfaces/http/weather/weather.module';
     OutfitsModule,
     PlanningModule,
     NotificationsModule,
+    BillingModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: HttpExceptionFilter }],

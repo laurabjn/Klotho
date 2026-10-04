@@ -247,6 +247,6 @@ describe('HelpScreen and TermsScreen', () => {
     await renderWithProviders(<TermsScreen />);
 
     expect(screen.getByText('1. Objet')).toBeOnTheScreen();
-    expect(screen.getByText('8. Droit applicable')).toBeOnTheScreen();
+    expect(screen.getByText('9. Droit applicable')).toBeOnTheScreen();
   });
 });

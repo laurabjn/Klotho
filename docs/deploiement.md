@@ -74,7 +74,32 @@ uniquement dans les variables d'environnement des services.
 
 Chaque merge sur `main` redéploie automatiquement l'API.
 
-## 5. L'app : build bêta (EAS)
+## 5. Paiements : Google Play et RevenueCat (quand tu actives Premium)
+
+1. Crée ton compte développeur Google Play (25 $ une fois) et ton profil
+   marchand.
+2. Dans la Play Console, crée l'app `com.laurabjn.klotho`, puis les produits :
+   - abonnements `klotho_premium_monthly` (3,99 €) et
+     `klotho_premium_annual` (32,99 €) ;
+   - produits intégrés `klotho_founders` (39,99 €, non consommable),
+     `klotho_credits_25` (1,99 €) et `klotho_credits_75` (3,99 €),
+     consommables.
+3. Sur https://app.revenuecat.com, crée un projet et une app Google Play,
+   relie-la à la Play Console (compte de service), importe les produits.
+   Crée les droits (« entitlements ») `premium` (les deux abonnements) et
+   `founders` (`klotho_founders`), et une offre contenant les 5 produits.
+4. Clés : la clé publique Android (`goog_…`) va dans
+   `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` (build EAS), la clé secrète
+   (`sk_…`) dans `REVENUECAT_SECRET_KEY` sur Koyeb.
+5. Webhook RevenueCat : URL `https://<ton-service>.koyeb.app/billing/revenuecat`,
+   « Authorization header » = une longue chaîne aléatoire, la même que
+   `REVENUECAT_WEBHOOK_AUTH` sur Koyeb.
+6. Mets `BILLING_ENABLED=true` sur Koyeb pour activer les limites gratuites.
+
+Les achats se testent avec le build bêta et des comptes testeurs de la Play
+Console (licences de test : rien n'est débité).
+
+## 6. L'app : build bêta (EAS)
 
 1. `npx eas-cli@latest login`, puis depuis `apps/mobile` :
    `npx eas-cli@latest init` (une seule fois).
@@ -88,7 +113,7 @@ Chaque merge sur `main` redéploie automatiquement l'API.
 3. `npm run build:preview:android` (depuis `apps/mobile`, environ 15 min) :
    EAS donne un lien vers l'APK à envoyer aux testeuses.
 
-## 6. Avant d'inviter les testeuses
+## 7. Avant d'inviter les testeuses
 
 - Complète `[E-mail de contact]` et `[adresse de Koyeb]` dans
   `packages/i18n/src/locales/privacy.fr.ts` et `privacy.en.ts`.

@@ -7,6 +7,7 @@ import { privacyEn } from './privacy.en';
 import { settingsEn } from './settings.en';
 import { statesEn } from './states.en';
 import { aiEn } from './ai.en';
+import { billingEn } from './billing.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -105,6 +106,7 @@ export const en: TranslationResource = {
   settings: settingsEn,
   states: statesEn,
   ai: aiEn,
+  billing: billingEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',
@@ -266,6 +268,13 @@ export const en: TranslationResource = {
     plans: {
       notFound: 'No outfit is planned on that day.',
       pastDay: 'This day is already over.',
+    },
+    billing: {
+      pieceLimit:
+        'Your wardrobe has reached the limit of the free version. Go Premium to add more pieces.',
+      generationLimit: 'You have used all your free generations this week.',
+      storeUnavailable:
+        'Your purchase cannot be checked right now. Try again in a moment.',
     },
     ai: {
       unavailable:

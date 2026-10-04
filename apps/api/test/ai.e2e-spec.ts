@@ -114,9 +114,11 @@ describe('AI photo analysis (e2e)', () => {
 
     expect(
       await t.prisma.aiUsage.findMany({
-        select: { feature: true, inputTokens: true, charged: true },
+        select: { feature: true, inputTokens: true, pool: true },
       }),
-    ).toEqual([{ feature: 'photoAnalysis', inputTokens: 900, charged: true }]);
+    ).toEqual([
+      { feature: 'photoAnalysis', inputTokens: 900, pool: 'balance' },
+    ]);
   });
 
   it('does not charge a photo without any piece', async () => {

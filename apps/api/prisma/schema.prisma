@@ -34,6 +34,9 @@ model User {
   notificationSettings NotificationSettings?
   notificationMarkers  NotificationMarker[]
   aiUsages             AiUsage[]
+  entitlement          Entitlement?
+  creditGrants         CreditGrant[]
+  usageEvents          UsageEvent[]
 }
 
 /// Only the SHA-256 of the token is stored. Tokens rotated from the same login share a familyId.
@@ -349,11 +352,51 @@ model AiUsage {
   model        String
   inputTokens  Int
   outputTokens Int
-  /// Counted in the user's quota (an analysis that found no piece is not).
-  charged      Boolean
+  /// Quota it was taken from: monthly (Premium) or balance; null when not
+  /// counted (no piece found).
+  pool         String?
   createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, feature])
+}
+
+/// The paid plan of a user, as last confirmed by the store (RevenueCat).
+model Entitlement {
+  userId    String    @id
+  /// premium or founders
+  plan      String
+  productId String
+  /// Null for the lifetime founders offer.
+  expiresAt DateTime?
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// AI credits bought (packs) or included (founders), once per store transaction.
+model CreditGrant {
+  id            String   @id @default(cuid())
+  userId        String
+  amount        Int
+  productId     String
+  transactionId String   @unique
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Metered features of the free plan (outfit generations).
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  feature   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, feature, createdAt])
 }

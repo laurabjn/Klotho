@@ -109,6 +109,25 @@ export const envSchema = z
     /** Photo analyses offered to every account. */
     AI_FREE_PHOTO_ANALYSES: z.coerce.number().int().min(0).default(3),
 
+    // Payments (RevenueCat). Off during the beta: no limit, nothing to buy.
+    BILLING_ENABLED: flag('false'),
+    /** RevenueCat secret API key (sk_…). */
+    REVENUECAT_SECRET_KEY: z
+      .string()
+      .trim()
+      .optional()
+      .transform((key) => key || undefined),
+    /** Value of the "Authorization header" set on the RevenueCat webhook. */
+    REVENUECAT_WEBHOOK_AUTH: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) => value || undefined),
+    FREE_PIECES: z.coerce.number().int().min(1).default(50),
+    FREE_GENERATIONS_PER_WEEK: z.coerce.number().int().min(1).default(10),
+    FREE_HISTORY_DAYS: z.coerce.number().int().min(1).default(7),
+    PREMIUM_MONTHLY_ANALYSES: z.coerce.number().int().min(0).default(25),
+
     // Rate limiting, per client IP (and per account for uploads).
     RATE_LIMIT_ENABLED: flag('true'),
     RATE_LIMIT_LOGIN: rateLimit('10/60'),
@@ -122,6 +141,18 @@ export const envSchema = z
     path: ['OPENWEATHER_API_KEY'],
     message: 'is required in production',
   })
+  .refine(
+    // Locally, the limits and the screens can be tried without the store.
+    (env) =>
+      !env.BILLING_ENABLED ||
+      env.NODE_ENV !== 'production' ||
+      (!!env.REVENUECAT_SECRET_KEY && !!env.REVENUECAT_WEBHOOK_AUTH),
+    {
+      path: ['BILLING_ENABLED'],
+      message:
+        'needs REVENUECAT_SECRET_KEY and REVENUECAT_WEBHOOK_AUTH in production',
+    },
+  )
   .refine(
     (env) =>
       env.MAIL_DRIVER !== 'brevo' || (!!env.BREVO_API_KEY && !!env.MAIL_FROM),

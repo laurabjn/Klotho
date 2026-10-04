@@ -12,6 +12,7 @@ export * from './outfits/schemas';
 export * from './outfits/planning';
 export * from './notifications/schemas';
 export * from './ai/schemas';
+export * from './billing/billing';
 
 export type HealthStatus = 'ok';
 

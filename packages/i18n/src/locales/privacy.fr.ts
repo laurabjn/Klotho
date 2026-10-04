@@ -21,7 +21,7 @@ export const privacyFr = {
     },
     partners: {
       title: 'Prestataires',
-      body: 'Hébergement de l’API : Koyeb (société française, serveurs dans l’Union européenne). Base de données : Neon (serveurs à Francfort, Allemagne). Photos : Cloudflare R2 (données stockées dans l’Union européenne). E-mails de mot de passe oublié : Brevo (société française). Météo : OpenWeatherMap (reçoit seulement des coordonnées approximatives, sans ton identité). Suivi des plantages : Sentry (serveurs dans l’Union européenne, rapports techniques sans e-mail ni nom). Analyse des photos par IA : Groq (États-Unis), seulement quand tu demandes une analyse ; la photo est envoyée sans ton nom ni ton e-mail.',
+      body: 'Hébergement de l’API : Koyeb (société française, serveurs dans l’Union européenne). Base de données : Neon (serveurs à Francfort, Allemagne). Photos : Cloudflare R2 (données stockées dans l’Union européenne). E-mails de mot de passe oublié : Brevo (société française). Météo : OpenWeatherMap (reçoit seulement des coordonnées approximatives, sans ton identité). Suivi des plantages : Sentry (serveurs dans l’Union européenne, rapports techniques sans e-mail ni nom). Paiements : Google Play ou l’App Store encaissent tes achats (Klotho ne voit jamais tes coordonnées bancaires) ; RevenueCat (États-Unis) reçoit ton identifiant Klotho et tes achats pour gérer l’abonnement. Analyse des photos par IA : Groq (États-Unis), seulement quand tu demandes une analyse ; la photo est envoyée sans ton nom ni ton e-mail.',
     },
     retention: {
       title: 'Durée de conservation',

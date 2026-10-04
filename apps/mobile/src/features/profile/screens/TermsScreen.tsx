@@ -13,6 +13,7 @@ const SECTIONS = [
   'purpose',
   'account',
   'beta',
+  'paid',
   'content',
   'advice',
   'liability',

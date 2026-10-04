@@ -57,7 +57,11 @@ export function useGenerateOutfits() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: GenerateOutfitsInput) => outfitsApi.generate(body),
-    onSuccess: (outfits) => remember(queryClient, outfits),
+    onSuccess: (outfits) => {
+      remember(queryClient, outfits);
+      // One generation less this week.
+      void queryClient.invalidateQueries({ queryKey: ['billing'] });
+    },
   });
 }
 

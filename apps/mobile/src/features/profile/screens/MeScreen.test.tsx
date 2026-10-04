@@ -8,6 +8,8 @@ import type {
 } from '@klotho/shared';
 
 import { authApi } from '@/features/auth/api/auth.api';
+import { billingApi } from '@/features/billing/api/billing.api';
+import { billingStatus } from '@/features/billing/testing';
 import { signIn, useAuthStore } from '@/features/auth/store/auth.store';
 import { preferencesApi } from '@/features/preferences/api/preferences.api';
 import { EMPTY_STYLE_PROFILE } from '@/features/preferences/hooks/useStyleProfile';
@@ -23,6 +25,7 @@ jest.mock('@/features/preferences/api/preferences.api');
 jest.mock('@/features/wardrobe/api/wardrobe.api');
 jest.mock('@/features/weather/api/weather.api');
 jest.mock('@/features/notifications/api/notifications.api');
+jest.mock('@/features/billing/api/billing.api');
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), navigate: jest.fn() },
 }));
@@ -158,6 +161,29 @@ describe('MeScreen', () => {
         temperatureUnit: 'fahrenheit',
       }),
     );
+  });
+
+  it('opens Klotho Premium, with the current plan', async () => {
+    jest.mocked(billingApi.status).mockResolvedValue(billingStatus());
+    await renderWithProviders(<MeScreen />);
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Klotho Premium · Gratuit' }),
+    );
+
+    expect(router.push).toHaveBeenCalledWith('/premium');
+  });
+
+  it('hides Premium while payments are off', async () => {
+    jest
+      .mocked(billingApi.status)
+      .mockResolvedValue(billingStatus({ enabled: false }));
+    await renderWithProviders(<MeScreen />);
+    await screen.findByText('Rose poudré');
+
+    expect(
+      screen.queryByRole('button', { name: /Klotho Premium/ }),
+    ).not.toBeOnTheScreen();
   });
 
   it('opens the preferences', async () => {

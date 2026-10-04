@@ -1,3 +1,7 @@
+import {
+  PLAN_GATE,
+  type PlanGate,
+} from '../../../domain/billing/ports/plan-gate';
 import { Logger, Module } from '@nestjs/common';
 
 import {
@@ -61,7 +65,6 @@ const useCases = [
   ClearOutfitFeedbackUseCase,
   ToggleOutfitFavoriteUseCase,
   MarkOutfitWornUseCase,
-  ListOutfitHistoryUseCase,
   DeleteOutfitWearUseCase,
 ];
 
@@ -106,9 +109,18 @@ const useCases = [
     })),
     {
       provide: CreateOutfitsUseCase,
-      inject: [OutfitWorkshop, NOTIFIER],
-      useFactory: (workshop: OutfitWorkshop, notifier: Notifier) =>
-        new CreateOutfitsUseCase(workshop, notifier),
+      inject: [OutfitWorkshop, NOTIFIER, PLAN_GATE],
+      useFactory: (
+        workshop: OutfitWorkshop,
+        notifier: Notifier,
+        plans: PlanGate,
+      ) => new CreateOutfitsUseCase(workshop, notifier, plans),
+    },
+    {
+      provide: ListOutfitHistoryUseCase,
+      inject: [OutfitWorkshop, PLAN_GATE],
+      useFactory: (workshop: OutfitWorkshop, plans: PlanGate) =>
+        new ListOutfitHistoryUseCase(workshop, plans),
     },
   ],
   // The planning reuses the looks and their presentation.
