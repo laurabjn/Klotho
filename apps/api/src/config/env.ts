@@ -89,6 +89,26 @@ export const envSchema = z
     WEATHER_TIMEOUT_MS: z.coerce.number().int().min(500).default(5000),
     WEATHER_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).default(600),
 
+    // AI photo analysis. Without a key, the app hides the feature.
+    AI_PROVIDER: z
+      .enum(['groq', 'gemini', 'mistral', 'anthropic'])
+      .default('groq'),
+    /** Key of the chosen provider. */
+    AI_API_KEY: z
+      .string()
+      .trim()
+      .optional()
+      .transform((key) => key || undefined),
+    /** Default: the provider's model (see infrastructure/ai). */
+    AI_MODEL: z
+      .string()
+      .trim()
+      .optional()
+      .transform((model) => model || undefined),
+    AI_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
+    /** Photo analyses offered to every account. */
+    AI_FREE_PHOTO_ANALYSES: z.coerce.number().int().min(0).default(3),
+
     // Rate limiting, per client IP (and per account for uploads).
     RATE_LIMIT_ENABLED: flag('true'),
     RATE_LIMIT_LOGIN: rateLimit('10/60'),

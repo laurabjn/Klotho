@@ -1,3 +1,20 @@
+import {
+  AI_SETTINGS,
+  type AiSettings,
+} from '../../../application/ai/ai-settings';
+import {
+  AnalyzeWardrobePhotoUseCase,
+  GetAiCreditsUseCase,
+} from '../../../application/ai/analyze-wardrobe-photo.use-case';
+import {
+  AI_USAGE_REPOSITORY,
+  type AiUsageRepository,
+} from '../../../domain/ai/ports/ai-usage.repository';
+import {
+  GARMENT_ANALYZER,
+  type GarmentAnalyzer,
+} from '../../../domain/ai/ports/garment-analyzer';
+import { AiController } from './ai.controller';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
@@ -68,7 +85,7 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
       }),
     }),
   ],
-  controllers: [WardrobeController, UploadsController],
+  controllers: [WardrobeController, UploadsController, AiController],
   providers: [
     ...itemUseCases.map((UseCase) => ({
       provide: UseCase,
@@ -108,6 +125,36 @@ const photoUseCases = [DeleteWardrobePhotoUseCase, SetMainWardrobePhotoUseCase];
         storage: FileStorage,
         settings: PhotoSettings,
       ) => new AddWardrobePhotoUseCase(wardrobe, photos, storage, settings),
+    },
+    {
+      provide: AnalyzeWardrobePhotoUseCase,
+      inject: [
+        IMAGE_PROCESSOR,
+        FILE_STORAGE,
+        GARMENT_ANALYZER,
+        AI_USAGE_REPOSITORY,
+        AI_SETTINGS,
+      ],
+      useFactory: (
+        images: ImageProcessor,
+        storage: FileStorage,
+        analyzer: GarmentAnalyzer,
+        usage: AiUsageRepository,
+        settings: AiSettings,
+      ) =>
+        new AnalyzeWardrobePhotoUseCase(
+          images,
+          storage,
+          analyzer,
+          usage,
+          settings,
+        ),
+    },
+    {
+      provide: GetAiCreditsUseCase,
+      inject: [AI_USAGE_REPOSITORY, AI_SETTINGS],
+      useFactory: (usage: AiUsageRepository, settings: AiSettings) =>
+        new GetAiCreditsUseCase(usage, settings),
     },
     {
       provide: UploadWardrobePhotoUseCase,

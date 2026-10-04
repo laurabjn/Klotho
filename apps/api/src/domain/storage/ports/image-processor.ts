@@ -13,6 +13,8 @@ export interface ProcessedImage {
 export interface ImageProcessor {
   /** @throws InvalidImageError when the bytes are not a supported image. */
   normalize(input: Uint8Array): Promise<ProcessedImage>;
+  /** A smaller copy of a normalised image (e.g. to send it to the AI). */
+  shrink(image: ProcessedImage, maxSide: number): Promise<ProcessedImage>;
 }
 
 export const IMAGE_PROCESSOR = Symbol('ImageProcessor');

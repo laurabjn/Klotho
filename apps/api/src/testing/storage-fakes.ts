@@ -60,6 +60,16 @@ export class FakeImageProcessor implements ImageProcessor {
       height: 1600,
     });
   }
+
+  /** Same bytes; only the reported size changes. */
+  shrink(image: ProcessedImage, maxSide: number): Promise<ProcessedImage> {
+    const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
+    return Promise.resolve({
+      ...image,
+      width: Math.round(image.width * ratio),
+      height: Math.round(image.height * ratio),
+    });
+  }
 }
 
 export const fakeImage = () => new TextEncoder().encode('IMG fake picture');

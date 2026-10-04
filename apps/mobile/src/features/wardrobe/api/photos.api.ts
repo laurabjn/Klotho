@@ -58,7 +58,7 @@ export async function addPhotos(
   const step = () => onProgress?.(++done / steps);
   for (const [index, photo] of photos.entries()) {
     try {
-      const { key } = await photosApi.upload(photo);
+      const key = photo.key ?? (await photosApi.upload(photo)).key;
       step();
       item = await photosApi.attach(itemId, key);
       step();

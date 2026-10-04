@@ -42,4 +42,21 @@ export class SharpImageProcessor implements ImageProcessor {
       height: info.height,
     };
   }
+
+  async shrink(
+    image: ProcessedImage,
+    maxSide: number,
+  ): Promise<ProcessedImage> {
+    if (Math.max(image.width, image.height) <= maxSide) return image;
+    const { data, info } = await sharp(image.bytes)
+      .resize(maxSide, maxSide, { fit: 'inside' })
+      .jpeg({ quality: 80, mozjpeg: true })
+      .toBuffer({ resolveWithObject: true });
+    return {
+      bytes: new Uint8Array(data),
+      contentType: 'image/jpeg',
+      width: info.width,
+      height: info.height,
+    };
+  }
 }

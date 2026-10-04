@@ -5,6 +5,7 @@ import { notificationsFr } from './notifications.fr';
 import { privacyFr } from './privacy.fr';
 import { settingsFr } from './settings.fr';
 import { statesFr } from './states.fr';
+import { aiFr } from './ai.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -104,6 +105,7 @@ export const fr = {
   notifications: notificationsFr,
   settings: settingsFr,
   states: statesFr,
+  ai: aiFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',
@@ -269,6 +271,13 @@ export const fr = {
     plans: {
       notFound: 'Aucune tenue n’est prévue ce jour-là.',
       pastDay: 'Ce jour est déjà passé.',
+    },
+    ai: {
+      unavailable:
+        'L’analyse n’est pas disponible pour le moment. Réessaie plus tard ou remplis la fiche toi-même.',
+      quotaExceeded: 'Tu as utilisé toutes tes analyses offertes.',
+      noGarment:
+        'Klotho ne reconnaît pas de vêtement sur cette photo. Essaie avec une photo de la pièce bien visible.',
     },
     weather: {
       unavailable:

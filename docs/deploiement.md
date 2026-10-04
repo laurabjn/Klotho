@@ -62,6 +62,7 @@ uniquement dans les variables d'environnement des services.
    | `STORAGE_ACCESS_KEY_ID`     | clé R2 (étape 2)                                        |
    | `STORAGE_SECRET_ACCESS_KEY` | secret R2 (étape 2)                                     |
    | `OPENWEATHER_API_KEY`       | ta clé OpenWeatherMap                                   |
+   | `AI_API_KEY`                | ta clé Groq (analyse photo, facultative)                |
    | `MAIL_DRIVER`               | `brevo`                                                 |
    | `BREVO_API_KEY`             | clé Brevo (étape 3)                                     |
    | `MAIL_FROM`                 | ton adresse de contact vérifiée                         |

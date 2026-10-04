@@ -3,6 +3,9 @@ import { Test } from '@nestjs/testing';
 import { App } from 'supertest/types';
 
 import { AppModule } from '../../src/app.module';
+import { AI_SETTINGS } from '../../src/application/ai/ai-settings';
+import { GARMENT_ANALYZER } from '../../src/domain/ai/ports/garment-analyzer';
+import { FakeGarmentAnalyzer } from '../../src/testing/ai-fakes';
 import { CLOCK, type Clock } from '../../src/domain/shared/ports/clock';
 import { FILE_STORAGE } from '../../src/domain/storage/ports/file-storage';
 import { MAILER } from '../../src/domain/notifications/ports/mailer';
@@ -45,6 +48,7 @@ export interface TestApp {
   mailer: SpyMailer;
   storage: InMemoryFileStorage;
   weather: FakeWeatherProvider;
+  analyzer: FakeGarmentAnalyzer;
   clock: TestClock;
   /** Empties every table (the database name is guaranteed to end with _test). */
   reset(): Promise<void>;
@@ -61,6 +65,7 @@ export async function createTestApp(
   const mailer = new SpyMailer();
   const storage = new InMemoryFileStorage();
   const weather = new FakeWeatherProvider();
+  const analyzer = new FakeGarmentAnalyzer();
   const clock = new TestClock();
   let builder = Test.createTestingModule({ imports: [AppModule] });
   if (options.rateLimits) {
@@ -77,6 +82,11 @@ export async function createTestApp(
     .useValue(weather)
     .overrideProvider(CITY_GEOCODER)
     .useValue(new FakeCityGeocoder())
+    .overrideProvider(GARMENT_ANALYZER)
+    .useValue(analyzer)
+    // As if a key were set: 2 analyses each, to test the quota quickly.
+    .overrideProvider(AI_SETTINGS)
+    .useValue({ enabled: true, freePhotoAnalyses: 2 })
     .overrideProvider(CLOCK)
     .useValue(clock)
     .compile();
@@ -91,6 +101,7 @@ export async function createTestApp(
     mailer,
     storage,
     weather,
+    analyzer,
     clock,
     async reset() {
       await prisma.$executeRawUnsafe('TRUNCATE TABLE "User" CASCADE');
@@ -104,6 +115,7 @@ export async function createTestApp(
       weather.weather = SUNNY;
       weather.forecast = FORECAST;
       weather.failing = false;
+      analyzer.reset();
       clock.reset();
     },
   };

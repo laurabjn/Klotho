@@ -11,6 +11,7 @@ export * from './outfits/taxonomy';
 export * from './outfits/schemas';
 export * from './outfits/planning';
 export * from './notifications/schemas';
+export * from './ai/schemas';
 
 export type HealthStatus = 'ok';
 
