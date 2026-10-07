@@ -16,6 +16,7 @@ export const en: TranslationResource = {
     loading: 'Loading…',
     error: 'Something went wrong.',
     retry: 'Retry',
+    serverWaking: 'Klotho is waking up… one moment.',
     backToTop: 'Back to top',
     cancel: 'Cancel',
     or: 'or',

@@ -2,10 +2,15 @@ import type { ApiErrorBody } from '@klotho/shared';
 
 import { resolveApiUrl } from './config';
 import { ApiError, NetworkError } from './errors';
+import { watchSlowAnswer } from './server-wake';
 
-const TIMEOUT_MS = 15_000;
+/**
+ * Long enough for the free server to wake up (about a minute after a while
+ * without visits); a lost connection still fails at once.
+ */
+const TIMEOUT_MS = 90_000;
 /** Photo uploads can be slow on mobile networks. */
-const UPLOAD_TIMEOUT_MS = 60_000;
+const UPLOAD_TIMEOUT_MS = 120_000;
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -42,6 +47,8 @@ async function send(
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
   const controller = new AbortController();
+  // Photo uploads show their own progress.
+  const answered = options.form ? () => undefined : watchSlowAnswer();
   const timeout = setTimeout(
     () => controller.abort(),
     options.form ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS,
@@ -59,6 +66,7 @@ async function send(
     throw new NetworkError(error);
   } finally {
     clearTimeout(timeout);
+    answered();
   }
 }
 

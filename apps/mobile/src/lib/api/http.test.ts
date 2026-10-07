@@ -1,5 +1,6 @@
 import { ApiError, NetworkError, errorMessageKey } from './errors';
 import { registerAuthHooks, request } from './http';
+import { SLOW_ANSWER_MS, useServerWake } from './server-wake';
 
 function jsonResponse(status: number, body?: unknown) {
   return {
@@ -109,5 +110,70 @@ describe('errorMessageKey', () => {
     [new Error('boom'), 'apiErrors.unknown'],
   ])('maps %p to %s', (error, key) => {
     expect(errorMessageKey(error)).toBe(key);
+  });
+});
+
+describe('request while the server wakes up', () => {
+  const fetchMock = jest.fn();
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    globalThis.fetch = fetchMock;
+    registerAuthHooks(null);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    useServerWake.setState({ slowRequests: 0 });
+  });
+
+  it('announces a slow answer, then forgets it', async () => {
+    jest.useFakeTimers();
+    let answer: (r: Response) => void = () => undefined;
+    fetchMock.mockReturnValue(
+      new Promise<Response>((resolve) => {
+        answer = resolve;
+      }),
+    );
+
+    const pending = request('/x');
+    jest.advanceTimersByTime(SLOW_ANSWER_MS - 1);
+    expect(useServerWake.getState().slowRequests).toBe(0);
+    jest.advanceTimersByTime(1);
+    expect(useServerWake.getState().slowRequests).toBe(1);
+
+    answer(jsonResponse(200, { ok: true }));
+    await expect(pending).resolves.toEqual({ ok: true });
+    expect(useServerWake.getState().slowRequests).toBe(0);
+  });
+
+  it('waits up to 90 seconds before giving up', async () => {
+    jest.useFakeTimers();
+    fetchMock.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () =>
+            reject(new Error('aborted')),
+          );
+        }),
+    );
+
+    const pending = request('/x').catch((e: unknown) => e);
+    jest.advanceTimersByTime(89_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(1_000);
+
+    expect(await pending).toBeInstanceOf(NetworkError);
+    expect(useServerWake.getState().slowRequests).toBe(0);
+  });
+
+  it('never announces a photo upload, which shows its own progress', async () => {
+    jest.useFakeTimers();
+    fetchMock.mockReturnValue(new Promise(() => undefined));
+
+    void request('/upload', { method: 'POST', form: new FormData() });
+    jest.advanceTimersByTime(SLOW_ANSWER_MS * 2);
+
+    expect(useServerWake.getState().slowRequests).toBe(0);
   });
 });

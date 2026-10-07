@@ -17,6 +17,7 @@ export const fr = {
     loading: 'Chargement…',
     error: 'Une erreur est survenue.',
     retry: 'Réessayer',
+    serverWaking: 'Klotho se réveille… un instant.',
     backToTop: 'Revenir en haut',
     cancel: 'Annuler',
     or: 'ou',
