@@ -26,7 +26,7 @@ export interface S3StorageConfig {
   urlTtlSeconds: number;
 }
 
-/** Any S3-compatible service: Cloudflare R2 in production, RustFS locally. */
+/** Any S3-compatible service: Backblaze B2 or Cloudflare R2 in production, RustFS locally. */
 export class S3FileStorage implements FileStorage {
   private readonly client: S3Client;
   private readonly signer: S3Client;
@@ -36,8 +36,13 @@ export class S3FileStorage implements FileStorage {
       new S3Client({
         endpoint,
         region: config.region,
-        // Path-style URLs (endpoint/bucket/key) work with R2, RustFS and MinIO.
+        // Path-style URLs (endpoint/bucket/key) work with R2, Backblaze B2,
+        // RustFS and MinIO.
         forcePathStyle: true,
+        // The checksums the SDK adds by default are refused by some
+        // S3-compatible services: only send them when the API requires it.
+        requestChecksumCalculation: 'WHEN_REQUIRED',
+        responseChecksumValidation: 'WHEN_REQUIRED',
         credentials: {
           accessKeyId: config.accessKeyId,
           secretAccessKey: config.secretAccessKey,

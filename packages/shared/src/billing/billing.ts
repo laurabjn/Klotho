@@ -53,5 +53,9 @@ export interface BillingStatus {
     free: PlanLimits;
     freeAnalyses: number;
     premiumMonthlyAnalyses: number;
+    /** The founders offer is limited in time. */
+    foundersOnSale: boolean;
+    /** Its last day (YYYY-MM-DD), null when no end is set. */
+    foundersUntil: string | null;
   };
 }

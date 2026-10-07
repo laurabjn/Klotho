@@ -29,8 +29,8 @@ const pack = (identifier: string, priceString: string) =>
 const PACKAGES = new Map(
   [
     pack('klotho_premium_annual', '32,99 €'),
-    pack('klotho_premium_monthly', '3,99 €'),
-    pack('klotho_founders', '39,99 €'),
+    pack('klotho_premium_monthly', '4,99 €'),
+    pack('klotho_founders', '49,99 €'),
     pack('klotho_credits_25', '1,99 €'),
     pack('klotho_credits_75', '3,99 €'),
   ].map((p) => [p.product.identifier, p]),
@@ -55,7 +55,7 @@ describe('PremiumScreen', () => {
 
     expect(
       await screen.findByLabelText(
-        'Pièces dans ton dressing : Gratuit 50, Premium Illimité',
+        'Pièces dans ton dressing : Gratuit 100, Premium Illimité',
       ),
     ).toBeOnTheScreen();
     expect(
@@ -82,7 +82,7 @@ describe('PremiumScreen', () => {
     await storeLoaded();
 
     await fireEvent.press(
-      screen.getByRole('radio', { name: /Founders, 39,99 €/ }),
+      screen.getByRole('radio', { name: /Founders, 49,99 €/ }),
     );
     await press('Continuer');
 
@@ -145,6 +145,36 @@ describe('PremiumScreen', () => {
     ).toBeOnTheScreen();
     expect(
       screen.queryByRole('radio', { name: /Annuel/ }),
+    ).not.toBeOnTheScreen();
+  });
+
+  it('shows the end of the founders offer, then hides it', async () => {
+    api.status.mockResolvedValue(
+      billingStatus({
+        offer: {
+          ...billingStatus().offer,
+          foundersUntil: '2026-12-31',
+        },
+      }),
+    );
+    await renderWithProviders(<PremiumScreen />);
+
+    expect(
+      await screen.findByRole('radio', { name: /Founders.*Jusqu’au/ }),
+    ).toBeOnTheScreen();
+  });
+
+  it('does not sell founders once the offer is over', async () => {
+    api.status.mockResolvedValue(
+      billingStatus({
+        offer: { ...billingStatus().offer, foundersOnSale: false },
+      }),
+    );
+    await renderWithProviders(<PremiumScreen />);
+    await screen.findByRole('radio', { name: /Annuel/ });
+
+    expect(
+      screen.queryByRole('radio', { name: /Founders/ }),
     ).not.toBeOnTheScreen();
   });
 });

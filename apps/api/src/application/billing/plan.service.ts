@@ -24,6 +24,8 @@ export interface BillingSettings {
   free: PlanLimits;
   /** Photo analyses included each calendar month in Premium. */
   premiumMonthlyAnalyses: number;
+  /** Last day of the founders offer, null when it has no end. */
+  foundersUntil: string | null;
 }
 
 export const BILLING_SETTINGS = Symbol('BillingSettings');
@@ -154,8 +156,17 @@ export class PlanService implements PlanGate {
         free: this.settings.free,
         freeAnalyses: this.ai.freePhotoAnalyses,
         premiumMonthlyAnalyses: this.settings.premiumMonthlyAnalyses,
+        foundersOnSale: this.foundersOnSale(),
+        foundersUntil: this.settings.foundersUntil,
       },
     };
+  }
+
+  /** Limited in time: on sale until the end of its last day (UTC). */
+  private foundersOnSale(): boolean {
+    const until = this.settings.foundersUntil;
+    if (!until) return true;
+    return this.clock.now() < new Date(`${until}T23:59:59.999Z`);
   }
 
   private generationsThisWeek(userId: string): Promise<number> {

@@ -51,6 +51,8 @@ export function PremiumScreen() {
   const [choice, setChoice] = useState<PlanChoice>('annual');
 
   const plan = status.data?.plan ?? 'free';
+  const foundersOnSale = status.data?.offer.foundersOnSale ?? false;
+  const foundersUntil = status.data?.offer.foundersUntil ?? null;
   const paid = plan !== 'free';
   const price = (product: string, fallback: string) =>
     store.data?.get(product)?.product.priceString ?? fallback;
@@ -135,14 +137,28 @@ export function PremiumScreen() {
               hint={t('billing.plans.monthlyHint')}
               onPress={() => setChoice('monthly')}
             />
-            <PlanCard
-              selected={choice === 'founders'}
-              title={t('billing.plans.founders')}
-              price={price(PRODUCTS.founders, t('billing.plans.foundersPrice'))}
-              hint={t('billing.plans.foundersHint')}
-              badge={t('billing.plans.foundersBadge')}
-              onPress={() => setChoice('founders')}
-            />
+            {foundersOnSale && (
+              <PlanCard
+                selected={choice === 'founders'}
+                title={t('billing.plans.founders')}
+                price={price(
+                  PRODUCTS.founders,
+                  t('billing.plans.foundersPrice'),
+                )}
+                hint={
+                  foundersUntil
+                    ? `${t('billing.plans.foundersHint')} ${t(
+                        'billing.plans.foundersUntil',
+                        {
+                          date: formatDay(foundersUntil, i18n.language),
+                        },
+                      )}`
+                    : t('billing.plans.foundersHint')
+                }
+                badge={t('billing.plans.foundersBadge')}
+                onPress={() => setChoice('founders')}
+              />
+            )}
           </View>
         )}
 

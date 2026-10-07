@@ -570,7 +570,7 @@ describe('AddWardrobeItemScreen', () => {
     jest
       .mocked(billingApi.status)
       .mockResolvedValue(
-        billingStatus({ usage: { pieces: 50, generationsThisWeek: 0 } }),
+        billingStatus({ usage: { pieces: 100, generationsThisWeek: 0 } }),
       );
     await renderWithProviders(<AddWardrobeItemScreen />);
 
