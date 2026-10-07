@@ -21,7 +21,7 @@ export const privacyEn: TranslationResource['privacy'] = {
     },
     partners: {
       title: 'Service providers',
-      body: 'API hosting: Koyeb (French company, servers in the European Union). Database: Neon (servers in Frankfurt, Germany). Photos: Backblaze B2 (data stored in Amsterdam, the Netherlands). Password reset e-mails: Brevo (French company). Weather: OpenWeatherMap (only receives approximate coordinates, without your identity). Crash reporting: Sentry (servers in the European Union, technical reports without e-mail or name). Payments: Google Play or the App Store take your purchases (Klotho never sees your bank details); RevenueCat (United States) receives your Klotho id and your purchases to manage the subscription. AI photo analysis: Groq (United States), only when you ask for an analysis; the photo is sent without your name or e-mail.',
+      body: 'API hosting: Render (US company, servers in Frankfurt, Germany). Database: Neon (servers in Frankfurt, Germany). Photos: Backblaze B2 (data stored in Amsterdam, the Netherlands). Password reset e-mails: Brevo (French company). Weather: OpenWeatherMap (only receives approximate coordinates, without your identity). Crash reporting: Sentry (servers in the European Union, technical reports without e-mail or name). Payments: Google Play or the App Store take your purchases (Klotho never sees your bank details); RevenueCat (United States) receives your Klotho id and your purchases to manage the subscription. AI photo analysis: Groq (United States), only when you ask for an analysis; the photo is sent without your name or e-mail.',
     },
     retention: {
       title: 'Retention',
@@ -29,11 +29,11 @@ export const privacyEn: TranslationResource['privacy'] = {
     },
     rights: {
       title: 'Your rights',
-      body: 'You can access, correct, retrieve or erase your data, and object to its use. Write to [Contact e-mail]. You can also contact your data protection authority.',
+      body: 'You can access, correct, retrieve or erase your data, and object to its use. Write to klotho.app.contact@gmail.com. You can also contact your data protection authority.',
     },
     legal: {
       title: 'Legal notice',
-      body: 'Publisher: Laura Bojon EI, sole trader (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact: [Contact e-mail]. Publication director: Laura Bojon. Host: Koyeb SAS, [Koyeb address].',
+      body: 'Publisher: Laura Bojon EI, sole trader (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact: klotho.app.contact@gmail.com. Publication director: Laura Bojon. Host: Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, United States.',
     },
   },
   delete: {

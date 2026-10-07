@@ -4,7 +4,7 @@ Hébergement gratuit, en Europe :
 
 | Rôle                          | Service           | Offre                                 |
 | ----------------------------- | ----------------- | ------------------------------------- |
-| API                           | Koyeb             | instance gratuite, Paris ou Francfort |
+| API                           | Render            | instance gratuite, Francfort          |
 | Base de données               | Neon (PostgreSQL) | gratuite, région Francfort            |
 | Photos                        | Backblaze B2      | gratuit jusqu'à 10 Go, Amsterdam (UE) |
 | E-mails (mot de passe oublié) | Brevo             | gratuit jusqu'à 300 e-mails/jour      |
@@ -56,38 +56,39 @@ demande une carte bancaire.
    mentions légales) : c'est `MAIL_FROM`.
 3. **SMTP & API → Clés API** : crée une clé : c'est `BREVO_API_KEY`.
 
-## 4. L'API : Koyeb
+## 4. L'API : Render
 
-1. Crée un compte sur koyeb.com et connecte ton GitHub.
-2. **Create Web Service → GitHub →** le dépôt `Klotho`, branche `main`.
-3. Builder : **Dockerfile**, chemin `apps/api/Dockerfile`, contexte de
-   build : la racine du dépôt (laisser vide).
-4. Région : **Frankfurt** (ou Paris), instance **Free**.
-5. Port exposé : **3100**, health check HTTP sur `/health`.
-6. Variables d'environnement (mets les clés en **Secret**) :
+En ligne sur https://klotho-api.onrender.com (offre gratuite, Francfort).
 
-   | Variable                    | Valeur                                                  |
-   | --------------------------- | ------------------------------------------------------- |
-   | `NODE_ENV`                  | `production`                                            |
-   | `DATABASE_URL`              | la chaîne Neon (étape 1)                                |
-   | `JWT_ACCESS_SECRET`         | une longue chaîne aléatoire (`openssl rand -base64 48`) |
-   | `STORAGE_ENDPOINT`          | `https://s3.eu-central-003.backblazeb2.com` (étape 2)   |
-   | `STORAGE_REGION`            | `eu-central-003` (étape 2)                              |
-   | `STORAGE_BUCKET`            | ton bucket (étape 2)                                    |
-   | `STORAGE_ACCESS_KEY_ID`     | keyID B2 (étape 2)                                      |
-   | `STORAGE_SECRET_ACCESS_KEY` | applicationKey B2 (étape 2)                             |
-   | `OPENWEATHER_API_KEY`       | ta clé OpenWeatherMap                                   |
-   | `AI_API_KEY`                | ta clé Groq (analyse photo, facultative)                |
-   | `MAIL_DRIVER`               | `brevo`                                                 |
-   | `BREVO_API_KEY`             | clé Brevo (étape 3)                                     |
-   | `MAIL_FROM`                 | ton adresse de contact vérifiée                         |
-   | `TRUST_PROXY`               | `1`                                                     |
+1. Sur render.com : **New → Web Service**, dépôt `laurabjn/Klotho` (accès
+   donné à ce seul dépôt dans l'app GitHub de Render), branche `main`.
+2. **Language** : Docker ; **Dockerfile Path** : `apps/api/Dockerfile` ;
+   **Docker Build Context Directory** : `.` ; région **Frankfurt** ;
+   instance **Free** ; **Health Check Path** : `/health`.
+3. **Environment → Import from .env** : les variables ci-dessous. Ne pas
+   définir `PORT` (fourni par Render), ni `STORAGE_PUBLIC_ENDPOINT`.
 
-7. Déploie. Au démarrage, l'API applique elle-même les migrations de la
-   base, puis démarre. Vérifie `https://<ton-service>.koyeb.app/health` :
-   il doit répondre `{"status":"ok"}`.
+   | Variable                                  | Valeur                                            |
+   | ----------------------------------------- | ------------------------------------------------- |
+   | `NODE_ENV`                                | `production`                                      |
+   | `DATABASE_URL`                            | la chaîne Neon (étape 1)                          |
+   | `JWT_ACCESS_SECRET`                       | une longue chaîne aléatoire (bouton **Generate**) |
+   | `STORAGE_ENDPOINT`, `STORAGE_REGION`      | étape 2                                           |
+   | `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID` | étape 2                                           |
+   | `STORAGE_SECRET_ACCESS_KEY`               | étape 2                                           |
+   | `MAIL_DRIVER`                             | `brevo`                                           |
+   | `BREVO_API_KEY`, `MAIL_FROM`              | étape 3                                           |
+   | `OPENWEATHER_API_KEY`                     | ta clé OpenWeatherMap                             |
+   | `AI_API_KEY`                              | ta clé Groq (analyse photo, facultative)          |
+   | `TRUST_PROXY`                             | `1`                                               |
 
-Chaque merge sur `main` redéploie automatiquement l'API.
+4. Au démarrage, l'API applique elle-même les migrations, puis démarre :
+   `https://klotho-api.onrender.com/health` répond `{"status":"ok"}`.
+   Chaque merge sur `main` redéploie l'API.
+
+L'offre gratuite endort l'API après 15 minutes sans visite (le premier appel
+suivant prend environ une minute) et donne 750 heures par mois pour tout
+l'espace Render. Koyeb (même image Docker, port 3100) reste une alternative.
 
 ## 5. Paiements : Google Play et RevenueCat (quand tu actives Premium)
 
@@ -105,11 +106,11 @@ Chaque merge sur `main` redéploie automatiquement l'API.
    `founders` (`klotho_founders`), et une offre contenant les 5 produits.
 4. Clés : la clé publique Android (`goog_…`) va dans
    `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` (build EAS), la clé secrète
-   (`sk_…`) dans `REVENUECAT_SECRET_KEY` sur Koyeb.
-5. Webhook RevenueCat : URL `https://<ton-service>.koyeb.app/billing/revenuecat`,
+   (`sk_…`) dans `REVENUECAT_SECRET_KEY` sur Render.
+5. Webhook RevenueCat : URL `https://klotho-api.onrender.com/billing/revenuecat`,
    « Authorization header » = une longue chaîne aléatoire, la même que
-   `REVENUECAT_WEBHOOK_AUTH` sur Koyeb.
-6. Mets `BILLING_ENABLED=true` sur Koyeb pour activer les limites gratuites,
+   `REVENUECAT_WEBHOOK_AUTH` sur Render.
+6. Mets `BILLING_ENABLED=true` sur Render pour activer les limites gratuites,
    et `FOUNDERS_UNTIL` (par exemple `2027-01-31`) pour arrêter l'offre
    Founders à une date : l'écran Premium l'annonce, puis la retire.
 
@@ -123,7 +124,7 @@ Console (licences de test : rien n'est débité).
 2. Variables du profil `preview` (EAS n'envoie pas le fichier `.env`) :
 
    ```
-   npx eas-cli@latest env:create --environment preview --visibility plaintext --name EXPO_PUBLIC_API_URL --value https://<ton-service>.koyeb.app
+   npx eas-cli@latest env:create --environment preview --visibility plaintext --name EXPO_PUBLIC_API_URL --value https://klotho-api.onrender.com
    npx eas-cli@latest env:create --environment preview --visibility plaintext --name EXPO_PUBLIC_SENTRY_DSN --value <ton DSN Sentry>
    ```
 
@@ -132,8 +133,8 @@ Console (licences de test : rien n'est débité).
 
 ## 7. Avant d'inviter les testeuses
 
-- Complète `[E-mail de contact]` et `[adresse de Koyeb]` dans
-  `packages/i18n/src/locales/privacy.fr.ts` et `privacy.en.ts`.
+- Vérifie l'adresse de l'hébergeur (Render) dans les mentions légales
+  (`packages/i18n/src/locales/privacy.fr.ts` et `privacy.en.ts`).
 - Crée un compte dans l'app bêta, ajoute une pièce avec photo, génère une
   tenue, puis supprime le compte (Moi → Confidentialité) : tout doit
   fonctionner de bout en bout.

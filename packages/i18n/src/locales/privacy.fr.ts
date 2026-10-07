@@ -21,7 +21,7 @@ export const privacyFr = {
     },
     partners: {
       title: 'Prestataires',
-      body: 'Hébergement de l’API : Koyeb (société française, serveurs dans l’Union européenne). Base de données : Neon (serveurs à Francfort, Allemagne). Photos : Backblaze B2 (données stockées à Amsterdam, Pays-Bas). E-mails de mot de passe oublié : Brevo (société française). Météo : OpenWeatherMap (reçoit seulement des coordonnées approximatives, sans ton identité). Suivi des plantages : Sentry (serveurs dans l’Union européenne, rapports techniques sans e-mail ni nom). Paiements : Google Play ou l’App Store encaissent tes achats (Klotho ne voit jamais tes coordonnées bancaires) ; RevenueCat (États-Unis) reçoit ton identifiant Klotho et tes achats pour gérer l’abonnement. Analyse des photos par IA : Groq (États-Unis), seulement quand tu demandes une analyse ; la photo est envoyée sans ton nom ni ton e-mail.',
+      body: 'Hébergement de l’API : Render (société américaine, serveurs à Francfort, Allemagne). Base de données : Neon (serveurs à Francfort, Allemagne). Photos : Backblaze B2 (données stockées à Amsterdam, Pays-Bas). E-mails de mot de passe oublié : Brevo (société française). Météo : OpenWeatherMap (reçoit seulement des coordonnées approximatives, sans ton identité). Suivi des plantages : Sentry (serveurs dans l’Union européenne, rapports techniques sans e-mail ni nom). Paiements : Google Play ou l’App Store encaissent tes achats (Klotho ne voit jamais tes coordonnées bancaires) ; RevenueCat (États-Unis) reçoit ton identifiant Klotho et tes achats pour gérer l’abonnement. Analyse des photos par IA : Groq (États-Unis), seulement quand tu demandes une analyse ; la photo est envoyée sans ton nom ni ton e-mail.',
     },
     retention: {
       title: 'Durée de conservation',
@@ -29,11 +29,11 @@ export const privacyFr = {
     },
     rights: {
       title: 'Tes droits',
-      body: 'Tu peux accéder à tes données, les corriger, les récupérer ou les effacer, et t’opposer à leur utilisation. Écris à [E-mail de contact]. Tu peux aussi saisir la CNIL (cnil.fr).',
+      body: 'Tu peux accéder à tes données, les corriger, les récupérer ou les effacer, et t’opposer à leur utilisation. Écris à klotho.app.contact@gmail.com. Tu peux aussi saisir la CNIL (cnil.fr).',
     },
     legal: {
       title: 'Mentions légales',
-      body: 'Éditrice : Laura Bojon EI, entrepreneuse individuelle (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact : [E-mail de contact]. Directrice de la publication : Laura Bojon. Hébergeur : Koyeb SAS, [adresse de Koyeb].',
+      body: 'Éditrice : Laura Bojon EI, entrepreneuse individuelle (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact : klotho.app.contact@gmail.com. Directrice de la publication : Laura Bojon. Hébergeur : Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis.',
     },
   },
   delete: {

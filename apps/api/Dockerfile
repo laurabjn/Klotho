@@ -3,6 +3,9 @@
 
 FROM node:24-slim AS build
 WORKDIR /app
+# Prisma's engines need OpenSSL, missing from the slim image.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Workspace manifests first: dependencies are cached until they change.
 COPY package.json package-lock.json turbo.json tsconfig.base.json ./
@@ -22,6 +25,9 @@ RUN npm run build -w @klotho/shared \
 FROM node:24-slim
 WORKDIR /app
 ENV NODE_ENV=production
+# Prisma's engines need OpenSSL, missing from the slim image.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app /app
 WORKDIR /app/apps/api
 USER node
