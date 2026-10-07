@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { restoreSession, useAuthStore } from '@/features/auth/store/auth.store';
 import { restoreWeatherSync } from '@/features/weather/store/weather-sync.store';
 import { restoreLanguage } from '@/lib/language';
+import { ServerWakeBanner } from '@/components/ui/ServerWakeBanner';
 import { Toast } from '@/components/ui/Toast';
 import { initMonitoring, wrapRoot } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
@@ -64,6 +65,8 @@ function RootLayout() {
       </Stack>
       {/* Short confirmations ("Tenue ajoutée aux favoris"), above every screen. */}
       <Toast />
+      {/* "Klotho se réveille…" while the free server wakes up. */}
+      <ServerWakeBanner />
       <StatusBar style="dark" />
     </QueryClientProvider>
   );
