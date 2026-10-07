@@ -13,5 +13,6 @@ process.env.STORAGE_CREATE_BUCKET = 'false';
 // Limits are tested by rate-limit.e2e-spec.ts with its own settings.
 process.env.RATE_LIMIT_ENABLED = 'false';
 process.env.LOG_HTTP_REQUESTS = 'false';
-// Payments stay off (the default) unless a test turns them on.
+// Payments stay off whatever the local .env says; billing tests turn them on.
+process.env.BILLING_ENABLED = 'false';
 process.env.REVENUECAT_WEBHOOK_AUTH = 'Bearer e2e-webhook-secret';

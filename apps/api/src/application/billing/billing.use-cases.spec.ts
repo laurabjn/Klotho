@@ -19,6 +19,7 @@ const SETTINGS: BillingSettings = {
   enabled: true,
   free: { pieces: 3, generationsPerWeek: 2, historyDays: 7 },
   premiumMonthlyAnalyses: 25,
+  foundersUntil: null,
 };
 
 describe('Billing', () => {
@@ -107,6 +108,17 @@ describe('Billing', () => {
       );
     });
 
+    it('sells founders until the end of its last day', async () => {
+      build({ ...SETTINGS, foundersUntil: '2026-10-31' });
+      expect((await plans.status(LAURA)).offer).toMatchObject({
+        foundersOnSale: true,
+        foundersUntil: '2026-10-31',
+      });
+
+      clock.advance(31 * DAY);
+      expect((await plans.status(LAURA)).offer.foundersOnSale).toBe(false);
+    });
+
     it('keeps founders for life', async () => {
       billing.entitlements.set(LAURA, {
         plan: 'founders',
@@ -136,6 +148,8 @@ describe('Billing', () => {
           free: SETTINGS.free,
           freeAnalyses: 3,
           premiumMonthlyAnalyses: 25,
+          foundersOnSale: true,
+          foundersUntil: null,
         },
       });
     });

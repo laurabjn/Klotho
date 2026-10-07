@@ -205,7 +205,7 @@ Every route requires `Authorization: Bearer <accessToken>` unless marked public.
 2. `POST /wardrobe/:id/photos` attaches that key to an item. A key can only be
    attached by its owner, once.
 
-Files live in a **private** S3-compatible bucket (Cloudflare R2 in production,
+Files live in a **private** S3-compatible bucket (Backblaze B2 or Cloudflare R2 in production,
 the RustFS container locally). Items expose their photos through signed URLs
 valid `PHOTO_URL_TTL_SECONDS` (1 hour); the app caches them by photo id.
 Deleting a photo or an item deletes the files.

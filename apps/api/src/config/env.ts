@@ -123,10 +123,12 @@ export const envSchema = z
       .trim()
       .optional()
       .transform((value) => value || undefined),
-    FREE_PIECES: z.coerce.number().int().min(1).default(50),
+    FREE_PIECES: z.coerce.number().int().min(1).default(100),
     FREE_GENERATIONS_PER_WEEK: z.coerce.number().int().min(1).default(10),
     FREE_HISTORY_DAYS: z.coerce.number().int().min(1).default(7),
     PREMIUM_MONTHLY_ANALYSES: z.coerce.number().int().min(0).default(25),
+    /** Last day of the founders offer (YYYY-MM-DD); unset: on sale without end. */
+    FOUNDERS_UNTIL: z.iso.date().optional(),
 
     // Rate limiting, per client IP (and per account for uploads).
     RATE_LIMIT_ENABLED: flag('true'),

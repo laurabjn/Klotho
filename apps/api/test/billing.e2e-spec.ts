@@ -38,6 +38,7 @@ describe('Billing (e2e)', () => {
         enabled: true,
         free: { pieces: 3, generationsPerWeek: 1, historyDays: 7 },
         premiumMonthlyAnalyses: 25,
+        foundersUntil: null,
       },
     });
   });
@@ -71,6 +72,8 @@ describe('Billing (e2e)', () => {
         free: { pieces: 3, generationsPerWeek: 1, historyDays: 7 },
         freeAnalyses: 2,
         premiumMonthlyAnalyses: 25,
+        foundersOnSale: true,
+        foundersUntil: null,
       },
     });
   });

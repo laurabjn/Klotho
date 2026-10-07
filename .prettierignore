@@ -7,3 +7,7 @@ package-lock.json
 apps/api/src/generated
 apps/api/prisma/migrations
 expo-env.d.ts
+
+# Local research (not in the repository)
+research_notes/
+reports/

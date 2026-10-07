@@ -181,6 +181,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
         premiumMonthlyAnalyses: config.get('PREMIUM_MONTHLY_ANALYSES', {
           infer: true,
         }),
+        foundersUntil: config.get('FOUNDERS_UNTIL', { infer: true }) ?? null,
       }),
     },
     {

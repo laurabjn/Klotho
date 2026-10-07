@@ -6,7 +6,7 @@ Hébergement gratuit, en Europe :
 | ----------------------------- | ----------------- | ------------------------------------- |
 | API                           | Koyeb             | instance gratuite, Paris ou Francfort |
 | Base de données               | Neon (PostgreSQL) | gratuite, région Francfort            |
-| Photos                        | Cloudflare R2     | gratuit jusqu'à 10 Go, juridiction UE |
+| Photos                        | Backblaze B2      | gratuit jusqu'à 10 Go, Amsterdam (UE) |
 | E-mails (mot de passe oublié) | Brevo             | gratuit jusqu'à 300 e-mails/jour      |
 | Plantages de l'app            | Sentry            | déjà créé (région UE)                 |
 
@@ -23,16 +23,31 @@ uniquement dans les variables d'environnement des services.
    `postgresql://…@ep-….eu-central-1.aws.neon.tech/neondb?sslmode=require`.
    C'est ta variable `DATABASE_URL`.
 
-## 2. Photos : Cloudflare R2
+## 2. Photos : Backblaze B2
 
-1. Crée un compte Cloudflare, puis dans **R2** un bucket `klotho-photos`
-   avec la juridiction **European Union (EU)**.
-2. **R2 → Manage API tokens → Create API token**, permission
-   « Object Read & Write » limitée au bucket `klotho-photos`. Note
-   l'**Access Key ID** et le **Secret Access Key** (affichés une seule fois).
-3. L'adresse du stockage pour un bucket UE est
-   `https://<ton-account-id>.eu.r2.cloudflarestorage.com` (l'account id est
-   visible dans la page R2).
+Sans carte bancaire, 10 Go gratuits, serveurs à Amsterdam (UE).
+
+1. Crée un compte sur backblaze.com (**B2 Cloud Storage**) en choisissant
+   la région **EU Central** à l'inscription : elle ne peut plus changer
+   ensuite.
+2. **Buckets → Create a Bucket** : un nom unique au monde (par exemple
+   `klotho-photos-laurabjn`), fichiers **Private**, chiffrement activé.
+   Note l'**Endpoint** affiché sous le bucket, par exemple
+   `s3.eu-central-003.backblazeb2.com`.
+3. **Application Keys → Add a New Application Key** : accès au seul bucket
+   ci-dessus, **Read and Write**. Note le **keyID** et l'**applicationKey**
+   (affichée une seule fois).
+4. Les variables de l'API :
+   - `STORAGE_ENDPOINT` : `https://` + l'endpoint (étape 2) ;
+   - `STORAGE_REGION` : la région de l'endpoint, par exemple
+     `eu-central-003` ;
+   - `STORAGE_BUCKET` : le nom du bucket ;
+   - `STORAGE_ACCESS_KEY_ID` : le keyID ;
+   - `STORAGE_SECRET_ACCESS_KEY` : l'applicationKey.
+
+Cloudflare R2 marche aussi (endpoint
+`https://<account-id>.eu.r2.cloudflarestorage.com`, région `auto`), mais
+demande une carte bancaire.
 
 ## 3. E-mails : Brevo
 
@@ -56,11 +71,11 @@ uniquement dans les variables d'environnement des services.
    | `NODE_ENV`                  | `production`                                            |
    | `DATABASE_URL`              | la chaîne Neon (étape 1)                                |
    | `JWT_ACCESS_SECRET`         | une longue chaîne aléatoire (`openssl rand -base64 48`) |
-   | `STORAGE_ENDPOINT`          | `https://<account-id>.eu.r2.cloudflarestorage.com`      |
-   | `STORAGE_REGION`            | `auto`                                                  |
-   | `STORAGE_BUCKET`            | `klotho-photos`                                         |
-   | `STORAGE_ACCESS_KEY_ID`     | clé R2 (étape 2)                                        |
-   | `STORAGE_SECRET_ACCESS_KEY` | secret R2 (étape 2)                                     |
+   | `STORAGE_ENDPOINT`          | `https://s3.eu-central-003.backblazeb2.com` (étape 2)   |
+   | `STORAGE_REGION`            | `eu-central-003` (étape 2)                              |
+   | `STORAGE_BUCKET`            | ton bucket (étape 2)                                    |
+   | `STORAGE_ACCESS_KEY_ID`     | keyID B2 (étape 2)                                      |
+   | `STORAGE_SECRET_ACCESS_KEY` | applicationKey B2 (étape 2)                             |
    | `OPENWEATHER_API_KEY`       | ta clé OpenWeatherMap                                   |
    | `AI_API_KEY`                | ta clé Groq (analyse photo, facultative)                |
    | `MAIL_DRIVER`               | `brevo`                                                 |
@@ -79,9 +94,9 @@ Chaque merge sur `main` redéploie automatiquement l'API.
 1. Crée ton compte développeur Google Play (25 $ une fois) et ton profil
    marchand.
 2. Dans la Play Console, crée l'app `com.laurabjn.klotho`, puis les produits :
-   - abonnements `klotho_premium_monthly` (3,99 €) et
+   - abonnements `klotho_premium_monthly` (4,99 €) et
      `klotho_premium_annual` (32,99 €) ;
-   - produits intégrés `klotho_founders` (39,99 €, non consommable),
+   - produits intégrés `klotho_founders` (49,99 €, non consommable),
      `klotho_credits_25` (1,99 €) et `klotho_credits_75` (3,99 €),
      consommables.
 3. Sur https://app.revenuecat.com, crée un projet et une app Google Play,
@@ -94,7 +109,9 @@ Chaque merge sur `main` redéploie automatiquement l'API.
 5. Webhook RevenueCat : URL `https://<ton-service>.koyeb.app/billing/revenuecat`,
    « Authorization header » = une longue chaîne aléatoire, la même que
    `REVENUECAT_WEBHOOK_AUTH` sur Koyeb.
-6. Mets `BILLING_ENABLED=true` sur Koyeb pour activer les limites gratuites.
+6. Mets `BILLING_ENABLED=true` sur Koyeb pour activer les limites gratuites,
+   et `FOUNDERS_UNTIL` (par exemple `2027-01-31`) pour arrêter l'offre
+   Founders à une date : l'écran Premium l'annonce, puis la retire.
 
 Les achats se testent avec le build bêta et des comptes testeurs de la Play
 Console (licences de test : rien n'est débité).
