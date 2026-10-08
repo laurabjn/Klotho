@@ -32,6 +32,8 @@ export interface BillingRepository {
   ): Promise<number>;
   countPieces(userId: string): Promise<number>;
   userExists(userId: string): Promise<boolean>;
+  /** Null when the account does not exist. */
+  emailOf(userId: string): Promise<string | null>;
 }
 
 export const BILLING_REPOSITORY = Symbol('BillingRepository');

@@ -123,6 +123,19 @@ export const envSchema = z
       .trim()
       .optional()
       .transform((value) => value || undefined),
+    /**
+     * Accounts with no limit at all, AI analyses included (the owner's),
+     * comma separated: "me@example.com,other@example.com".
+     */
+    UNLIMITED_EMAILS: z
+      .string()
+      .default('')
+      .transform((list) =>
+        list
+          .split(',')
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      ),
     FREE_PIECES: z.coerce.number().int().min(1).default(100),
     FREE_GENERATIONS_PER_WEEK: z.coerce.number().int().min(1).default(10),
     FREE_HISTORY_DAYS: z.coerce.number().int().min(1).default(7),

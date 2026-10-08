@@ -78,4 +78,12 @@ export class PrismaBillingRepository implements BillingRepository {
   async userExists(userId: string): Promise<boolean> {
     return (await this.prisma.user.count({ where: { id: userId } })) > 0;
   }
+
+  async emailOf(userId: string): Promise<string | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    return user?.email ?? null;
+  }
 }

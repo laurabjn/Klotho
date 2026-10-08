@@ -45,6 +45,7 @@ describe('AI photo analysis', () => {
         free: { pieces: 50, generationsPerWeek: 10, historyDays: 7 },
         premiumMonthlyAnalyses: 3,
         foundersUntil: null,
+        unlimitedEmails: [],
       },
       settings,
       clock,
