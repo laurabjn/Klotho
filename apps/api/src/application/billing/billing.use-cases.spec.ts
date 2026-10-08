@@ -20,6 +20,7 @@ const SETTINGS: BillingSettings = {
   free: { pieces: 3, generationsPerWeek: 2, historyDays: 7 },
   premiumMonthlyAnalyses: 25,
   foundersUntil: null,
+  unlimitedEmails: [],
 };
 
 describe('Billing', () => {
@@ -117,6 +118,30 @@ describe('Billing', () => {
 
       clock.advance(31 * DAY);
       expect((await plans.status(LAURA)).offer.foundersOnSale).toBe(false);
+    });
+
+    it('lifts every limit for the owner, AI analyses included', async () => {
+      build({ ...SETTINGS, unlimitedEmails: ['laura@example.com'] });
+      billing.emails.set(LAURA, 'Laura@Example.com');
+      billing.pieces.set(LAURA, 5000);
+      for (let i = 0; i < 20; i += 1) await plans.generationDone(LAURA);
+
+      await expect(plans.current(LAURA)).resolves.toEqual({
+        plan: 'founders',
+        expiresAt: null,
+      });
+      await expect(plans.assertCanAddPiece(LAURA)).resolves.toBeUndefined();
+      await expect(plans.assertCanGenerate(LAURA)).resolves.toBeUndefined();
+      await expect(plans.historyFrom(LAURA)).resolves.toBeNull();
+      await expect(plans.credits(LAURA)).resolves.toMatchObject({
+        remaining: 9999,
+        pool: 'balance',
+      });
+      // Other accounts keep the free plan.
+      billing.emails.set('user-other', 'other@example.com');
+      await expect(plans.current('user-other')).resolves.toMatchObject({
+        plan: 'free',
+      });
     });
 
     it('keeps founders for life', async () => {

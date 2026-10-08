@@ -35,6 +35,7 @@ describe('validateEnv', () => {
       AI_TIMEOUT_MS: 30000,
       AI_FREE_PHOTO_ANALYSES: 3,
       BILLING_ENABLED: false,
+      UNLIMITED_EMAILS: [],
       FREE_PIECES: 100,
       FREE_GENERATIONS_PER_WEEK: 10,
       FREE_HISTORY_DAYS: 7,

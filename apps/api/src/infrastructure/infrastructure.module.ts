@@ -182,6 +182,7 @@ const OPENWEATHERMAP_CLIENT = Symbol('OpenWeatherMapClient');
           infer: true,
         }),
         foundersUntil: config.get('FOUNDERS_UNTIL', { infer: true }) ?? null,
+        unlimitedEmails: config.get('UNLIMITED_EMAILS', { infer: true }),
       }),
     },
     {

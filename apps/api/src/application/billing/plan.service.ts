@@ -26,11 +26,15 @@ export interface BillingSettings {
   premiumMonthlyAnalyses: number;
   /** Last day of the founders offer, null when it has no end. */
   foundersUntil: string | null;
+  /** Lower-case e-mails of the accounts with no limit at all (the owner's). */
+  unlimitedEmails: string[];
 }
 
 export const BILLING_SETTINGS = Symbol('BillingSettings');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Shown to unlimited accounts; never decreases. */
+const UNLIMITED_ANALYSES = 9999;
 const UNLIMITED: PlanLimits = {
   pieces: null,
   generationsPerWeek: null,
@@ -61,7 +65,18 @@ export class PlanService implements PlanGate {
     private readonly clock: Clock,
   ) {}
 
+  /** The owner's accounts: every limit lifted, AI analyses included. */
+  async isUnlimited(userId: string): Promise<boolean> {
+    if (this.settings.unlimitedEmails.length === 0) return false;
+    const email = await this.billing.emailOf(userId);
+    return (
+      !!email && this.settings.unlimitedEmails.includes(email.toLowerCase())
+    );
+  }
+
   async current(userId: string): Promise<CurrentPlan> {
+    if (await this.isUnlimited(userId))
+      return { plan: 'founders', expiresAt: null };
     const entitlement = await this.billing.findEntitlement(userId);
     const active =
       entitlement &&
@@ -112,6 +127,13 @@ export class PlanService implements PlanGate {
     const free = this.ai.freePhotoAnalyses;
     if (!this.ai.enabled)
       return { enabled: false, remaining: 0, quota: free, pool: null };
+    if (await this.isUnlimited(userId))
+      return {
+        enabled: true,
+        remaining: UNLIMITED_ANALYSES,
+        quota: UNLIMITED_ANALYSES,
+        pool: 'balance',
+      };
     const { plan } = await this.current(userId);
     const monthly =
       plan === 'premium' ? this.settings.premiumMonthlyAnalyses : 0;

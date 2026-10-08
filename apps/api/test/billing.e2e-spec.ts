@@ -39,6 +39,7 @@ describe('Billing (e2e)', () => {
         free: { pieces: 3, generationsPerWeek: 1, historyDays: 7 },
         premiumMonthlyAnalyses: 25,
         foundersUntil: null,
+        unlimitedEmails: [],
       },
     });
   });

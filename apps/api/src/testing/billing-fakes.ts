@@ -18,6 +18,7 @@ export class InMemoryBillingRepository implements BillingRepository {
   /** Pieces of each user (the wardrobe is not needed here). */
   readonly pieces = new Map<string, number>();
   readonly users = new Set<string>();
+  readonly emails = new Map<string, string>();
 
   constructor(private readonly clock: Clock) {}
 
@@ -72,6 +73,10 @@ export class InMemoryBillingRepository implements BillingRepository {
 
   userExists(userId: string): Promise<boolean> {
     return Promise.resolve(this.users.has(userId));
+  }
+
+  emailOf(userId: string): Promise<string | null> {
+    return Promise.resolve(this.emails.get(userId) ?? null);
   }
 }
 
