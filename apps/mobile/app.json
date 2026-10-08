@@ -62,6 +62,12 @@
         }
       ]
     ],
-    "scheme": "klotho"
+    "scheme": "klotho",
+    "extra": {
+      "eas": {
+        "projectId": "11554972-38ba-4cd1-b2ee-33c48a5dbb45"
+      }
+    },
+    "owner": "laurabjn2"
   }
 }
