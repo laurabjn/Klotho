@@ -78,6 +78,13 @@ export const stylePhotos: Partial<Record<Style, number>> = {
   sporty: require('../../assets/styles/sporty.jpg'),
   cottagecore: require('../../assets/styles/cottagecore.jpg'),
   artsy: require('../../assets/styles/artsy.jpg'),
+  streetwear: require('../../assets/styles/streetwear.jpg'),
+  rock: require('../../assets/styles/rock.jpg'),
+  glamour: require('../../assets/styles/glamour.jpg'),
+  coquette: require('../../assets/styles/coquette.jpg'),
+  vintage50s: require('../../assets/styles/vintage50s.jpg'),
+  vintage60s: require('../../assets/styles/vintage60s.jpg'),
+  victorian: require('../../assets/styles/victorian.jpg'),
 };
 
 /** Illustrations of the state screens (provisional crops of the board). */
