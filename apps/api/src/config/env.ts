@@ -62,6 +62,8 @@ export const envSchema = z
     /** Sender address, verified in the mail provider. */
     MAIL_FROM: z.email().optional(),
     MAIL_FROM_NAME: z.string().min(1).default('Klotho'),
+    /** Shown on the account deletion web page; MAIL_FROM when unset. */
+    CONTACT_EMAIL: z.email().optional(),
 
     // Photo storage: any S3-compatible service (Cloudflare R2, RustFS locally).
     STORAGE_ENDPOINT: z.url(),

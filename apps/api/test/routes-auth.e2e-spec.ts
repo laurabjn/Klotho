@@ -78,6 +78,8 @@ const PUBLIC_ROUTES = [
   'POST /auth/reset-password',
   // The confirmation link may be opened while signed out.
   'POST /auth/confirm-email',
+  // Privacy policy, terms and account deletion: linked from the store listing.
+  'GET /legal/:page',
 ].sort();
 
 const label = (route: Route) => `${route.method} ${route.path}`;

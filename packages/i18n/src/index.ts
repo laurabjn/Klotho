@@ -2,6 +2,7 @@ import { en } from './locales/en';
 import { fr, type TranslationResource } from './locales/fr';
 
 export type { TranslationResource };
+export * from './legal';
 
 export const SUPPORTED_LOCALES = ['fr', 'en'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];

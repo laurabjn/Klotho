@@ -36,6 +36,19 @@ export const privacyEn: TranslationResource['privacy'] = {
       body: 'Publisher: Laura Bojon EI, sole trader (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact: klotho.app.contact@gmail.com. Publication director: Laura Bojon. Host: Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, United States.',
     },
   },
+  deletePage: {
+    title: 'Delete my Klotho account',
+    intro:
+      'You can delete your account and all your data at any time, for free.',
+    inAppTitle: 'From the app',
+    inApp:
+      'Open Klotho, go to Me, then Privacy, and tap “Delete my account”. Confirm with your password: the deletion is immediate.',
+    byEmailTitle: 'Without the app',
+    byEmail:
+      'Write to {{email}} from the address of your account, with the subject “Account deletion”. Your account is deleted within 30 days at most, and you receive a confirmation.',
+    whatTitle: 'What is deleted',
+    what: 'Your profile, your wardrobe and its photos, your preferences, your outfits, your feedback, your favourites, your history, your reminders and your notifications. Nothing is kept, except what the law requires (for instance the invoices of purchases, handled by Google Play).',
+  },
   delete: {
     title: 'Delete my account',
     body: 'Everything will be erased for good: your profile, your wardrobe, your photos, your outfits and your history.',

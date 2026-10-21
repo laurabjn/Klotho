@@ -1,4 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { PRIVACY_SECTIONS, type PrivacySection } from '@klotho/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -23,24 +24,15 @@ import { errorMessageKey } from '@/lib/api/errors';
 import type { IconName } from '@/theme/icons';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
 
-const SECTIONS: { key: SectionKey; icon: IconName }[] = [
-  { key: 'data', icon: 'database-outline' },
-  { key: 'location', icon: 'map-marker-outline' },
-  { key: 'photos', icon: 'camera-outline' },
-  { key: 'partners', icon: 'handshake-outline' },
-  { key: 'retention', icon: 'clock-outline' },
-  { key: 'rights', icon: 'shield-check-outline' },
-  { key: 'legal', icon: 'scale-balance' },
-];
-
-type SectionKey =
-  | 'data'
-  | 'location'
-  | 'photos'
-  | 'partners'
-  | 'retention'
-  | 'rights'
-  | 'legal';
+const ICONS: Record<PrivacySection, IconName> = {
+  data: 'database-outline',
+  location: 'map-marker-outline',
+  photos: 'camera-outline',
+  partners: 'handshake-outline',
+  retention: 'clock-outline',
+  rights: 'shield-check-outline',
+  legal: 'scale-balance',
+};
 
 /** Moi → Confidentialité: privacy policy, legal notices, account deletion. */
 export function PrivacyScreen() {
@@ -57,12 +49,12 @@ export function PrivacyScreen() {
         />
         <AppText>{t('privacy.intro')}</AppText>
 
-        {SECTIONS.map(({ key, icon }) => (
+        {PRIVACY_SECTIONS.map((key) => (
           <View key={key} style={styles.card}>
             <View style={styles.cardTitle}>
               <View style={styles.icon}>
                 <MaterialCommunityIcons
-                  name={icon}
+                  name={ICONS[key]}
                   size={20}
                   color={colors.primary}
                 />

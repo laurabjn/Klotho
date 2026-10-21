@@ -36,6 +36,19 @@ export const privacyFr = {
       body: 'Éditrice : Laura Bojon EI, entrepreneuse individuelle (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact : klotho.app.contact@gmail.com. Directrice de la publication : Laura Bojon. Hébergeur : Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis.',
     },
   },
+  deletePage: {
+    title: 'Supprimer mon compte Klotho',
+    intro:
+      'Tu peux supprimer ton compte et toutes tes données à tout moment, gratuitement.',
+    inAppTitle: 'Depuis l’application',
+    inApp:
+      'Ouvre Klotho, va dans Moi, puis Confidentialité, et touche « Supprimer mon compte ». Confirme avec ton mot de passe : la suppression est immédiate.',
+    byEmailTitle: 'Sans l’application',
+    byEmail:
+      'Écris à {{email}} depuis l’adresse de ton compte, avec pour objet « Suppression de compte ». Ton compte est supprimé sous 30 jours au plus, et tu reçois une confirmation.',
+    whatTitle: 'Ce qui est supprimé',
+    what: 'Ton profil, ta garde-robe et ses photos, tes préférences, tes tenues, tes avis, tes favoris, ton historique, tes rappels et tes notifications. Rien n’est conservé, sauf ce que la loi impose (par exemple les factures d’achats, gérées par Google Play).',
+  },
   delete: {
     title: 'Supprimer mon compte',
     body: 'Tout sera effacé définitivement : ton profil, ta garde-robe, tes photos, tes tenues et ton historique.',

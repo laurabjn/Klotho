@@ -15,11 +15,12 @@ COPY packages/eslint-config/package.json packages/eslint-config/
 COPY apps/api/package.json apps/api/
 COPY apps/mobile/package.json apps/mobile/
 # Only the API and what it uses (not the mobile app's dependencies).
-RUN npm ci --workspace @klotho/api --workspace @klotho/shared --include-workspace-root
+RUN npm ci --workspace @klotho/api --workspace @klotho/shared --workspace @klotho/i18n --include-workspace-root
 
 COPY packages/shared packages/shared
+COPY packages/i18n packages/i18n
 COPY apps/api apps/api
-RUN npm run build -w @klotho/shared \
+RUN npm run build -w @klotho/shared -w @klotho/i18n \
   && cd apps/api && npx prisma generate && npm run build
 
 FROM node:24-slim
