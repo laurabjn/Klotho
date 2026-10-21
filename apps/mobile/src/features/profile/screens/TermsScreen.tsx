@@ -1,3 +1,4 @@
+import { TERMS_DATE, TERMS_SECTIONS as SECTIONS } from '@klotho/i18n';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,21 +9,6 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ScrollPage } from '@/components/ui/ScrollToTop';
 import { formatDay } from '@/lib/days';
 import { colors, fonts, radii, spacing } from '@/theme/tokens';
-
-const SECTIONS = [
-  'purpose',
-  'account',
-  'beta',
-  'paid',
-  'content',
-  'advice',
-  'liability',
-  'end',
-  'law',
-] as const;
-
-/** Day of this version of the terms. */
-const TERMS_DATE = '2026-10-04';
 
 /** "Conditions générales" (reachable signed out too, from the sign-up). */
 export function TermsScreen() {

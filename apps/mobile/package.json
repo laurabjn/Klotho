@@ -15,6 +15,7 @@
     "start:dev-client": "expo start --dev-client",
     "build:dev:android": "npx eas-cli@latest build --profile development --platform android",
     "build:preview:android": "npx eas-cli@latest build --profile preview --platform android",
+    "build:production:android": "npx eas-cli@latest build --profile production --platform android",
     "eas-build-post-install": "npm --prefix ../.. run build -w @klotho/shared -w @klotho/i18n"
   },
   "jest": {
