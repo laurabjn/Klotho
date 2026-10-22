@@ -71,8 +71,42 @@ Ajoute `?lang=en` pour la version anglaise de chaque page.
 
 > Organise your wardrobe and get your outfit of the day for the weather. No ads.
 
-**Description longue** : reprendre la version française traduite ; je peux la
-rédiger au moment d'ajouter l'anglais à la fiche.
+**Description longue** :
+
+> Klotho is your wardrobe in your pocket, with a gentle touch.
+>
+> Add your clothes with a photo, and Klotho helps you put together outfits
+> that feel like you, based on today's weather, your style and the occasion.
+>
+> ✿ YOUR WARDROBE, FINALLY ORGANISED
+> • Take photos of your clothes (up to 5 per item)
+> • Klotho can fill in the details from the photo: category, colours, style,
+> season
+> • Find any item in a second: filter by category, colour, season, style or
+> temperature
+>
+> ✿ AN OUTFIT FOR EVERY DAY
+> • Suggestions based on the weather in your city, your style and the
+> occasion (work, date, weekend…)
+> • Pick an item you want to wear, leave out what you don't like
+> • Swap an item, create variations, keep your favourite outfits
+>
+> ✿ YOUR WEEK, PLANNED
+> • Plan your outfits for the week in the calendar
+> • A morning reminder with your outfit of the day
+> • Your history, so you don't wear the same outfit too often
+>
+> ✿ A STYLE THAT FEELS LIKE YOU
+> • 23 styles, from romantic to streetwear, from Parisian to Victorian
+> • Your colour palette and your favourite metals
+>
+> ✿ YOUR DATA, YOUR CONTROL
+> • No ads
+> • Your photos stay private, hosted in Europe
+> • Delete your account and all your data at any time
+>
+> Klotho is a French app, made for everyone who has "nothing to wear" in
+> front of a full wardrobe.
 
 ## Catégorie et coordonnées
 
@@ -117,11 +151,11 @@ formulaire, Google le fait évoluer.
 
 ## Visuels à préparer
 
-| Visuel                     | Format                      | Idée                                                                  |
-| -------------------------- | --------------------------- | --------------------------------------------------------------------- |
-| Icône                      | 512 × 512 px, PNG           | l'icône de l'app (`assets/icon.png`, agrandie)                        |
-| Image de présentation      | 1024 × 500 px, JPG ou PNG   | logo Klotho sur une illustration de dressing (une des images ChatGPT) |
-| Captures d'écran téléphone | 2 à 8, format portrait 9:16 | voir ci-dessous                                                       |
+| Visuel                     | Format                      | Idée                                                   |
+| -------------------------- | --------------------------- | ------------------------------------------------------ |
+| Icône                      | 512 × 512 px, PNG           | prête : `marketing/store/icon-512.png`                 |
+| Image de présentation      | 1024 × 500 px, JPG ou PNG   | prête : `marketing/store/feature-graphic-1024x500.png` |
+| Captures d'écran téléphone | 2 à 8, format portrait 9:16 | voir ci-dessous                                        |
 
 Captures proposées, chacune avec une phrase courte en haut :
 

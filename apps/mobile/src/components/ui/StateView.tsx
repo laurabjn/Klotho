@@ -18,12 +18,13 @@ interface Action {
 
 /**
  * The state screens of the mockups (empty dressing, no connection, no
- * result…): an illustration fading into the page, a title, a few words,
- * then the main action, a second one and a discreet link.
+ * result…): an illustration (or a photo fading into the page), a title, a
+ * few words, then the main action, a second one and a discreet link.
  */
 export function StateView({
   image,
-  imageRatio = 1.4,
+  imageRatio = 1.2,
+  fit = 'contain',
   title,
   body,
   primary,
@@ -34,6 +35,11 @@ export function StateView({
   image?: ImageSource;
   /** Width / height of the illustration. */
   imageRatio?: number;
+  /**
+   * contain: a transparent illustration, shown whole; cover: a photo filling
+   * the frame, fading into the page.
+   */
+  fit?: 'contain' | 'cover';
   title: string;
   body?: string;
   primary?: Action;
@@ -46,20 +52,26 @@ export function StateView({
     <View style={styles.container}>
       {image && (
         <View
-          style={[styles.art, { aspectRatio: imageRatio }]}
+          style={[
+            styles.art,
+            fit === 'cover' && styles.photo,
+            { aspectRatio: imageRatio },
+          ]}
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
         >
           <Image
             source={image}
             style={StyleSheet.absoluteFill}
-            contentFit="cover"
+            contentFit={fit}
           />
-          <LinearGradient
-            colors={[CLEAR, CLEAR, colors.background]}
-            locations={[0, 0.7, 1]}
-            style={StyleSheet.absoluteFill}
-          />
+          {fit === 'cover' && (
+            <LinearGradient
+              colors={[CLEAR, CLEAR, colors.background]}
+              locations={[0, 0.7, 1]}
+              style={StyleSheet.absoluteFill}
+            />
+          )}
         </View>
       )}
       <View style={styles.text}>
@@ -108,11 +120,8 @@ export function StateView({
 
 const styles = StyleSheet.create({
   container: { gap: spacing.lg, alignItems: 'stretch' },
-  art: {
-    width: '100%',
-    overflow: 'hidden',
-    borderRadius: radii.card,
-  },
+  art: { width: '100%' },
+  photo: { overflow: 'hidden', borderRadius: radii.card },
   text: { gap: spacing.sm, paddingHorizontal: spacing.sm },
   title: { fontSize: 28, lineHeight: 33 },
   body: { fontSize: 16, lineHeight: 22 },
