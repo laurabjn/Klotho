@@ -7,6 +7,7 @@ import { settingsFr } from './settings.fr';
 import { statesFr } from './states.fr';
 import { aiFr } from './ai.fr';
 import { billingFr } from './billing.fr';
+import { siteFr } from './site.fr';
 import { weatherFr } from './weather.fr';
 
 // French is the reference locale: every other locale must match its keys.
@@ -109,6 +110,7 @@ export const fr = {
   states: statesFr,
   ai: aiFr,
   billing: billingFr,
+  site: siteFr,
   profile: {
     title: 'Mon profil',
     open: 'Ouvrir mon profil',

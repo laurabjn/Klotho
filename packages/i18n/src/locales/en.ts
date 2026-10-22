@@ -8,6 +8,7 @@ import { settingsEn } from './settings.en';
 import { statesEn } from './states.en';
 import { aiEn } from './ai.en';
 import { billingEn } from './billing.en';
+import { siteEn } from './site.en';
 import { weatherEn } from './weather.en';
 
 export const en: TranslationResource = {
@@ -108,6 +109,7 @@ export const en: TranslationResource = {
   states: statesEn,
   ai: aiEn,
   billing: billingEn,
+  site: siteEn,
   profile: {
     title: 'My profile',
     open: 'Open my profile',
