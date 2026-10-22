@@ -66,12 +66,12 @@ const LINKS: Record<Locale, Record<LegalPage, string>> = {
   fr: {
     privacy: 'Confidentialité',
     terms: 'Conditions générales',
-    'delete-account': 'Supprimer mon compte',
+    'delete-account': 'Suppression de compte',
   },
   en: {
     privacy: 'Privacy',
     terms: 'Terms of use',
-    'delete-account': 'Delete my account',
+    'delete-account': 'Account deletion',
   },
 };
 
