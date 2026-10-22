@@ -80,6 +80,8 @@ const PUBLIC_ROUTES = [
   'POST /auth/confirm-email',
   // Privacy policy, terms and account deletion: linked from the store listing.
   'GET /legal/:page',
+  // Home page of the web address given to Google Play.
+  'GET /',
 ].sort();
 
 const label = (route: Route) => `${route.method} ${route.path}`;

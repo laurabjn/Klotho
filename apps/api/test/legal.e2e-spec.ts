@@ -37,6 +37,19 @@ describe('Legal pages (e2e)', () => {
     expect(res.text).toContain('Delete my Klotho account');
   });
 
+  it('serves a home page with the legal links', async () => {
+    const res = await http().get('/').expect(200);
+
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Ton dressing dans ta poche');
+    expect(res.text).toContain('href="/legal/privacy?lang=fr"');
+    expect(res.text).toContain('href="/legal/delete-account?lang=fr"');
+    expect(res.text).not.toContain('<script');
+
+    const en = await http().get('/?lang=en').expect(200);
+    expect(en.text).toContain('Your wardrobe in your pocket');
+  });
+
   it('answers 404 for an unknown page', async () => {
     await http().get('/legal/cookies').expect(404);
   });
