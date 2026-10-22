@@ -28,6 +28,7 @@ export function PremiumLimit({
     <StateView
       image={photos.welcome.source}
       imageRatio={photos.welcome.ratio}
+      fit="cover"
       title={title}
       body={body}
       primary={{

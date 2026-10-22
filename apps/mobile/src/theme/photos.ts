@@ -87,13 +87,13 @@ export const stylePhotos: Partial<Record<Style, number>> = {
   victorian: require('../../assets/styles/victorian.jpg'),
 };
 
-/** Illustrations of the state screens (provisional crops of the board). */
+/** Transparent illustrations of the state screens. */
 export const statePhotos = {
-  emptyWardrobe: require('../../assets/states/empty-wardrobe.jpg'),
-  generating: require('../../assets/states/generating.jpg'),
-  noOutfit: require('../../assets/states/no-outfit.jpg'),
-  offline: require('../../assets/states/offline.jpg'),
-  photos: require('../../assets/states/photos.jpg'),
-  location: require('../../assets/states/location.jpg'),
-  search: require('../../assets/states/search.jpg'),
+  emptyWardrobe: require('../../assets/states/empty-wardrobe.webp'),
+  generating: require('../../assets/states/generating.webp'),
+  noOutfit: require('../../assets/states/no-outfit.webp'),
+  offline: require('../../assets/states/offline.webp'),
+  photos: require('../../assets/states/photos.webp'),
+  location: require('../../assets/states/location.webp'),
+  search: require('../../assets/states/search.webp'),
 } as const;
