@@ -82,6 +82,7 @@ function layout(
   nav: string,
   switchTo: string,
   main: string,
+  head = '',
 ): string {
   const other: Locale = locale === 'fr' ? 'en' : 'fr';
   return `<!doctype html>
@@ -89,7 +90,7 @@ function layout(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escape(title)}</title>
+<title>${escape(title)}</title>${head}
 <style>
   :root { color-scheme: light; }
   body { margin: 0; background: #FBF7F2; color: #6B5048;
@@ -158,7 +159,12 @@ export function renderLegalPage(
 }
 
 /** The home page: what Klotho is, how to reach its author, the legal pages. */
-export function renderHomePage(locale: Locale, contactEmail: string): string {
+export function renderHomePage(
+  locale: Locale,
+  contactEmail: string,
+  /** Google Search Console proof that the site is ours. */
+  siteVerification?: string,
+): string {
   const t = resources[locale].translation.site;
   const other: Locale = locale === 'fr' ? 'en' : 'fr';
   const features = t.features
@@ -186,5 +192,8 @@ export function renderHomePage(locale: Locale, contactEmail: string): string {
 ${contact}
 <h2>${escape(t.legalTitle)}</h2>
 <ul>${legal}</ul>`,
+    siteVerification
+      ? `\n<meta name="google-site-verification" content="${escape(siteVerification)}">`
+      : '',
   );
 }

@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import type { Env } from '../../../config/env';
-import { CONTACT_EMAIL, LegalController } from './legal.controller';
+import {
+  CONTACT_EMAIL,
+  LegalController,
+  SITE_VERIFICATION,
+} from './legal.controller';
 
 @Module({
   controllers: [LegalController],
@@ -15,6 +19,12 @@ import { CONTACT_EMAIL, LegalController } from './legal.controller';
         config.get<Env['CONTACT_EMAIL']>('CONTACT_EMAIL') ??
         config.get<Env['MAIL_FROM']>('MAIL_FROM') ??
         '',
+    },
+    {
+      provide: SITE_VERIFICATION,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<Env, true>): string | undefined =>
+        config.get<Env['GOOGLE_SITE_VERIFICATION']>('GOOGLE_SITE_VERIFICATION'),
     },
   ],
 })

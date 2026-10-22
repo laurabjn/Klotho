@@ -45,6 +45,8 @@ describe('Legal pages (e2e)', () => {
     expect(res.text).toContain('href="/legal/privacy?lang=fr"');
     expect(res.text).toContain('href="/legal/delete-account?lang=fr"');
     expect(res.text).not.toContain('<script');
+    // No Search Console tag unless GOOGLE_SITE_VERIFICATION is set.
+    expect(res.text).not.toContain('google-site-verification');
 
     const en = await http().get('/?lang=en').expect(200);
     expect(en.text).toContain('Your wardrobe in your pocket');

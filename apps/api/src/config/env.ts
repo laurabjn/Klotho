@@ -64,6 +64,13 @@ export const envSchema = z
     MAIL_FROM_NAME: z.string().min(1).default('Klotho'),
     /** Shown on the account deletion web page; MAIL_FROM when unset. */
     CONTACT_EMAIL: z.email().optional(),
+    /** Google Search Console "HTML tag" code, put on the home page. */
+    GOOGLE_SITE_VERIFICATION: z
+      .string()
+      .trim()
+      .regex(/^[\w-]*$/, 'must be the content of the meta tag only')
+      .optional()
+      .transform((code) => code || undefined),
 
     // Photo storage: any S3-compatible service (Cloudflare R2, RustFS locally).
     STORAGE_ENDPOINT: z.url(),
