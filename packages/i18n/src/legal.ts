@@ -5,6 +5,7 @@ export const PRIVACY_SECTIONS = [
   'location',
   'photos',
   'partners',
+  'site',
   'retention',
   'rights',
   'legal',

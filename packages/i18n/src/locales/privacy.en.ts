@@ -23,6 +23,10 @@ export const privacyEn: TranslationResource['privacy'] = {
       title: 'Service providers',
       body: 'API hosting: Render (US company, servers in Frankfurt, Germany). Database: Neon (servers in Frankfurt, Germany). Photos: Backblaze B2 (data stored in Amsterdam, the Netherlands). Password reset e-mails: Brevo (French company). Weather: OpenWeatherMap (only receives approximate coordinates, without your identity). Crash reporting: Sentry (servers in the European Union, technical reports without e-mail or name). Payments: Google Play or the App Store take your purchases (Klotho never sees your bank details); RevenueCat (United States) receives your Klotho id and your purchases to manage the subscription. AI photo analysis: Groq (United States), only when you ask for an analysis; the photo is sent without your name or e-mail.',
     },
+    site: {
+      title: 'Our website and its cookies',
+      body: 'The Klotho website may use, only if you accept it in the banner, the advertising trackers of Meta (Facebook, Instagram), TikTok, Google and Pinterest, to measure how well our ads work. They set cookies and send these companies information about your visit (pages seen, click to the Play Store). Your choice is kept for 6 months and can be changed at any time with the “Manage cookies” link at the bottom of the website. The Klotho app itself contains no advertising tracker.',
+    },
     retention: {
       title: 'Retention',
       body: 'Your data is kept as long as your account exists. When you delete your account, everything is erased: your profile, your wardrobe, your photos, your outfits and your history.',

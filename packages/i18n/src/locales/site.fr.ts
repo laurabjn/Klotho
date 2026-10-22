@@ -11,6 +11,7 @@ export const siteFr = {
   },
   home: 'Accueil',
   soon: 'Bientôt sur Google Play',
+  download: 'Télécharger sur Google Play',
   hero: {
     overline: 'Ton dressing, en douceur',
     title: 'Ta tenue du jour, sans y passer la matinée.',
@@ -67,4 +68,11 @@ export const siteFr = {
   contactBody: 'Écris-nous, on te répond avec plaisir.',
   legalTitle: 'Informations',
   rights: 'Tous droits réservés.',
+  consent: {
+    text: 'Avec ton accord, nous utilisons des cookies de Meta, TikTok, Google et Pinterest pour mesurer l’efficacité de nos publicités. Refuser ne change rien à ta visite.',
+    accept: 'Accepter',
+    refuse: 'Refuser',
+    more: 'En savoir plus',
+    manage: 'Gérer les cookies',
+  },
 } as const;

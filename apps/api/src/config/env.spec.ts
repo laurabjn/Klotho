@@ -36,6 +36,7 @@ describe('validateEnv', () => {
       AI_FREE_PHOTO_ANALYSES: 3,
       BILLING_ENABLED: false,
       UNLIMITED_EMAILS: [],
+      PLAY_STORE_LIVE: false,
       FREE_PIECES: 100,
       FREE_GENERATIONS_PER_WEEK: 10,
       FREE_HISTORY_DAYS: 7,
