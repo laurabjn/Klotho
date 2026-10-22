@@ -82,6 +82,9 @@ const PUBLIC_ROUTES = [
   'GET /legal/:page',
   // Home page of the web address given to Google Play.
   'GET /',
+  // Logo, illustrations and fonts of the website.
+  'GET /site/:file',
+  'GET /site/fonts/:file',
 ].sort();
 
 const label = (route: Route) => `${route.method} ${route.path}`;
