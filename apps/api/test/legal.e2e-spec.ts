@@ -41,7 +41,7 @@ describe('Legal pages (e2e)', () => {
     const res = await http().get('/').expect(200);
 
     expect(res.headers['content-type']).toContain('text/html');
-    expect(res.text).toContain('Ton dressing dans ta poche');
+    expect(res.text).toContain('Ta tenue du jour, sans y passer la matinée.');
     expect(res.text).toContain('href="/legal/privacy?lang=fr"');
     expect(res.text).toContain('href="/legal/delete-account?lang=fr"');
     expect(res.text).not.toContain('<script');
@@ -49,7 +49,25 @@ describe('Legal pages (e2e)', () => {
     expect(res.text).not.toContain('google-site-verification');
 
     const en = await http().get('/?lang=en').expect(200);
-    expect(en.text).toContain('Your wardrobe in your pocket');
+    expect(en.text).toContain('Your outfit of the day');
+  });
+
+  it('serves the logo, illustrations and fonts of the site', async () => {
+    const logo = await http().get('/site/monogram.svg').expect(200);
+    expect(logo.headers['content-type']).toContain('image/svg+xml');
+    expect(logo.headers['cache-control']).toContain('max-age=604800');
+
+    const hero = await http().get('/site/hero.webp').expect(200);
+    expect(hero.headers['content-type']).toContain('image/webp');
+
+    const font = await http().get('/site/fonts/jost-400.woff2').expect(200);
+    expect(font.headers['content-type']).toContain('font/woff2');
+  });
+
+  it('serves nothing else from the site folder', async () => {
+    await http().get('/site/secret.txt').expect(404);
+    await http().get('/site/fonts/..%2F..%2Fpackage.json').expect(404);
+    await http().get('/site/fonts/hero.webp').expect(404);
   });
 
   it('answers 404 for an unknown page', async () => {
