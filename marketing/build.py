@@ -25,7 +25,8 @@ body {{ font-family: 'Jost', sans-serif; color: #6B5048;
 .brand {{ display: flex; align-items: center; gap: .35em; font-family: 'Cormorant';
   font-weight: 600; color: #3E231C; }}
 .brand img {{ height: 1.25em; }}
-h1 {{ font-family: 'Cormorant'; font-weight: 600; color: #3E231C; line-height: 1.04; }}
+h1 {{ font-family: 'Cormorant'; font-weight: 600; color: #3E231C; line-height: 1.04;
+  text-wrap: balance; }}
 .over {{ text-transform: uppercase; letter-spacing: .22em; color: #9C6658; font-weight: 500; }}
 .pill {{ display: inline-block; border-radius: 999px; background: #B07869; color: #FFF9F5;
   font-weight: 500; box-shadow: 0 10px 24px rgba(176, 120, 105, .3); }}
@@ -99,6 +100,30 @@ for key, (over, title) in HOOKS.items():
 <img class="art" src="{SRC}/hero.png" style="right:10px;top:500px;height:800px">
 <div style="position:absolute;left:0;right:0;bottom:60px;text-align:center">
   <p class="pill" style="font-size:30px;padding:20px 46px">{cta}</p>
+</div>
+""")
+
+
+# Play Store phone screenshots: 1080 x 1920, a sentence above the app screen
+# (captures of the demo account in marketing/src/screens).
+SCREENS = {
+    '1-accueil': 'Ta tenue du jour, selon la météo',
+    '2-garde-robe': 'Tout ton dressing, enfin rangé',
+    '3-piece': 'Chaque pièce, et son histoire',
+    '4-creer-tenue': 'Ton style, l’occasion, la météo',
+    '5-tenues': 'Des idées qui te ressemblent',
+    '6-calendrier': 'Ta semaine de tenues, planifiée',
+}
+for key, caption in SCREENS.items():
+    VISUALS[f'store/screens/{key}-1080x1920'] = (1080, 1920, f"""
+<div style="position:absolute;left:0;right:0;top:120px;text-align:center;padding:0 90px">
+  <p class="over" style="font-size:24px">Klotho</p>
+  <h1 style="font-size:84px;margin-top:22px">{caption}</h1>
+</div>
+<div style="position:absolute;left:50%;top:470px;width:780px;transform:translateX(-50%);
+  border:14px solid #3E231C;border-bottom:0;border-radius:72px 72px 0 0;overflow:hidden;
+  box-shadow:0 30px 60px rgba(62,35,28,.25);background:#FBF7F2">
+  <img src="{SRC}/screens/{key}.webp" style="display:block;width:100%">
 </div>
 """)
 
