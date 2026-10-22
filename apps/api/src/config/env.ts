@@ -64,6 +64,29 @@ export const envSchema = z
     MAIL_FROM_NAME: z.string().min(1).default('Klotho'),
     /** Shown on the account deletion web page; MAIL_FROM when unset. */
     CONTACT_EMAIL: z.email().optional(),
+    /** The app is on Google Play: the site shows the download button. */
+    PLAY_STORE_LIVE: flag('false'),
+    // Advertising pixels of the website, loaded only after consent.
+    META_PIXEL_ID: z
+      .string()
+      .regex(/^\d{5,20}$/, 'digits only')
+      .optional(),
+    TIKTOK_PIXEL_ID: z
+      .string()
+      .regex(/^[A-Z0-9]{10,30}$/i, 'letters and digits only')
+      .optional(),
+    GOOGLE_ADS_ID: z
+      .string()
+      .regex(/^AW-\d{5,20}$/, 'must look like AW-123456789')
+      .optional(),
+    GOOGLE_ADS_CONVERSION_LABEL: z
+      .string()
+      .regex(/^[\w-]{3,40}$/, 'the conversion label only')
+      .optional(),
+    PINTEREST_TAG_ID: z
+      .string()
+      .regex(/^\d{5,20}$/, 'digits only')
+      .optional(),
     /** Google Search Console "HTML tag" code, put on the home page. */
     GOOGLE_SITE_VERIFICATION: z
       .string()

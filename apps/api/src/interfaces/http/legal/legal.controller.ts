@@ -14,9 +14,9 @@ import { isSupportedLocale, type Locale } from '@klotho/i18n';
 import { Public } from '../auth/public.decorator';
 import { renderHomePage, renderLegalPage, type LegalPage } from './legal-pages';
 import { siteAsset } from './site-assets';
+import type { SiteSettings } from './site-tracking';
 
-export const CONTACT_EMAIL = Symbol('ContactEmail');
-export const SITE_VERIFICATION = Symbol('SiteVerification');
+export const SITE_SETTINGS = Symbol('SiteSettings');
 
 const PAGES = new Set<string>(['privacy', 'terms', 'delete-account']);
 
@@ -26,20 +26,18 @@ const PAGES = new Set<string>(['privacy', 'terms', 'delete-account']);
  */
 @Controller()
 export class LegalController {
-  constructor(
-    @Inject(CONTACT_EMAIL) private readonly contactEmail: string,
-    @Inject(SITE_VERIFICATION)
-    private readonly siteVerification: string | undefined,
-  ) {}
+  constructor(@Inject(SITE_SETTINGS) private readonly site: SiteSettings) {}
 
   /** The web address given to Google Play: what Klotho is. */
   @Public()
   @Get()
   @Header('Content-Type', 'text/html; charset=utf-8')
   @Header('Cache-Control', 'public, max-age=3600')
-  home(@Query('lang') lang?: string): string {
-    const locale: Locale = isSupportedLocale(lang) ? lang : 'fr';
-    return renderHomePage(locale, this.contactEmail, this.siteVerification);
+  home(@Query() query: Record<string, unknown>): string {
+    const lang = query.lang;
+    const locale: Locale =
+      typeof lang === 'string' && isSupportedLocale(lang) ? lang : 'fr';
+    return renderHomePage(locale, this.site, query);
   }
 
   @Public()
@@ -49,7 +47,7 @@ export class LegalController {
   page(@Param('page') page: string, @Query('lang') lang?: string): string {
     if (!PAGES.has(page)) throw new NotFoundException();
     const locale: Locale = isSupportedLocale(lang) ? lang : 'fr';
-    return renderLegalPage(page as LegalPage, locale, this.contactEmail);
+    return renderLegalPage(page as LegalPage, locale, this.site);
   }
 
   /** Logo and illustrations of the website (fixed list). */

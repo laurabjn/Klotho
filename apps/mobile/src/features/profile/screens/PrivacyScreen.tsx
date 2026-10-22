@@ -29,6 +29,7 @@ const ICONS: Record<PrivacySection, IconName> = {
   location: 'map-marker-outline',
   photos: 'camera-outline',
   partners: 'handshake-outline',
+  site: 'web',
   retention: 'clock-outline',
   rights: 'shield-check-outline',
   legal: 'scale-balance',

@@ -12,6 +12,7 @@ export const siteEn: TranslationResource['site'] = {
   },
   home: 'Home',
   soon: 'Coming soon on Google Play',
+  download: 'Get it on Google Play',
   hero: {
     overline: 'Your wardrobe, gently',
     title: 'Your outfit of the day, without losing your morning.',
@@ -68,4 +69,11 @@ export const siteEn: TranslationResource['site'] = {
   contactBody: 'Write to us, we will be happy to answer.',
   legalTitle: 'Information',
   rights: 'All rights reserved.',
+  consent: {
+    text: 'With your consent, we use cookies from Meta, TikTok, Google and Pinterest to measure how well our ads work. Refusing changes nothing to your visit.',
+    accept: 'Accept',
+    refuse: 'Refuse',
+    more: 'Learn more',
+    manage: 'Manage cookies',
+  },
 };

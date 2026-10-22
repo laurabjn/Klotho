@@ -23,6 +23,10 @@ export const privacyFr = {
       title: 'Prestataires',
       body: 'Hébergement de l’API : Render (société américaine, serveurs à Francfort, Allemagne). Base de données : Neon (serveurs à Francfort, Allemagne). Photos : Backblaze B2 (données stockées à Amsterdam, Pays-Bas). E-mails de mot de passe oublié : Brevo (société française). Météo : OpenWeatherMap (reçoit seulement des coordonnées approximatives, sans ton identité). Suivi des plantages : Sentry (serveurs dans l’Union européenne, rapports techniques sans e-mail ni nom). Paiements : Google Play ou l’App Store encaissent tes achats (Klotho ne voit jamais tes coordonnées bancaires) ; RevenueCat (États-Unis) reçoit ton identifiant Klotho et tes achats pour gérer l’abonnement. Analyse des photos par IA : Groq (États-Unis), seulement quand tu demandes une analyse ; la photo est envoyée sans ton nom ni ton e-mail.',
     },
+    site: {
+      title: 'Notre site et ses cookies',
+      body: 'Le site de Klotho peut utiliser, seulement si tu l’acceptes dans le bandeau, les traceurs publicitaires de Meta (Facebook, Instagram), TikTok, Google et Pinterest, pour mesurer l’efficacité de nos publicités. Ils déposent des cookies et transmettent à ces sociétés des informations sur ta visite (pages vues, clic vers le Play Store). Ton choix est gardé 6 mois et modifiable à tout moment avec le lien « Gérer les cookies » en bas du site. L’application Klotho, elle, ne contient aucun traceur publicitaire.',
+    },
     retention: {
       title: 'Durée de conservation',
       body: 'Tes données sont gardées tant que ton compte existe. Quand tu supprimes ton compte, tout est effacé : ton profil, ta garde-robe, tes photos, tes tenues et ton historique.',

@@ -6,6 +6,14 @@ import {
   type Locale,
 } from '@klotho/i18n';
 
+import {
+  CONSENT_STYLE,
+  consentBlock,
+  hasPixels,
+  playStoreLink,
+  type SiteSettings,
+} from './site-tracking';
+
 /** The legal pages, on the web (the store listing links to them). */
 export type LegalPage = 'privacy' | 'terms' | 'delete-account';
 
@@ -203,11 +211,13 @@ function layout(options: {
   description: string;
   current: LegalPage | 'home';
   switchTo: string;
-  contactEmail: string;
+  site: SiteSettings;
+  /** Play Store link, with the campaign of the visit. */
+  storeHref: string;
   main: string;
   head?: string;
 }): string {
-  const { locale, current } = options;
+  const { locale, current, site } = options;
   const t = resources[locale].translation.site;
   const other: Locale = locale === 'fr' ? 'en' : 'fr';
   const home = `/?lang=${locale}`;
@@ -217,9 +227,13 @@ function layout(options: {
     (p) =>
       `<a href="${href(p, locale)}"${p === current ? ' aria-current="page"' : ''}>${escape(LINKS[locale][p])}</a>`,
   ).join('');
-  const contact = options.contactEmail
-    ? `<a href="mailto:${escape(options.contactEmail)}">${escape(options.contactEmail)}</a>`
+  const contact = site.contactEmail
+    ? `<a href="mailto:${escape(site.contactEmail)}">${escape(site.contactEmail)}</a>`
     : '';
+  const tracked = hasPixels(site.pixels);
+  const store = site.playStoreLive
+    ? `<a class="pill primary" href="${escape(options.storeHref)}" data-store rel="noopener">${escape(t.download)}</a>`
+    : `<span class="pill soft">${escape(t.soon)}</span>`;
   return `<!doctype html>
 <html lang="${locale}">
 <head>
@@ -233,7 +247,7 @@ function layout(options: {
 <meta name="theme-color" content="#FBF7F2">
 <link rel="icon" href="/site/monogram.svg" type="image/svg+xml">
 <link rel="preload" href="/site/fonts/cormorant-600.woff2" as="font" type="font/woff2" crossorigin>${options.head ?? ''}
-<style>${STYLE}</style>
+<style>${STYLE}${tracked ? CONSENT_STYLE : ''}</style>
 </head>
 <body>
 <header class="top">
@@ -246,18 +260,19 @@ function layout(options: {
       <a href="${anchor('contact')}">${escape(t.nav.contact)}</a>
     </nav>
     <a class="lang" href="${options.switchTo}" hreflang="${other}">${other.toUpperCase()}</a>
-    <span class="pill soft">${escape(t.soon)}</span>
+    ${store}
   </div>
 </header>
 ${options.main}
 <footer class="bottom">
   <div class="wrap">
     <a class="brand" href="${home}"><img src="/site/monogram.svg" alt="" width="28" height="28">Klotho</a>
-    <nav aria-label="${escape(t.legalTitle)}">${legal}</nav>
+    <nav aria-label="${escape(t.legalTitle)}">${legal}${tracked ? `<a href="#" id="manage-cookies">${escape(t.consent.manage)}</a>` : ''}</nav>
     ${contact}
     <span class="copy">© 2026 Laura Bojon EI. ${escape(t.rights)}</span>
   </div>
 </footer>
+${consentBlock(site.pixels, t.consent, href('privacy', locale), escape)}
 </body>
 </html>`;
 }
@@ -265,9 +280,9 @@ ${options.main}
 export function renderLegalPage(
   page: LegalPage,
   locale: Locale,
-  contactEmail: string,
+  site: SiteSettings,
 ): string {
-  const { title, intro, sections } = content(page, locale, contactEmail);
+  const { title, intro, sections } = content(page, locale, site.contactEmail);
   const other: Locale = locale === 'fr' ? 'en' : 'fr';
   const body = sections
     .map(
@@ -281,7 +296,8 @@ export function renderLegalPage(
     description: intro,
     current: page,
     switchTo: href(page, other),
-    contactEmail,
+    site,
+    storeHref: playStoreLink({}),
     main: `<main class="doc">
 <h1>${escape(title)}</h1>
 <p class="intro">${escape(intro)}</p>
@@ -302,11 +318,12 @@ const FEATURES = [
 /** The home page: what Klotho is, how it works, how to reach its author. */
 export function renderHomePage(
   locale: Locale,
-  contactEmail: string,
-  /** Google Search Console proof that the site is ours. */
-  siteVerification?: string,
+  site: SiteSettings,
+  /** Query of the visit: the utm_… of the ad link go on to the Play Store. */
+  query: Record<string, unknown> = {},
 ): string {
   const t = resources[locale].translation.site;
+  const storeHref = playStoreLink(query);
   const other: Locale = locale === 'fr' ? 'en' : 'fr';
   const cards = FEATURES.map(
     (key) =>
@@ -318,18 +335,24 @@ export function renderHomePage(
         `<li><h3>${escape(step.title)}</h3><p>${escape(step.body)}</p></li>`,
     )
     .join('\n');
-  const mail = contactEmail
-    ? `<p><a class="pill primary" href="mailto:${escape(contactEmail)}">${escape(contactEmail)}</a></p>`
+  const mail = site.contactEmail
+    ? `<p><a class="pill primary" href="mailto:${escape(site.contactEmail)}">${escape(site.contactEmail)}</a></p>`
     : '';
+  const actions = site.playStoreLive
+    ? `<a class="pill primary" href="${escape(storeHref)}" data-store rel="noopener">${escape(t.download)}</a>
+        <a class="pill soft" href="#features">${escape(t.hero.discover)}</a>`
+    : `<a class="pill primary" href="#features">${escape(t.hero.discover)}</a>
+        <span class="pill soft">${escape(t.soon)}</span>`;
   return layout({
     locale,
     title: t.title,
     description: t.description,
     current: 'home',
     switchTo: `/?lang=${other}`,
-    contactEmail,
-    head: siteVerification
-      ? `\n<meta name="google-site-verification" content="${escape(siteVerification)}">`
+    site,
+    storeHref,
+    head: site.siteVerification
+      ? `\n<meta name="google-site-verification" content="${escape(site.siteVerification)}">`
       : '',
     main: `<main>
 <section class="hero">
@@ -339,8 +362,7 @@ export function renderHomePage(
       <h1>${escape(t.hero.title)}</h1>
       <p class="lead">${escape(t.hero.body)}</p>
       <div class="actions">
-        <a class="pill primary" href="#features">${escape(t.hero.discover)}</a>
-        <span class="pill soft">${escape(t.soon)}</span>
+        ${actions}
       </div>
     </div>
     <figure style="margin:0"><img src="/site/hero.webp" alt="" width="720" height="861"></figure>
