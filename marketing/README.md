@@ -21,6 +21,8 @@ Deux accroches (`a` : « Ta tenue du jour… », `b` : « Rien à te mettre ? »
 deux boutons (`bientot`, `disponible` une fois l'app publiée). Les textes
 sont dans `HOOKS`, `CTAS` et `SUB` en haut de `build.py`.
 
-Le dossier `ads/` n'est pas versionné : relance le script pour le recréer.
+Les dossiers `ads/` et `store/screens/` ne sont pas versionnés : relance le
+script pour les recréer. Les écrans de l'app sont dans `src/screens/`
+(captures du compte de démo dans l'émulateur, barre d'état retirée).
 Dans les stories, les textes restent hors des 250 px du haut et du bas,
 masqués par l'interface d'Instagram et de TikTok.

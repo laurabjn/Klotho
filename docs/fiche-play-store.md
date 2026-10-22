@@ -155,16 +155,23 @@ formulaire, Google le fait évoluer.
 | -------------------------- | --------------------------- | ------------------------------------------------------ |
 | Icône                      | 512 × 512 px, PNG           | prête : `marketing/store/icon-512.png`                 |
 | Image de présentation      | 1024 × 500 px, JPG ou PNG   | prête : `marketing/store/feature-graphic-1024x500.png` |
-| Captures d'écran téléphone | 2 à 8, format portrait 9:16 | voir ci-dessous                                        |
+| Captures d'écran téléphone | 2 à 8, format portrait 9:16 | prêtes : `marketing/store/screens/` (voir ci-dessous)  |
 
-Captures proposées, chacune avec une phrase courte en haut :
+Six captures 1080 × 1920, chacune avec une phrase courte en haut, créées par
+`python marketing/build.py` (dans cet ordre sur la fiche) :
 
 1. Accueil avec la tenue du jour : « Ta tenue du jour, selon la météo »
 2. Ma garde-robe : « Tout ton dressing, enfin rangé »
-3. Ajouter une pièce avec Klotho IA : « Une photo, et la fiche se remplit »
+3. Détail d'une pièce : « Chaque pièce, et son histoire »
 4. Créer une tenue : « Ton style, l'occasion, la météo »
 5. Résultats des tenues : « Des idées qui te ressemblent »
 6. Calendrier : « Ta semaine de tenues, planifiée »
+
+Les écrans viennent du compte de démo (`npm run db:seed:demo -w @klotho/api`)
+dans l'émulateur Android, avec des photos de vêtements Unsplash (licence
+Unsplash : usage commercial autorisé, sans mention obligatoire). Ils sont en
+français : pour la fiche anglaise, refaire les captures avec le téléphone en
+anglais.
 
 ## Avant d'envoyer en production
 
