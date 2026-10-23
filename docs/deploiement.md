@@ -58,7 +58,9 @@ demande une carte bancaire.
 
 ## 4. L'API : Render
 
-En ligne sur https://klotho-api.onrender.com (offre gratuite, Francfort).
+En ligne sur https://klotho-api.onrender.com (offre gratuite, Francfort). Le
+site est aussi servi sur https://www.dressingklotho.fr (voir « Nom de domaine »
+plus bas) ; l'app garde l'adresse `onrender.com`.
 
 1. Sur render.com : **New → Web Service**, dépôt `laurabjn/Klotho` (accès
    donné à ce seul dépôt dans l'app GitHub de Render), branche `main`.
@@ -140,3 +142,19 @@ Console (licences de test : rien n'est débité).
   fonctionner de bout en bout.
 - Les indicateurs : `npm run kpis -w @klotho/api` avec la `DATABASE_URL` de
   Neon dans `apps/api/.env` (sans la commiter).
+
+## Nom de domaine : dressingklotho.fr
+
+Acheté chez IONOS (domaine seul, avec une boîte `contact@dressingklotho.fr`
+incluse). Il pointe vers le service Render :
+
+| Type  | Nom d'hôte | Valeur                    |
+| ----- | ---------- | ------------------------- |
+| A     | `@`        | `216.24.57.1`             |
+| CNAME | `www`      | `klotho-api.onrender.com` |
+
+L'enregistrement AAAA `@` d'IONOS est désactivé (Render n'a pas d'IPv6) ; les
+enregistrements Mail (MX, SPF, DMARC, DKIM) restent ceux d'IONOS. Dans Render,
+**Settings → Custom Domains** contient `dressingklotho.fr` (redirigé vers
+`www`) et `www.dressingklotho.fr`, avec le certificat HTTPS automatique ; le
+sous-domaine `onrender.com` doit rester activé, l'app l'utilise.
