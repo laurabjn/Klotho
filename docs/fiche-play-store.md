@@ -6,13 +6,14 @@ sont celles de Google (titre 30, description courte 80, description longue
 
 ## Adresses à renseigner
 
-| Champ de la Play Console                     | Valeur                                                 |
-| -------------------------------------------- | ------------------------------------------------------ |
-| Règles de confidentialité                    | `https://klotho-api.onrender.com/legal/privacy`        |
-| Suppression du compte (Sécurité des données) | `https://klotho-api.onrender.com/legal/delete-account` |
-| Conditions d'utilisation (si demandé)        | `https://klotho-api.onrender.com/legal/terms`          |
-| E-mail de contact                            | ton adresse Klotho (celle de Brevo et des mentions)    |
-| Nom du package                               | `com.laurabjn.klotho`                                  |
+| Champ de la Play Console                     | Valeur                                               |
+| -------------------------------------------- | ---------------------------------------------------- |
+| Règles de confidentialité                    | `https://www.dressingklotho.fr/legal/privacy`        |
+| Suppression du compte (Sécurité des données) | `https://www.dressingklotho.fr/legal/delete-account` |
+| Conditions d'utilisation (si demandé)        | `https://www.dressingklotho.fr/legal/terms`          |
+| E-mail de contact                            | ton adresse Klotho (celle de Brevo et des mentions)  |
+| Nom du package                               | `com.laurabjn.klotho`                                |
+| Site Web (coordonnées)                       | `https://www.dressingklotho.fr`                      |
 
 Ajoute `?lang=en` pour la version anglaise de chaque page.
 
