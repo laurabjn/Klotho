@@ -9,20 +9,23 @@ python marketing/build.py
 
 Il faut Python 3 et Google Chrome. Le script crée :
 
-| Fichier                              | Usage                              |
-| ------------------------------------ | ---------------------------------- |
-| `store/feature-graphic-1024x500.png` | image de présentation Google Play  |
-| `store/icon-512.png`                 | icône Google Play                  |
-| `ads/carre-*-1080x1080.png`          | fil Instagram, Facebook, TikTok    |
-| `ads/story-*-1080x1920.png`          | stories, reels, TikTok plein écran |
-| `ads/epingle-*-1000x1500.png`        | épingle Pinterest                  |
+| Fichier                                 | Usage                                    |
+| --------------------------------------- | ---------------------------------------- |
+| `store/feature-graphic-1024x500.png`    | image de présentation Google Play        |
+| `store/feature-graphic-en-1024x500.png` | la même, en anglais                      |
+| `store/icon-512.png`                    | icône Google Play                        |
+| `store/screens/{fr,en}/*-1080x1920.png` | captures d'écran Google Play, par langue |
+| `ads/carre-*-1080x1080.png`             | fil Instagram, Facebook, TikTok          |
+| `ads/story-*-1080x1920.png`             | stories, reels, TikTok plein écran       |
+| `ads/epingle-*-1000x1500.png`           | épingle Pinterest                        |
 
 Deux accroches (`a` : « Ta tenue du jour… », `b` : « Rien à te mettre ? ») et
 deux boutons (`bientot`, `disponible` une fois l'app publiée). Les textes
 sont dans `HOOKS`, `CTAS` et `SUB` en haut de `build.py`.
 
 Les dossiers `ads/` et `store/screens/` ne sont pas versionnés : relance le
-script pour les recréer. Les écrans de l'app sont dans `src/screens/`
+script pour les recréer. Les écrans de l'app sont dans `src/screens/fr/` et
+`src/screens/en/`
 (captures du compte de démo dans l'émulateur, barre d'état retirée).
 Dans les stories, les textes restent hors des 250 px du haut et du bas,
 masqués par l'interface d'Instagram et de TikTok.

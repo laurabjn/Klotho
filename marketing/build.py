@@ -47,11 +47,18 @@ def logo(size):
 VISUALS = {}
 
 # Play Store feature graphic: 1024 x 500, no text near the edges.
-VISUALS['store/feature-graphic-1024x500'] = (1024, 500, f"""
+FEATURE = {
+    '': ('Ta tenue du jour, sans y passer la matinée.',
+         'Ton dressing organisé, des tenues selon la météo, ton style et l’occasion.'),
+    '-en': ('Your outfit of the day, without spending the morning on it.',
+            'Your wardrobe organised, outfits for the weather, your style and the occasion.'),
+}
+for suffix, (title, sub) in FEATURE.items():
+    VISUALS[f'store/feature-graphic{suffix}-1024x500'] = (1024, 500, f"""
 <div style="position:absolute;left:64px;top:92px;width:500px">
   {logo(42)}
-  <h1 style="font-size:46px;margin:24px 0 14px">Ta tenue du jour, sans y passer la matinée.</h1>
-  <p style="font-size:19px;line-height:1.5">Ton dressing organisé, des tenues selon la météo, ton style et l’occasion.</p>
+  <h1 style="font-size:46px;margin:24px 0 14px">{title}</h1>
+  <p style="font-size:19px;line-height:1.5">{sub}</p>
 </div>
 <img class="art" src="{SRC}/hero.png" style="right:56px;top:28px;height:444px">
 """)
@@ -105,17 +112,28 @@ for key, (over, title) in HOOKS.items():
 
 
 # Play Store phone screenshots: 1080 x 1920, a sentence above the app screen
-# (captures of the demo account in marketing/src/screens).
+# (captures of the demo account in marketing/src/screens/<language>).
 SCREENS = {
-    '1-accueil': 'Ta tenue du jour, selon la météo',
-    '2-garde-robe': 'Tout ton dressing, enfin rangé',
-    '3-piece': 'Chaque pièce, et son histoire',
-    '4-creer-tenue': 'Ton style, l’occasion, la météo',
-    '5-tenues': 'Des idées qui te ressemblent',
-    '6-calendrier': 'Ta semaine de tenues, planifiée',
+    'fr': {
+        '1-accueil': 'Ta tenue du jour, selon la météo',
+        '2-garde-robe': 'Tout ton dressing, enfin rangé',
+        '3-piece': 'Chaque pièce, et son histoire',
+        '4-creer-tenue': 'Ton style, l’occasion, la météo',
+        '5-tenues': 'Des idées qui te ressemblent',
+        '6-calendrier': 'Ta semaine de tenues, planifiée',
+    },
+    'en': {
+        '1-accueil': 'Your outfit of the day, for the weather',
+        '2-garde-robe': 'Your whole wardrobe, finally organised',
+        '3-piece': 'Every piece, and its story',
+        '4-creer-tenue': 'Your style, the occasion, the weather',
+        '5-tenues': 'Ideas that feel like you',
+        '6-calendrier': 'Your week of outfits, planned',
+    },
 }
-for key, caption in SCREENS.items():
-    VISUALS[f'store/screens/{key}-1080x1920'] = (1080, 1920, f"""
+for lang, captions in SCREENS.items():
+    for key, caption in captions.items():
+        VISUALS[f'store/screens/{lang}/{key}-1080x1920'] = (1080, 1920, f"""
 <div style="position:absolute;left:0;right:0;top:120px;text-align:center;padding:0 90px">
   <p class="over" style="font-size:24px">Klotho</p>
   <h1 style="font-size:84px;margin-top:22px">{caption}</h1>
@@ -123,7 +141,7 @@ for key, caption in SCREENS.items():
 <div style="position:absolute;left:50%;top:470px;width:780px;transform:translateX(-50%);
   border:14px solid #3E231C;border-bottom:0;border-radius:72px 72px 0 0;overflow:hidden;
   box-shadow:0 30px 60px rgba(62,35,28,.25);background:#FBF7F2">
-  <img src="{SRC}/screens/{key}.webp" style="display:block;width:100%">
+  <img src="{SRC}/screens/{lang}/{key}.webp" style="display:block;width:100%">
 </div>
 """)
 
