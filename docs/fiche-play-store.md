@@ -151,11 +151,11 @@ formulaire, Google le fait évoluer.
 
 ## Visuels à préparer
 
-| Visuel                     | Format                      | Idée                                                   |
-| -------------------------- | --------------------------- | ------------------------------------------------------ |
-| Icône                      | 512 × 512 px, PNG           | prête : `marketing/store/icon-512.png`                 |
-| Image de présentation      | 1024 × 500 px, JPG ou PNG   | prête : `marketing/store/feature-graphic-1024x500.png` |
-| Captures d'écran téléphone | 2 à 8, format portrait 9:16 | prêtes : `marketing/store/screens/` (voir ci-dessous)  |
+| Visuel                     | Format                      | Idée                                                                                                 |
+| -------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Icône                      | 512 × 512 px, PNG           | prête : `marketing/store/icon-512.png`                                                               |
+| Image de présentation      | 1024 × 500 px, JPG ou PNG   | prête : `marketing/store/feature-graphic-1024x500.png` (anglais : `feature-graphic-en-1024x500.png`) |
+| Captures d'écran téléphone | 2 à 8, format portrait 9:16 | prêtes : `marketing/store/screens/fr/` et `screens/en/` (voir ci-dessous)                            |
 
 Six captures 1080 × 1920, chacune avec une phrase courte en haut, créées par
 `python marketing/build.py` (dans cet ordre sur la fiche) :
@@ -169,9 +169,12 @@ Six captures 1080 × 1920, chacune avec une phrase courte en haut, créées par
 
 Les écrans viennent du compte de démo (`npm run db:seed:demo -w @klotho/api`)
 dans l'émulateur Android, avec des photos de vêtements Unsplash (licence
-Unsplash : usage commercial autorisé, sans mention obligatoire). Ils sont en
-français : pour la fiche anglaise, refaire les captures avec le téléphone en
-anglais.
+Unsplash : usage commercial autorisé, sans mention obligatoire). Les captures
+anglaises (`screens/en/`) sont faites avec l'émulateur en anglais et les pièces
+renommées en anglais, avec les mêmes phrases traduites : « Your outfit of the
+day, for the weather », « Your whole wardrobe, finally organised », « Every
+piece, and its story », « Your style, the occasion, the weather », « Ideas that
+feel like you », « Your week of outfits, planned ».
 
 ## Avant d'envoyer en production
 
