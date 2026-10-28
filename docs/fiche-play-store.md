@@ -19,95 +19,105 @@ Ajoute `?lang=en` pour la version anglaise de chaque page.
 
 ## Textes (français, langue principale)
 
-**Nom de l'application** (26/30) :
+Version optimisée pour la recherche dans le Play Store (ASO) : les mots que
+les gens tapent (« dressing virtuel », « garde-robe », « tenue du jour »,
+« idées de tenues », « look ») sont dans le titre, la description courte et
+plusieurs fois dans la description longue. Les blocs ci-dessous se copient
+tels quels dans la console (pas de retours à la ligne à retirer).
 
-> Klotho : Dressing & Tenues
+**Nom de l'application** (25/30) :
 
-**Description courte** (75/80) :
+```text
+Klotho : Dressing virtuel
+```
 
-> Organise ta garde-robe et reçois ta tenue du jour selon la météo. Sans pub.
+**Description courte** (72/80) :
 
-**Description longue** :
+```text
+Range ta garde-robe et reçois ta tenue du jour selon la météo. Sans pub.
+```
 
-> Klotho, c'est ton dressing dans ta poche, avec une touche de douceur.
->
-> Ajoute tes pièces en photo, et Klotho t'aide à composer des tenues qui te
-> ressemblent, selon la météo du jour, ton style et l'occasion.
->
-> ✿ TON DRESSING, ENFIN RANGÉ
-> • Prends tes vêtements en photo (jusqu'à 5 par pièce)
-> • Klotho peut pré-remplir la fiche depuis la photo : catégorie, couleurs,
-> style, saison
-> • Retrouve chaque pièce en un instant : filtres par catégorie, couleur,
-> saison, style ou température
->
-> ✿ UNE TENUE POUR CHAQUE JOUR
-> • Des propositions selon la météo de ta ville, ton style et l'occasion
-> (travail, rendez-vous, week-end…)
-> • Impose une pièce que tu veux porter, écarte ce que tu n'aimes pas
-> • Remplace une pièce, crée des variantes, garde tes tenues favorites
->
-> ✿ TA SEMAINE, PLANIFIÉE
-> • Prévois tes tenues de la semaine dans le calendrier
-> • Un rappel le matin avec ta tenue du jour
-> • Ton historique pour ne pas remettre la même tenue trop souvent
->
-> ✿ UN STYLE QUI TE RESSEMBLE
-> • 23 styles, de romantique à streetwear, de parisien à victorien
-> • Ta palette de couleurs et tes métaux préférés
->
-> ✿ TES DONNÉES, TON CONTRÔLE
-> • Aucune publicité
-> • Tes photos restent privées, hébergées en Europe
-> • Supprime ton compte et toutes tes données à tout moment
->
-> Klotho est une application française, pensée pour toutes celles qui ont
-> « rien à se mettre » devant une armoire pleine.
+**Description longue** (1664/4000) :
 
-## Textes (anglais)
+```text
+Klotho, c'est ton dressing virtuel, avec une touche de douceur. Fini le « rien à me mettre » devant une armoire pleine : prends tes vêtements en photo, et Klotho te propose chaque jour des idées de tenues qui te ressemblent, selon la météo, ton style et l'occasion.
 
-**Nom** : `Klotho: Wardrobe & Outfits`
+✿ TON DRESSING VIRTUEL, ENFIN RANGÉ
+• Ajoute tes vêtements, chaussures et accessoires en photo (jusqu'à 5 par pièce)
+• Klotho remplit la fiche pour toi depuis la photo : catégorie, couleurs, style, saison
+• Retrouve chaque pièce de ta garde-robe en un instant : filtres par catégorie, couleur, saison, style ou température
+• Vois ce que tu portes le plus, et redécouvre les pièces oubliées
 
-**Description courte** :
+✿ TA TENUE DU JOUR, SELON LA MÉTÉO
+• Des idées de tenues selon la météo de ta ville, ton style et l'occasion : quotidien, balade, travail, rendez-vous, restaurant, soirée, cérémonie
+• Impose une pièce que tu veux porter, écarte ce que tu n'aimes pas
+• Remplace une pièce, crée des variantes, garde tes looks favoris
 
-> Organise your wardrobe and get your outfit of the day for the weather. No ads.
+✿ PLANIFIE TES TENUES DE LA SEMAINE
+• Prévois tes looks dans le calendrier
+• Un rappel le matin avec ta tenue du jour
+• Ton historique pour ne pas remettre la même tenue trop souvent
 
-**Description longue** :
+✿ UN STYLE QUI TE RESSEMBLE
+• 23 styles, de romantique à streetwear, de parisien à victorien
+• Ta palette de couleurs et tes métaux préférés
+• Idéal pour construire une garde-robe capsule et mieux porter ce que tu as déjà
 
-> Klotho is your wardrobe in your pocket, with a gentle touch.
->
-> Add your clothes with a photo, and Klotho helps you put together outfits
-> that feel like you, based on today's weather, your style and the occasion.
->
-> ✿ YOUR WARDROBE, FINALLY ORGANISED
-> • Take photos of your clothes (up to 5 per item)
-> • Klotho can fill in the details from the photo: category, colours, style,
-> season
-> • Find any item in a second: filter by category, colour, season, style or
-> temperature
->
-> ✿ AN OUTFIT FOR EVERY DAY
-> • Suggestions based on the weather in your city, your style and the
-> occasion (work, date, weekend…)
-> • Pick an item you want to wear, leave out what you don't like
-> • Swap an item, create variations, keep your favourite outfits
->
-> ✿ YOUR WEEK, PLANNED
-> • Plan your outfits for the week in the calendar
-> • A morning reminder with your outfit of the day
-> • Your history, so you don't wear the same outfit too often
->
-> ✿ A STYLE THAT FEELS LIKE YOU
-> • 23 styles, from romantic to streetwear, from Parisian to Victorian
-> • Your colour palette and your favourite metals
->
-> ✿ YOUR DATA, YOUR CONTROL
-> • No ads
-> • Your photos stay private, hosted in Europe
-> • Delete your account and all your data at any time
->
-> Klotho is a French app, made for everyone who has "nothing to wear" in
-> front of a full wardrobe.
+✿ TES DONNÉES, TON CONTRÔLE
+• Aucune publicité
+• Tes photos restent privées, hébergées en Europe
+• Supprime ton compte et toutes tes données à tout moment
+
+Klotho est une application française, pensée pour toutes celles qui veulent s'habiller avec plaisir, sans y passer la matinée.
+```
+
+## Textes (anglais, en-US)
+
+**Nom** (22/30) :
+
+```text
+Klotho: Outfit Planner
+```
+
+**Description courte** (80/80) :
+
+```text
+Your digital closet: organise your wardrobe, get your outfit of the day. No ads.
+```
+
+**Description longue** (1567/4000) :
+
+```text
+Klotho is your digital closet, with a gentle touch. No more "nothing to wear" in front of a full wardrobe: take photos of your clothes, and Klotho suggests outfit ideas that feel like you every day, based on the weather, your style and the occasion.
+
+✿ YOUR DIGITAL CLOSET, FINALLY ORGANISED
+• Add your clothes, shoes and accessories with a photo (up to 5 per item)
+• Klotho fills in the details from the photo: category, colours, style, season
+• Find any item of your wardrobe in a second: filter by category, colour, season, style or temperature
+• See what you wear the most, and rediscover forgotten pieces
+
+✿ YOUR OUTFIT OF THE DAY, FOR THE WEATHER
+• Outfit ideas based on the weather in your city, your style and the occasion: everyday, walk, work, date, restaurant, night out, ceremony
+• Pick an item you want to wear, leave out what you don't like
+• Swap an item, create variations, keep your favourite looks
+
+✿ PLAN YOUR OUTFITS FOR THE WEEK
+• Plan your looks in the calendar
+• A morning reminder with your outfit of the day
+• Your history, so you don't wear the same outfit too often
+
+✿ A STYLE THAT FEELS LIKE YOU
+• 23 styles, from romantic to streetwear, from Parisian to Victorian
+• Your colour palette and your favourite metals
+• Perfect to build a capsule wardrobe and make the most of what you already own
+
+✿ YOUR DATA, YOUR CONTROL
+• No ads
+• Your photos stay private, hosted in Europe
+• Delete your account and all your data at any time
+
+Klotho is a French app, made for everyone who wants to enjoy getting dressed without spending the morning on it.
+```
 
 ## Catégorie et coordonnées
 
