@@ -50,7 +50,8 @@ export async function storePackages(
   const purchases = await forUser(userId);
   const offerings = await purchases.getOfferings();
   const all = Object.values(offerings.all).flatMap((o) => o.availablePackages);
-  return new Map(all.map((p) => [p.product.identifier, p]));
+  // Google Play subscriptions are identified as "productId:basePlanId".
+  return new Map(all.map((p) => [p.product.identifier.split(':')[0]!, p]));
 }
 
 /** False when the buyer closed the store sheet. */
