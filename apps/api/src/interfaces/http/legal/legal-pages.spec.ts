@@ -1,4 +1,9 @@
-import { renderHomePage, renderLegalPage } from './legal-pages';
+import {
+  renderHomePage,
+  renderLegalPage,
+  renderRobots,
+  renderSitemap,
+} from './legal-pages';
 import type { SiteSettings } from './site-tracking';
 
 const SITE: SiteSettings = {
@@ -104,6 +109,38 @@ describe('website pages', () => {
     expect(renderHomePage('en', site, {}, last)).toContain('class="founders"');
     expect(renderHomePage('en', site, {}, after)).not.toContain(
       'class="founders"',
+    );
+  });
+
+  it('gives search engines one address per page and language', () => {
+    const home = renderHomePage('fr', SITE, { utm_source: 'instagram' });
+    const terms = renderLegalPage('terms', 'en', SITE);
+
+    expect(home).toContain(
+      '<link rel="canonical" href="https://www.dressingklotho.fr/">',
+    );
+    expect(home).toContain(
+      '<link rel="alternate" hreflang="en" href="https://www.dressingklotho.fr/?lang=en">',
+    );
+    expect(terms).toContain(
+      '<link rel="canonical" href="https://www.dressingklotho.fr/legal/terms?lang=en">',
+    );
+    expect(terms).toContain(
+      '<link rel="alternate" hreflang="x-default" href="https://www.dressingklotho.fr/legal/terms?lang=fr">',
+    );
+  });
+
+  it('opens the website to search engines, with its sitemap', () => {
+    const sitemap = renderSitemap();
+
+    expect(renderRobots()).toContain('Allow: /');
+    expect(renderRobots()).toContain(
+      'Sitemap: https://www.dressingklotho.fr/sitemap.xml',
+    );
+    expect(sitemap.match(/<loc>/g)).toHaveLength(8);
+    expect(sitemap).toContain('<loc>https://www.dressingklotho.fr/</loc>');
+    expect(sitemap).toContain(
+      '<loc>https://www.dressingklotho.fr/legal/delete-account?lang=en</loc>',
     );
   });
 
