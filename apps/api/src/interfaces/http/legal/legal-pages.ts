@@ -11,6 +11,7 @@ import {
   consentBlock,
   hasPixels,
   playStoreLink,
+  type SiteOffer,
   type SiteSettings,
 } from './site-tracking';
 
@@ -172,6 +173,34 @@ section.block h2 { font-size: clamp(32px, 4vw, 44px); text-align: center; margin
   font: 600 22px 'Cormorant', serif; }
 .steps h3 { font-size: 24px; margin: 0 0 4px; }
 .steps p { margin: 0; }
+.pricing { text-align: center; }
+.pricing h2 { margin-bottom: 12px !important; line-height: 1.15; }
+.pricing .intro { max-width: 560px; margin: 0 auto 36px; font-size: 19px; }
+.plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;
+  max-width: 880px; margin: 0 auto; text-align: left; }
+.plan { display: flex; flex-direction: column; }
+.plan.featured { border: 2px solid var(--rose);
+  box-shadow: 0 12px 28px rgba(176, 120, 105, .16); }
+.plan h3 { margin-top: 0; }
+.plan .price { font: 500 28px/1.2 'Jost', sans-serif; color: var(--title); }
+.plan .or { font-size: 15px; color: var(--muted); margin: 2px 0; }
+.plan .hint { font-size: 15px; color: var(--muted); }
+.save { display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px;
+  background: var(--blush); color: var(--rose-dark); font: 500 14px 'Jost', sans-serif;
+  vertical-align: middle; }
+.rows { list-style: none; padding: 0; margin: 20px 0 0; }
+.rows li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px;
+  padding: 10px 0; border-top: 1px solid var(--line); }
+.rows strong { font-weight: 500; color: var(--title); }
+.founders { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px 32px; max-width: 880px; margin: 20px auto 0; padding: 24px 28px; text-align: left;
+  background: var(--blush); border-radius: 24px; }
+.founders > div { flex: 1 1 280px; min-width: 0; }
+.founders h3 { font-size: 24px; margin: 4px 0; }
+.founders p { margin: 0; }
+.founders .price { font: 500 28px/1.2 'Jost', sans-serif; color: var(--title); }
+.pricing .more { max-width: 880px; margin: 24px auto 0; }
+.pricing .fine { max-width: 880px; margin: 12px auto 0; font-size: 14px; color: var(--muted); }
 .privacy .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
 .contact { text-align: center; }
 .contact p { font-size: 19px; }
@@ -191,14 +220,16 @@ footer.bottom .copy { margin-left: auto; }
   border-radius: 20px; padding: 22px 26px; margin-top: 16px; }
 .doc h2 { font-size: 24px; margin: 0 0 6px; }
 .doc p { margin: 0; }
-@media (max-width: 860px) {
+@media (max-width: 1100px) {
   nav.links { display: none; }
   .bar .lang { margin-left: auto; }
+}
+@media (max-width: 860px) {
   .bar .pill { display: none; }
   .hero .wrap, .how .wrap, .privacy .wrap { grid-template-columns: 1fr; }
   .hero .wrap { padding-top: 40px; }
   .hero figure { max-width: 380px; margin: 0 auto !important; }
-  .grid { grid-template-columns: 1fr; }
+  .grid, .plans { grid-template-columns: minmax(0, 1fr); }
   section.block { padding: 56px 0; }
   footer.bottom .copy { margin-left: 0; }
 }
@@ -256,6 +287,7 @@ function layout(options: {
     <nav class="links" aria-label="Klotho">
       <a href="${anchor('features')}">${escape(t.nav.features)}</a>
       <a href="${anchor('how')}">${escape(t.nav.how)}</a>
+      ${site.offer ? `<a href="${anchor('pricing')}">${escape(t.nav.pricing)}</a>` : ''}
       <a href="${href('privacy', locale)}"${current === 'privacy' ? ' aria-current="page"' : ''}>${escape(t.nav.privacy)}</a>
       <a href="${anchor('contact')}">${escape(t.nav.contact)}</a>
     </nav>
@@ -315,12 +347,106 @@ const FEATURES = [
   'privacy',
 ] as const;
 
+/** The plans, with the wording and the prices of the Premium screen. */
+function pricingSection(locale: Locale, offer: SiteOffer, now: Date): string {
+  const { site: t, billing } = resources[locale].translation;
+  const { compare, plans } = billing;
+  const { free } = offer;
+  const filled = (text: string, values: Record<string, string>) =>
+    escape(fill(text, values));
+  const unlimited = escape(compare.unlimited);
+  const rows = (values: string[]) => {
+    const labels = [
+      compare.pieces,
+      compare.generations,
+      compare.history,
+      compare.analyses,
+    ];
+    return `<ul class="rows">${labels
+      .map(
+        (label, i) =>
+          `<li><span>${escape(label)}</span><strong>${values[i]}</strong></li>`,
+      )
+      .join('')}</ul>`;
+  };
+  const freeRows = rows([
+    free.pieces === null ? unlimited : String(free.pieces),
+    free.generationsPerWeek === null
+      ? unlimited
+      : filled(compare.generationsFree, {
+          count: String(free.generationsPerWeek),
+        }),
+    free.historyDays === null
+      ? escape(compare.historyPremium)
+      : filled(compare.historyFree, { count: String(free.historyDays) }),
+    filled(compare.analysesFree, { count: String(offer.freeAnalyses) }),
+  ]);
+  const premiumRows = rows([
+    unlimited,
+    unlimited,
+    escape(compare.historyPremium),
+    filled(compare.analysesPremium, {
+      count: String(offer.premiumMonthlyAnalyses),
+    }),
+  ]);
+  const until = offer.foundersUntil;
+  // Same rule as the app: on sale until the end of its last day (UTC).
+  const foundersOnSale = !until || now < new Date(`${until}T23:59:59.999Z`);
+  const untilText = until
+    ? `<p class="hint">${filled(plans.foundersUntil, {
+        date: new Intl.DateTimeFormat(locale, {
+          dateStyle: 'long',
+          timeZone: 'UTC',
+        }).format(new Date(`${until}T00:00:00Z`)),
+      })}</p>`
+    : '';
+  const founders = foundersOnSale
+    ? `
+    <aside class="founders">
+      <div>
+        <span class="overline">${escape(plans.foundersBadge)}</span>
+        <h3>${escape(plans.founders)}</h3>
+        <p>${escape(plans.foundersHint)}</p>
+        ${untilText}
+      </div>
+      <p class="price">${escape(plans.foundersPrice)}</p>
+    </aside>`
+    : '';
+  return `<section class="block pricing" id="pricing">
+  <div class="wrap">
+    <h2>${escape(t.pricing.title)}</h2>
+    <p class="intro">${escape(billing.intro)}</p>
+    <div class="plans">
+      <article class="card plan">
+        <h3>${escape(compare.free)}</h3>
+        <p class="price">${escape(t.pricing.freePrice)}</p>
+        <p class="hint">${escape(t.pricing.freeHint)}</p>
+        ${freeRows}
+      </article>
+      <article class="card plan featured">
+        <h3>${escape(compare.premium)}</h3>
+        <p class="price">${escape(plans.monthlyPrice)}</p>
+        <p class="hint">${escape(plans.monthlyHint)}</p>
+        <p class="or">${escape(t.pricing.or)}</p>
+        <p class="price">${escape(plans.annualPrice)}<span class="save">${escape(plans.save)}</span></p>
+        <p class="hint">${escape(plans.annualHint)}</p>
+        ${premiumRows}
+      </article>
+    </div>${founders}
+    <p class="more">${escape(t.pricing.credits)}</p>
+    <p class="fine">${escape(t.pricing.note)} ${filled(billing.legal, { store: billing.stores.android })}</p>
+  </div>
+</section>
+`;
+}
+
 /** The home page: what Klotho is, how it works, how to reach its author. */
 export function renderHomePage(
   locale: Locale,
   site: SiteSettings,
   /** Query of the visit: the utm_… of the ad link go on to the Play Store. */
   query: Record<string, unknown> = {},
+  now: Date = new Date(),
 ): string {
   const t = resources[locale].translation.site;
   const storeHref = playStoreLink(query);
@@ -387,7 +513,7 @@ ${steps}
     </div>
   </div>
 </section>
-<section class="block privacy" id="privacy">
+${site.offer ? pricingSection(locale, site.offer, now) : ''}<section class="block privacy" id="privacy">
   <div class="wrap">
     <div>
       <h2>${escape(t.privacyTitle)}</h2>

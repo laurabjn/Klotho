@@ -5,6 +5,13 @@ const SITE: SiteSettings = {
   contactEmail: 'contact@example.com',
   playStoreLive: false,
   pixels: {},
+  offer: null,
+};
+const OFFER = {
+  free: { pieces: 100, generationsPerWeek: 10, historyDays: 7 },
+  freeAnalyses: 3,
+  premiumMonthlyAnalyses: 25,
+  foundersUntil: '2027-01-31',
 };
 const PIXELS = {
   meta: '1234567890',
@@ -59,6 +66,45 @@ describe('website pages', () => {
     );
     expect(html).not.toContain('bad');
     expect(html).not.toContain('Bientôt sur Google Play');
+  });
+
+  it('hides the plans while payments are off', () => {
+    const html = renderHomePage('fr', SITE);
+
+    expect(html).not.toContain('id="pricing"');
+    expect(html).not.toContain('href="#pricing"');
+  });
+
+  it('shows the configured limits and the prices of the plans', () => {
+    const html = renderHomePage('fr', { ...SITE, offer: OFFER });
+
+    for (const part of [
+      'href="#pricing"',
+      'id="pricing"',
+      '<strong>100</strong>',
+      '<strong>10 / semaine</strong>',
+      '<strong>7 jours</strong>',
+      '<strong>3 offertes</strong>',
+      '<strong>25 / mois</strong>',
+      '4,99 € / mois',
+      '32,99 € / an',
+      '49,99 € à vie',
+      'Jusqu’au 31 janvier 2027 seulement.',
+      'depuis Google Play',
+    ])
+      expect(html).toContain(part);
+    expect(html).not.toContain('{{');
+  });
+
+  it('removes the founders offer after its last day', () => {
+    const site = { ...SITE, offer: OFFER };
+    const last = new Date('2027-01-31T23:00:00Z');
+    const after = new Date('2027-02-01T00:00:00Z');
+
+    expect(renderHomePage('en', site, {}, last)).toContain('class="founders"');
+    expect(renderHomePage('en', site, {}, after)).not.toContain(
+      'class="founders"',
+    );
   });
 
   it('asks for consent before loading the pixels', () => {

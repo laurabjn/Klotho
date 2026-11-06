@@ -18,6 +18,18 @@ import type { SiteSettings } from './site-tracking';
           contactEmail: get('CONTACT_EMAIL') ?? get('MAIL_FROM') ?? '',
           siteVerification: get('GOOGLE_SITE_VERIFICATION'),
           playStoreLive: get('PLAY_STORE_LIVE'),
+          offer: get('BILLING_ENABLED')
+            ? {
+                free: {
+                  pieces: get('FREE_PIECES'),
+                  generationsPerWeek: get('FREE_GENERATIONS_PER_WEEK'),
+                  historyDays: get('FREE_HISTORY_DAYS'),
+                },
+                freeAnalyses: get('AI_FREE_PHOTO_ANALYSES'),
+                premiumMonthlyAnalyses: get('PREMIUM_MONTHLY_ANALYSES'),
+                foundersUntil: get('FOUNDERS_UNTIL') ?? null,
+              }
+            : null,
           pixels: {
             meta: get('META_PIXEL_ID'),
             tiktok: get('TIKTOK_PIXEL_ID'),

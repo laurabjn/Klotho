@@ -7,6 +7,7 @@ export const siteEn: TranslationResource['site'] = {
   nav: {
     features: 'Features',
     how: 'How it works',
+    pricing: 'Pricing',
     privacy: 'Privacy',
     contact: 'Contact',
   },
@@ -31,7 +32,7 @@ export const siteEn: TranslationResource['site'] = {
     },
     occasion: {
       title: 'For every occasion',
-      body: 'Work, a date, the weekend: pick a piece to wear, leave out what you dislike.',
+      body: 'Work, a date, a night out: pick a piece to wear, leave out what you dislike.',
     },
     calendar: {
       title: 'Your week, planned',
@@ -61,6 +62,15 @@ export const siteEn: TranslationResource['site'] = {
       body: 'Every day, ideas for the weather and the occasion, to keep as a favourite or to plan.',
     },
   ],
+  pricing: {
+    title: 'Free to start, unlimited if you like',
+    freePrice: '€0',
+    freeHint: 'No credit card',
+    or: 'or',
+    credits:
+      'Need more analyses? 25 credits for €1.99 or 75 credits for €3.99, with no expiry date.',
+    note: 'Prices in France, taxes included. Purchases are made in the app, through Google Play.',
+  },
   privacyTitle: 'Your data, your control',
   privacyBody:
     'Klotho only keeps what it needs to put your outfits together. Nothing is sold or used for advertising, and you can delete your account and all your data at any time.',

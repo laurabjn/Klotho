@@ -1,3 +1,5 @@
+import type { PlanLimits } from '@klotho/shared';
+
 /** Advertising pixels of the website, each one only when configured. */
 export interface SitePixels {
   /** Meta (Facebook, Instagram) pixel id: digits. */
@@ -19,6 +21,16 @@ export interface SiteSettings {
   /** The app is on Google Play: the download button replaces "soon". */
   playStoreLive: boolean;
   pixels: SitePixels;
+  /** The free and Premium plans; null while payments are off. */
+  offer: SiteOffer | null;
+}
+
+export interface SiteOffer {
+  free: PlanLimits;
+  freeAnalyses: number;
+  premiumMonthlyAnalyses: number;
+  /** Last day of the founders offer (YYYY-MM-DD); null when not limited. */
+  foundersUntil: string | null;
 }
 
 export const PLAY_STORE_URL =
