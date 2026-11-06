@@ -23,6 +23,15 @@ const PAGES: LegalPage[] = ['privacy', 'terms', 'delete-account'];
 const href = (page: LegalPage, locale: Locale) =>
   `/legal/${page}?lang=${locale}`;
 
+/** The address search engines must keep, whatever the host of the visit. */
+const SITE_URL = 'https://www.dressingklotho.fr';
+
+/** The address of a page, without the campaign of the visit. */
+const pageUrl = (page: LegalPage | 'home', locale: Locale) => {
+  if (page !== 'home') return `${SITE_URL}${href(page, locale)}`;
+  return locale === 'fr' ? `${SITE_URL}/` : `${SITE_URL}/?lang=${locale}`;
+};
+
 const escape = (text: string) =>
   text
     .replace(/&/g, '&amp;')
@@ -272,6 +281,10 @@ function layout(options: {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escape(options.title)}</title>
 <meta name="description" content="${escape(options.description)}">
+<link rel="canonical" href="${escape(pageUrl(current, locale))}">
+<link rel="alternate" hreflang="${locale}" href="${escape(pageUrl(current, locale))}">
+<link rel="alternate" hreflang="${other}" href="${escape(pageUrl(current, other))}">
+<link rel="alternate" hreflang="x-default" href="${escape(pageUrl(current, 'fr'))}">
 <meta property="og:title" content="${escape(options.title)}">
 <meta property="og:description" content="${escape(options.description)}">
 <meta property="og:image" content="/site/hero.webp">
@@ -346,6 +359,25 @@ const FEATURES = [
   'styles',
   'privacy',
 ] as const;
+
+/** Lets search engines read the website and points them to its pages. */
+export function renderRobots(): string {
+  return `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`;
+}
+
+/** Every public page, in both languages. */
+export function renderSitemap(): string {
+  const urls = (['home', ...PAGES] as const).flatMap((page) =>
+    (['fr', 'en'] as const).map(
+      (locale) => `  <url><loc>${escape(pageUrl(page, locale))}</loc></url>`,
+    ),
+  );
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join('\n')}
+</urlset>
+`;
+}
 
 /** The plans, with the wording and the prices of the Premium screen. */
 function pricingSection(locale: Locale, offer: SiteOffer, now: Date): string {

@@ -12,7 +12,13 @@ import type { Response } from 'express';
 import { isSupportedLocale, type Locale } from '@klotho/i18n';
 
 import { Public } from '../auth/public.decorator';
-import { renderHomePage, renderLegalPage, type LegalPage } from './legal-pages';
+import {
+  renderHomePage,
+  renderLegalPage,
+  renderRobots,
+  renderSitemap,
+  type LegalPage,
+} from './legal-pages';
 import { siteAsset } from './site-assets';
 import type { SiteSettings } from './site-tracking';
 
@@ -48,6 +54,22 @@ export class LegalController {
     if (!PAGES.has(page)) throw new NotFoundException();
     const locale: Locale = isSupportedLocale(lang) ? lang : 'fr';
     return renderLegalPage(page as LegalPage, locale, this.site);
+  }
+
+  @Public()
+  @Get('robots.txt')
+  @Header('Content-Type', 'text/plain; charset=utf-8')
+  @Header('Cache-Control', 'public, max-age=3600')
+  robots(): string {
+    return renderRobots();
+  }
+
+  @Public()
+  @Get('sitemap.xml')
+  @Header('Content-Type', 'application/xml; charset=utf-8')
+  @Header('Cache-Control', 'public, max-age=3600')
+  sitemap(): string {
+    return renderSitemap();
   }
 
   /** Logo and illustrations of the website (fixed list). */
