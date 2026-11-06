@@ -6,6 +6,7 @@ export const siteFr = {
   nav: {
     features: 'Fonctionnalités',
     how: 'Comment ça marche',
+    pricing: 'Tarifs',
     privacy: 'Confidentialité',
     contact: 'Contact',
   },
@@ -30,7 +31,7 @@ export const siteFr = {
     },
     occasion: {
       title: 'Pour chaque occasion',
-      body: 'Travail, rendez-vous, week-end : impose une pièce, écarte ce que tu n’aimes pas.',
+      body: 'Travail, rendez-vous, soirée : impose une pièce, écarte ce que tu n’aimes pas.',
     },
     calendar: {
       title: 'Ta semaine planifiée',
@@ -60,6 +61,15 @@ export const siteFr = {
       body: 'Chaque jour, des propositions selon la météo et l’occasion, à garder en favori ou à planifier.',
     },
   ],
+  pricing: {
+    title: 'Gratuit pour commencer, sans limite si tu veux',
+    freePrice: '0 €',
+    freeHint: 'Sans carte bancaire',
+    or: 'ou',
+    credits:
+      'Besoin de plus d’analyses ? 25 crédits à 1,99 € ou 75 crédits à 3,99 €, sans date limite.',
+    note: 'Prix en France, toutes taxes comprises. Les achats se font dans l’application, via Google Play.',
+  },
   privacyTitle: 'Tes données, ton contrôle',
   privacyBody:
     'Klotho ne garde que ce qui sert à composer tes tenues. Rien n’est vendu ni utilisé pour de la publicité, et tu peux supprimer ton compte et toutes tes données à tout moment.',
