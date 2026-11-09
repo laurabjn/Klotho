@@ -18,6 +18,7 @@ import {
   outfitHistoryQuerySchema,
   outfitVariantSchema,
   replaceOutfitItemSchema,
+  type CompleteLook,
   type GenerateOutfitsRequest,
   type ListOutfitsQuery,
   type Outfit,
@@ -40,6 +41,7 @@ import {
   CreateOutfitsUseCase,
   CreateOutfitVariantUseCase,
   DeleteOutfitUseCase,
+  GetCompleteLookUseCase,
   GetOutfitUseCase,
   ListOutfitAlternativesUseCase,
   ReplaceOutfitItemUseCase,
@@ -68,6 +70,7 @@ export class OutfitsController {
     private readonly markWorn: MarkOutfitWornUseCase,
     private readonly listHistory: ListOutfitHistoryUseCase,
     private readonly deleteWear: DeleteOutfitWearUseCase,
+    private readonly completeLook: GetCompleteLookUseCase,
   ) {}
 
   /** The 5 looks of the day, saved. */
@@ -115,6 +118,15 @@ export class OutfitsController {
     @Param('id') id: string,
   ): Promise<Outfit> {
     return this.getOutfit.execute(userId, id);
+  }
+
+  /** "Le look complet": Premium only (402 on the free plan). */
+  @Get(':id/look')
+  look(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<CompleteLook> {
+    return this.completeLook.execute(userId, id);
   }
 
   /** "Supprimer de mes tenues": refused (409) once the look was worn. */

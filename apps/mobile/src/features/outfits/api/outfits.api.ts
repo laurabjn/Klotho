@@ -1,4 +1,5 @@
 import type {
+  CompleteLook,
   GenerateOutfitsInput,
   ListOutfitsQueryInput,
   Outfit,
@@ -35,6 +36,9 @@ export const outfitsApi = {
   recent: async (limit: number) =>
     (await outfitsApi.list({ filter: 'generated', pageSize: limit })).items,
   get: (id: string) => request<Outfit>(`/outfits/${id}`, { auth: true }),
+  /** "Le look complet" (Premium): hairstyle and makeup ideas. */
+  look: (id: string) =>
+    request<CompleteLook>(`/outfits/${id}/look`, { auth: true }),
   /** "Supprimer de mes tenues" (refused for a look already worn). */
   remove: (id: string) =>
     request<void>(`/outfits/${id}`, { method: 'DELETE', auth: true }),

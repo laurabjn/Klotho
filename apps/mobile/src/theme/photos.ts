@@ -1,4 +1,4 @@
-import type { Occasion, Style } from '@klotho/shared';
+import type { Hairstyle, MakeupLook, Occasion, Style } from '@klotho/shared';
 
 // Editorial photos of the mockups. Provisional crops of the mockup boards:
 // replace the files (same names) with the HD versions, then update the ratios.
@@ -86,6 +86,12 @@ export const stylePhotos: Partial<Record<Style, number>> = {
   vintage60s: require('../../assets/styles/vintage60s.jpg'),
   victorian: require('../../assets/styles/victorian.jpg'),
 };
+
+/**
+ * Illustrations of "Le look complet", by hairstyle or makeup key. Missing
+ * ones fall back to an icon.
+ */
+export const lookPhotos: Partial<Record<Hairstyle | MakeupLook, number>> = {};
 
 /** Transparent illustrations of the state screens. */
 export const statePhotos = {

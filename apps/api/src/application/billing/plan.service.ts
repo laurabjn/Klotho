@@ -11,6 +11,7 @@ import type {
 } from '../../domain/ai/ports/ai-usage.repository';
 import {
   GenerationLimitReachedError,
+  PremiumRequiredError,
   PieceLimitReachedError,
 } from '../../domain/billing/errors';
 import type { BillingRepository } from '../../domain/billing/ports/billing.repository';
@@ -107,6 +108,13 @@ export class PlanService implements PlanGate {
     if (generationsPerWeek === null) return;
     if ((await this.generationsThisWeek(userId)) >= generationsPerWeek)
       throw new GenerationLimitReachedError();
+  }
+
+  /** Premium features are open to everyone while payments are off. */
+  async assertPremium(userId: string): Promise<void> {
+    if (!this.settings.enabled) return;
+    if ((await this.current(userId)).plan === 'free')
+      throw new PremiumRequiredError();
   }
 
   /** Always recorded: the usage is followed even without limits. */

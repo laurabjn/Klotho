@@ -24,6 +24,7 @@ import { outfitsApi } from '../api/outfits.api';
 export const outfitKeys = {
   all: ['outfits'] as const,
   one: (id: string) => ['outfits', 'one', id] as const,
+  look: (id: string) => ['outfits', 'look', id] as const,
   recent: (limit: number) => ['outfits', 'recent', limit] as const,
   alternatives: (id: string, role: OutfitRole) =>
     ['outfits', 'alternatives', id, role] as const,
@@ -69,6 +70,14 @@ export function useOutfit(id: string) {
   return useQuery({
     queryKey: outfitKeys.one(id),
     queryFn: () => outfitsApi.get(id),
+  });
+}
+
+/** "Le look complet": follows her latest hair and makeup preferences. */
+export function useCompleteLook(id: string) {
+  return useQuery({
+    queryKey: outfitKeys.look(id),
+    queryFn: () => outfitsApi.look(id),
   });
 }
 

@@ -29,6 +29,7 @@ import { formatDay, today } from '@/lib/days';
 import { occasionIcons, styleIcons, type IconName } from '@/theme/icons';
 import { colors, fonts, radii, spacing, touchTarget } from '@/theme/tokens';
 
+import { CompleteLookCard } from '../components/CompleteLookCard';
 import { OutfitCollage } from '../components/OutfitCollage';
 import { OutfitItemTile } from '../components/OutfitItemTile';
 import { itemTitle } from '@/features/wardrobe/labels';
@@ -230,6 +231,8 @@ function Details({ outfit }: { outfit: Outfit }) {
             </View>
           </View>
         )}
+
+        <CompleteLookCard outfitId={outfit.id} />
 
         <OutfitFeedbackBar outfit={outfit} />
 

@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import {
+  HAIR_LENGTHS,
+  HAIR_TEXTURES,
+  MAKEUP_PREFERENCES,
+} from '../looks/catalog';
 import { LEVEL_MAX, LEVEL_MIN } from '../wardrobe/taxonomy';
 import { colorSchema, seasonSchema, styleSchema } from '../wardrobe/schemas';
 
@@ -57,6 +62,19 @@ export const styleProfileSchema = z
       .nullable()
       .default(null),
     avoidsDeepNeckline: z.boolean().nullable().default(null),
+    /** "Le look complet": what hairstyles and makeup suit the user. */
+    hairLength: z
+      .enum(HAIR_LENGTHS, { error: 'errors.preferences.hairLength' })
+      .nullable()
+      .default(null),
+    hairTexture: z
+      .enum(HAIR_TEXTURES, { error: 'errors.preferences.hairTexture' })
+      .nullable()
+      .default(null),
+    makeupPreference: z
+      .enum(MAKEUP_PREFERENCES, { error: 'errors.preferences.makeup' })
+      .nullable()
+      .default(null),
   })
   .refine(
     (profile) =>

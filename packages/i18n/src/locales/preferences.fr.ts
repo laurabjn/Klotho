@@ -91,4 +91,21 @@ export const preferencesFr = {
   neckline: 'Décolleté',
   necklineAvoid: 'Éviter les décolletés profonds',
   necklineAny: 'Peu importe',
+  hairMakeup: 'Cheveux et maquillage',
+  hairMakeupHint: 'Pour des idées de coiffure et de maquillage qui te vont.',
+  hairLength: 'Longueur de mes cheveux',
+  hairLengths: { short: 'Courts', medium: 'Mi-longs', long: 'Longs' },
+  hairTexture: 'Texture de mes cheveux',
+  hairTextures: {
+    straight: 'Raides',
+    wavy: 'Ondulés',
+    curly: 'Bouclés',
+    coily: 'Crépus',
+  },
+  makeup: 'Le maquillage et moi',
+  makeups: {
+    none: 'Je n’en porte pas',
+    light: 'Léger seulement',
+    any: 'J’aime varier',
+  },
 } as const;

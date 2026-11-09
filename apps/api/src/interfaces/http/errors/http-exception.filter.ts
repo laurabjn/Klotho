@@ -23,6 +23,7 @@ import {
 } from '../../../domain/ai/errors';
 import {
   GenerationLimitReachedError,
+  PremiumRequiredError,
   PieceLimitReachedError,
   StoreUnavailableError,
 } from '../../../domain/billing/errors';
@@ -98,6 +99,7 @@ const DOMAIN_ERROR_STATUS = new Map<new () => DomainError, HttpStatus>([
   [NoGarmentError, HttpStatus.UNPROCESSABLE_ENTITY],
   [PieceLimitReachedError, HttpStatus.PAYMENT_REQUIRED],
   [GenerationLimitReachedError, HttpStatus.PAYMENT_REQUIRED],
+  [PremiumRequiredError, HttpStatus.PAYMENT_REQUIRED],
   [StoreUnavailableError, HttpStatus.SERVICE_UNAVAILABLE],
 ]);
 

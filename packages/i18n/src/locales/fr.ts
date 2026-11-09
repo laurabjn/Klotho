@@ -7,6 +7,7 @@ import { settingsFr } from './settings.fr';
 import { statesFr } from './states.fr';
 import { aiFr } from './ai.fr';
 import { billingFr } from './billing.fr';
+import { looksFr } from './looks.fr';
 import { siteFr } from './site.fr';
 import { weatherFr } from './weather.fr';
 
@@ -110,6 +111,7 @@ export const fr = {
   states: statesFr,
   ai: aiFr,
   billing: billingFr,
+  looks: looksFr,
   site: siteFr,
   profile: {
     title: 'Mon profil',
@@ -191,6 +193,9 @@ export const fr = {
       metal: 'Métal inconnu',
       bottoms: 'Choix inconnu',
       length: 'Longueur inconnue',
+      hairLength: 'Longueur de cheveux inconnue',
+      hairTexture: 'Texture de cheveux inconnue',
+      makeup: 'Choix de maquillage inconnu',
       colorConflict:
         'Une couleur ne peut pas être à la fois favorite et à éviter',
     },
@@ -282,6 +287,7 @@ export const fr = {
         'Ton dressing a atteint la limite de la version gratuite. Passe à Premium pour ajouter d’autres pièces.',
       generationLimit:
         'Tu as utilisé toutes tes générations gratuites de la semaine.',
+      premiumRequired: 'Cette fonctionnalité fait partie de Premium.',
       storeUnavailable:
         'Impossible de vérifier ton achat pour le moment. Réessaie dans un instant.',
     },
