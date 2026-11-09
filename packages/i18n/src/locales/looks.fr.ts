@@ -23,6 +23,7 @@ export const looksFr = {
     occasion: 'Parfait pour l’occasion',
     style: 'Dans le style de la tenue',
     colors: 'Assorti à tes couleurs',
+    echo: 'Rappelle une couleur de ta tenue',
     hair: 'Pensé pour tes cheveux',
   },
   hairstyles: {
@@ -187,6 +188,26 @@ export const looksFr = {
     victorianPale: {
       name: 'Teint de porcelaine',
       how: 'Un teint lumineux et clair, un blush rosé discret et des lèvres teintées de rouge sombre, estompées.',
+    },
+    coloredLiner: {
+      name: 'Eye-liner coloré',
+      how: 'Remplace le noir par un trait bleu électrique, vert ou violet, au ras des cils. Garde le reste du visage simple.',
+    },
+    pastelEyes: {
+      name: 'Paupières pastel',
+      how: 'Un fard lilas, menthe ou bleu ciel estompé sur toute la paupière, une touche d’enlumineur au coin de l’œil.',
+    },
+    sunsetEyes: {
+      name: 'Coucher de soleil',
+      how: 'Un dégradé de fard orange au creux, rose au centre et doré près des cils, bien estompé.',
+    },
+    brightLips: {
+      name: 'Lèvres vives',
+      how: 'Un rouge à lèvres fuchsia, orange ou corail vif, appliqué net au pinceau. Le reste du visage reste léger.',
+    },
+    jewelEyes: {
+      name: 'Pierres précieuses',
+      how: 'Un fard émeraude, saphir ou améthyste sur la paupière mobile et une touche irisée au centre.',
     },
   },
 } as const;

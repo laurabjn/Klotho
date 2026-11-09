@@ -196,14 +196,28 @@ function scoreMakeup(
   if (context.occasion && formality === 1) reasons.push('occasion');
   const style = styleFit(traits.styles, outfit, context);
   if (style.matched) reasons.push('style');
+  const lovesColour = context.profile.makeupPreference === 'colorful';
   let colors = 0.7;
-  if (tone !== 'neutral' && traits.tone !== 'neutral') {
+  if (traits.echoes) {
+    // A colourful look needs a reason: a colour of the outfit, or her taste.
+    const echoed = mainPieces(outfit).some(({ item }) =>
+      [item.primaryColor, ...item.secondaryColors].some((color) =>
+        traits.echoes!.includes(familyOf(color)),
+      ),
+    );
+    colors = echoed ? 1 : lovesColour ? 0.7 : 0.3;
+    if (echoed) reasons.push('echo');
+  } else if (tone !== 'neutral' && traits.tone !== 'neutral') {
     colors = traits.tone === tone ? 1 : 0.4;
     if (traits.tone === tone) reasons.push('colors');
   }
   return {
     score:
-      0.4 * style.score + 0.3 * formality + 0.15 * weatherScore + 0.15 * colors,
+      0.4 * style.score +
+      0.3 * formality +
+      0.15 * weatherScore +
+      0.15 * colors +
+      (lovesColour && traits.echoes ? 0.25 : 0),
     reasons,
   };
 }

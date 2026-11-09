@@ -24,6 +24,7 @@ export const looksEn: TranslationResource['looks'] = {
     occasion: 'Perfect for the occasion',
     style: 'In the style of the outfit',
     colors: 'Matches your colours',
+    echo: 'Echoes a colour of your outfit',
     hair: 'Made for your hair',
   },
   hairstyles: {
@@ -188,6 +189,26 @@ export const looksEn: TranslationResource['looks'] = {
     victorianPale: {
       name: 'Porcelain complexion',
       how: 'A bright, light complexion, a discreet rosy blush and lips stained dark red, blended.',
+    },
+    coloredLiner: {
+      name: 'Coloured eyeliner',
+      how: 'Swap black for an electric blue, green or purple line along the lashes. Keep the rest of the face simple.',
+    },
+    pastelEyes: {
+      name: 'Pastel eyelids',
+      how: 'A lilac, mint or sky blue eyeshadow blended over the whole lid, a touch of highlighter in the inner corner.',
+    },
+    sunsetEyes: {
+      name: 'Sunset eyes',
+      how: 'A gradient of orange in the crease, pink in the middle and gold near the lashes, well blended.',
+    },
+    brightLips: {
+      name: 'Bright lips',
+      how: 'A fuchsia, orange or bright coral lipstick, applied crisply with a brush. Keep the rest of the face light.',
+    },
+    jewelEyes: {
+      name: 'Jewel eyes',
+      how: 'An emerald, sapphire or amethyst eyeshadow on the lid and an iridescent touch in the middle.',
     },
   },
 };

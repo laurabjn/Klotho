@@ -7,8 +7,11 @@ export type HairLength = (typeof HAIR_LENGTHS)[number];
 export const HAIR_TEXTURES = ['straight', 'wavy', 'curly', 'coily'] as const;
 export type HairTexture = (typeof HAIR_TEXTURES)[number];
 
-/** "none": hairstyle only; "light": the lightest makeup looks only. */
-export const MAKEUP_PREFERENCES = ['none', 'light', 'any'] as const;
+/**
+ * "none": hairstyle only; "light": the lightest makeup looks only;
+ * "colorful": the colourful looks first.
+ */
+export const MAKEUP_PREFERENCES = ['none', 'light', 'any', 'colorful'] as const;
 export type MakeupPreference = (typeof MAKEUP_PREFERENCES)[number];
 
 export const HAIRSTYLES = [
@@ -56,6 +59,11 @@ export const MAKEUP_LOOKS = [
   'y2kGloss',
   'glitter',
   'victorianPale',
+  'coloredLiner',
+  'pastelEyes',
+  'sunsetEyes',
+  'brightLips',
+  'jewelEyes',
 ] as const;
 export type MakeupLook = (typeof MAKEUP_LOOKS)[number];
 
@@ -67,6 +75,7 @@ export const LOOK_REASONS = [
   'occasion',
   'style',
   'colors',
+  'echo',
   'hair',
 ] as const;
 export type LookReason = (typeof LOOK_REASONS)[number];

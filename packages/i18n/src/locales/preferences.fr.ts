@@ -107,5 +107,6 @@ export const preferencesFr = {
     none: 'Je n’en porte pas',
     light: 'Léger seulement',
     any: 'J’aime varier',
+    colorful: 'J’adore la couleur',
   },
 } as const;

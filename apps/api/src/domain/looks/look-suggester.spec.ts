@@ -149,6 +149,38 @@ describe('suggestCompleteLook', () => {
     expect(MAKEUP_TRAITS[coolOutfit.makeups[0]!.key].tone).toBe('cool');
   });
 
+  it('puts the colourful looks first for those who love colour', () => {
+    const colorful = profile({ makeupPreference: 'colorful' });
+    const navy = suggestCompleteLook(
+      'look-1',
+      outfit({ primaryColor: 'navy' }),
+      context({ profile: colorful }),
+    );
+    const plain = suggestCompleteLook(
+      'look-1',
+      outfit(),
+      context({ profile: colorful }),
+    );
+
+    const top = MAKEUP_TRAITS[navy.makeups[0]!.key];
+    expect(top.echoes).toContain('blues');
+    expect(navy.makeups[0]!.reasons).toContain('echo');
+    for (const { key } of plain.makeups)
+      expect(MAKEUP_TRAITS[key].echoes).toBeDefined();
+  });
+
+  it('keeps colourful looks for outfits that echo them, otherwise', () => {
+    const neutral = suggestCompleteLook('look-1', outfit(), context());
+    const light = suggestCompleteLook(
+      'look-1',
+      outfit({ primaryColor: 'navy' }),
+      context({ profile: profile({ makeupPreference: 'light' }) }),
+    );
+
+    for (const { key } of [...neutral.makeups, ...light.makeups])
+      expect(MAKEUP_TRAITS[key].echoes).toBeUndefined();
+  });
+
   it('keeps the makeup light in the heat', () => {
     const result = suggestCompleteLook(
       'look-1',

@@ -107,5 +107,6 @@ export const preferencesEn: TranslationResource['preferences'] = {
     none: 'I don’t wear any',
     light: 'Light only',
     any: 'I like to vary',
+    colorful: 'I love colour',
   },
 };
