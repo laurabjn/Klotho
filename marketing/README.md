@@ -18,6 +18,7 @@ Il faut Python 3 et Google Chrome. Le script crée :
 | `ads/carre-*-1080x1080.png`             | fil Instagram, Facebook, TikTok          |
 | `ads/story-*-1080x1920.png`             | stories, reels, TikTok plein écran       |
 | `ads/epingle-*-1000x1500.png`           | épingle Pinterest                        |
+| `ads/google-{paysage,carre,portrait}-*` | campagne Google Ads (Play Store)         |
 
 Deux accroches (`a` : « Ta tenue du jour… », `b` : « Rien à te mettre ? ») et
 deux boutons (`bientot`, `disponible` une fois l'app publiée). Les textes
