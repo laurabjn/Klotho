@@ -17,6 +17,9 @@ describe('styleProfileSchema', () => {
       preferredFormality: null,
       minLength: null,
       avoidsDeepNeckline: null,
+      hairLength: null,
+      hairTexture: null,
+      makeupPreference: null,
     });
   });
 
@@ -33,6 +36,9 @@ describe('styleProfileSchema', () => {
       preferredFormality: 3,
       minLength: 'knee',
       avoidsDeepNeckline: true,
+      hairLength: 'medium',
+      hairTexture: 'curly',
+      makeupPreference: 'light',
     };
     expect(styleProfileSchema.parse(profile)).toEqual(profile);
   });
@@ -45,6 +51,9 @@ describe('styleProfileSchema', () => {
     [{ preferredFormality: 6 }, 'errors.wardrobe.level'],
     [{ minLength: 'ankle' }, 'errors.preferences.length'],
     [{ colorSeason: 'monsoon' }, 'errors.wardrobe.season'],
+    [{ hairLength: 'bald' }, 'errors.preferences.hairLength'],
+    [{ hairTexture: 'frizzy' }, 'errors.preferences.hairTexture'],
+    [{ makeupPreference: 'always' }, 'errors.preferences.makeup'],
   ])('rejects %j', (input, expected) => {
     expect(messages(styleProfileSchema.safeParse(input))).toContain(expected);
   });

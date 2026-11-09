@@ -20,6 +20,9 @@ const select = {
   preferredFormality: true,
   minLength: true,
   avoidsDeepNeckline: true,
+  hairLength: true,
+  hairTexture: true,
+  makeupPreference: true,
   onboardedAt: true,
   updatedAt: true,
 } as const;

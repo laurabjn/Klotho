@@ -91,4 +91,21 @@ export const preferencesEn: TranslationResource['preferences'] = {
   neckline: 'Neckline',
   necklineAvoid: 'Avoid deep necklines',
   necklineAny: 'Doesn’t matter',
+  hairMakeup: 'Hair and makeup',
+  hairMakeupHint: 'For hairstyle and makeup ideas that suit you.',
+  hairLength: 'My hair length',
+  hairLengths: { short: 'Short', medium: 'Medium', long: 'Long' },
+  hairTexture: 'My hair texture',
+  hairTextures: {
+    straight: 'Straight',
+    wavy: 'Wavy',
+    curly: 'Curly',
+    coily: 'Coily',
+  },
+  makeup: 'Makeup and me',
+  makeups: {
+    none: 'I don’t wear any',
+    light: 'Light only',
+    any: 'I like to vary',
+  },
 };

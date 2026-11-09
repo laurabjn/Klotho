@@ -8,6 +8,7 @@ import { settingsEn } from './settings.en';
 import { statesEn } from './states.en';
 import { aiEn } from './ai.en';
 import { billingEn } from './billing.en';
+import { looksEn } from './looks.en';
 import { siteEn } from './site.en';
 import { weatherEn } from './weather.en';
 
@@ -109,6 +110,7 @@ export const en: TranslationResource = {
   states: statesEn,
   ai: aiEn,
   billing: billingEn,
+  looks: looksEn,
   site: siteEn,
   profile: {
     title: 'My profile',
@@ -189,6 +191,9 @@ export const en: TranslationResource = {
       metal: 'Unknown metal',
       bottoms: 'Unknown choice',
       length: 'Unknown length',
+      hairLength: 'Unknown hair length',
+      hairTexture: 'Unknown hair texture',
+      makeup: 'Unknown makeup choice',
       colorConflict: 'A colour cannot be both a favourite and to avoid',
     },
     outfits: {
@@ -276,6 +281,7 @@ export const en: TranslationResource = {
       pieceLimit:
         'Your wardrobe has reached the limit of the free version. Go Premium to add more pieces.',
       generationLimit: 'You have used all your free generations this week.',
+      premiumRequired: 'This feature is part of Premium.',
       storeUnavailable:
         'Your purchase cannot be checked right now. Try again in a moment.',
     },

@@ -4,6 +4,8 @@ export interface PlanGate {
   assertCanAddPiece(userId: string): Promise<void>;
   /** @throws GenerationLimitReachedError */
   assertCanGenerate(userId: string): Promise<void>;
+  /** @throws PremiumRequiredError */
+  assertPremium(userId: string): Promise<void>;
   generationDone(userId: string): Promise<void>;
   /** First calendar day of the visible history, or null for all of it. */
   historyFrom(userId: string): Promise<string | null>;
@@ -13,6 +15,7 @@ export interface PlanGate {
 export const NO_LIMITS: PlanGate = {
   assertCanAddPiece: () => Promise.resolve(),
   assertCanGenerate: () => Promise.resolve(),
+  assertPremium: () => Promise.resolve(),
   generationDone: () => Promise.resolve(),
   historyFrom: () => Promise.resolve(null),
 };

@@ -16,6 +16,7 @@ import { colors, spacing } from '@/theme/tokens';
 
 import {
   AdvancedSection,
+  HairMakeupSection,
   ColorsSection,
   PracticalSection,
   StylesSection,
@@ -74,6 +75,7 @@ function Editor({ profile }: { profile: StyleProfile }) {
         <ColorsSection {...props} row />
         <PracticalSection {...props} />
         <AdvancedSection {...props} />
+        <HairMakeupSection {...props} />
       </ScrollPage>
       <View style={styles.footer}>
         <FormError

@@ -122,6 +122,13 @@ beforeEach(() => {
     observedAt: '2026-10-01T08:00:00.000Z',
     source: 'city',
   });
+  api.look.mockResolvedValue({
+    hairstyles: [
+      { key: 'lowBun', reasons: ['occasion', 'style'] },
+      { key: 'halfUp', reasons: [] },
+    ],
+    makeups: [{ key: 'officeFresh', reasons: ['occasion'] }],
+  });
   jest.mocked(wardrobeApi.list).mockResolvedValue({
     items: [BLOUSE, SKIRT, FLATS],
     total: 3,
@@ -377,6 +384,41 @@ describe('OutfitDetailsScreen', () => {
       pathname: '/outfits/[id]/feedback',
       params: { id: 'o1', rating: 'dislike' },
     });
+  });
+});
+
+describe('OutfitDetailsScreen complete look', () => {
+  it('suggests a hairstyle and a makeup look, and another idea', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    expect(await screen.findByText('Chignon bas élégant')).toBeOnTheScreen();
+    expect(screen.getAllByText('Parfait pour l’occasion')).toHaveLength(2);
+    expect(screen.getByText('Bonne mine au travail')).toBeOnTheScreen();
+    expect(api.look).toHaveBeenCalledWith('o1');
+
+    // Only the hairstyle has a second idea.
+    const another = screen.getAllByRole('button', { name: 'Autre idée' });
+    expect(another).toHaveLength(1);
+    await fireEvent.press(another[0]!);
+    expect(await screen.findByText('Demi-queue')).toBeOnTheScreen();
+
+    // Her hair is unknown: the preferences can tell more.
+    await press('Mes préférences');
+    expect(router.push).toHaveBeenCalledWith('/preferences');
+  });
+
+  it('shows a Premium teaser on the free plan, without asking the API', async () => {
+    mockParams = { id: 'o1' };
+    api.get.mockResolvedValue(outfit('o1'));
+    jest.mocked(billingApi.status).mockResolvedValue(billingStatus());
+    await renderWithProviders(<OutfitDetailsScreen />);
+
+    expect(await screen.findByText('Inclus dans Premium')).toBeOnTheScreen();
+    await press('Découvrir Premium');
+    expect(router.push).toHaveBeenCalledWith('/premium');
+    expect(api.look).not.toHaveBeenCalled();
   });
 });
 

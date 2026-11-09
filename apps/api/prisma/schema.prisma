@@ -171,6 +171,9 @@ model StyleProfile {
   preferredFormality  Int?
   minLength           String?
   avoidsDeepNeckline  Boolean?
+  hairLength          String?
+  hairTexture         String?
+  makeupPreference    String?
   onboardedAt         DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

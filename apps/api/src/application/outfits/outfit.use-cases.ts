@@ -1,6 +1,7 @@
 import {
   OUTFIT_ALTERNATIVES_MAX,
   styleProfileSchema,
+  type CompleteLook,
   type GenerateOutfitsRequest,
   type Outfit as OutfitDto,
   type OutfitAlternative,
@@ -30,6 +31,7 @@ import type {
   OutfitWearRecord,
   StoredOutfit,
 } from '../../domain/outfits/ports/outfit.repository';
+import { suggestCompleteLook } from '../../domain/looks/look-suggester';
 import { highlightsOf } from '../../domain/outfits/scoring/highlights';
 import { scoreOutfit } from '../../domain/outfits/scoring/outfit-score';
 import { filterCandidates } from '../../domain/outfits/services/outfit-candidate-filter';
@@ -293,6 +295,26 @@ export class CreateOutfitsUseCase {
       outfitId: saved[0]!.id,
     });
     return this.workshop.present(saved, items);
+  }
+}
+
+/** "Le look complet" (Premium): a hairstyle and a makeup look for the look. */
+export class GetCompleteLookUseCase {
+  constructor(
+    private readonly workshop: OutfitWorkshop,
+    private readonly plans: PlanGate = NO_LIMITS,
+  ) {}
+
+  async execute(userId: string, id: string): Promise<CompleteLook> {
+    await this.plans.assertPremium(userId);
+    const outfit = await this.workshop.ownedOutfit(userId, id);
+    const items = await this.workshop.wardrobe.findAllOwned(userId);
+    const context = await this.workshop.context(userId, outfit, items);
+    return suggestCompleteLook(
+      outfit.id,
+      this.workshop.lookOf(outfit, items),
+      context,
+    );
   }
 }
 

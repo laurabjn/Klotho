@@ -18,6 +18,7 @@ import {
   CreateOutfitsUseCase,
   CreateOutfitVariantUseCase,
   DeleteOutfitUseCase,
+  GetCompleteLookUseCase,
   GetOutfitUseCase,
   ListOutfitAlternativesUseCase,
   OutfitWorkshop,
@@ -115,6 +116,12 @@ const useCases = [
         notifier: Notifier,
         plans: PlanGate,
       ) => new CreateOutfitsUseCase(workshop, notifier, plans),
+    },
+    {
+      provide: GetCompleteLookUseCase,
+      inject: [OutfitWorkshop, PLAN_GATE],
+      useFactory: (workshop: OutfitWorkshop, plans: PlanGate) =>
+        new GetCompleteLookUseCase(workshop, plans),
     },
     {
       provide: ListOutfitHistoryUseCase,

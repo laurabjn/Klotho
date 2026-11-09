@@ -1,10 +1,16 @@
 import {
   BOTTOM_PREFERENCES,
+  HAIR_LENGTHS,
+  HAIR_TEXTURES,
   LENGTHS,
+  MAKEUP_PREFERENCES,
   SEASONS,
   type BottomPreference,
   type ColorKey,
+  type HairLength,
+  type HairTexture,
   type Length,
+  type MakeupPreference,
   type Season,
   type StyleProfileFields,
 } from '@klotho/shared';
@@ -286,6 +292,60 @@ export function AdvancedSection({ value, onChange }: SectionProps) {
           }
           onChange={(choice) =>
             onChange({ ...value, avoidsDeepNeckline: fromTriState(choice) })
+          }
+        />
+      </Section>
+    </>
+  );
+}
+
+/** Only in the preferences screen: what "Le look complet" needs to know. */
+export function HairMakeupSection({ value, onChange }: SectionProps) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <Section
+        title={t('preferences.hairLength')}
+        note={t('preferences.optional')}
+        hint={t('preferences.hairMakeupHint')}
+      >
+        <ChipGroup<HairLength>
+          allowNone
+          testIDPrefix="hair-length"
+          options={HAIR_LENGTHS.map((length) => ({
+            value: length,
+            label: t(`preferences.hairLengths.${length}`),
+          }))}
+          value={value.hairLength}
+          onChange={(hairLength) => onChange({ ...value, hairLength })}
+        />
+      </Section>
+      <Section
+        title={t('preferences.hairTexture')}
+        note={t('preferences.optional')}
+      >
+        <ChipGroup<HairTexture>
+          allowNone
+          testIDPrefix="hair-texture"
+          options={HAIR_TEXTURES.map((texture) => ({
+            value: texture,
+            label: t(`preferences.hairTextures.${texture}`),
+          }))}
+          value={value.hairTexture}
+          onChange={(hairTexture) => onChange({ ...value, hairTexture })}
+        />
+      </Section>
+      <Section title={t('preferences.makeup')} note={t('preferences.optional')}>
+        <ChipGroup<MakeupPreference>
+          allowNone
+          testIDPrefix="makeup"
+          options={MAKEUP_PREFERENCES.map((preference) => ({
+            value: preference,
+            label: t(`preferences.makeups.${preference}`),
+          }))}
+          value={value.makeupPreference}
+          onChange={(makeupPreference) =>
+            onChange({ ...value, makeupPreference })
           }
         />
       </Section>

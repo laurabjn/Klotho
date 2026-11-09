@@ -32,6 +32,9 @@ export const DEMO_PROFILE: StyleProfileInput = {
   preferredFormality: 3,
   minLength: 'knee',
   avoidsDeepNeckline: null,
+  hairLength: 'long',
+  hairTexture: 'wavy',
+  makeupPreference: 'any',
 };
 
 export const DEMO_CITY: City = {

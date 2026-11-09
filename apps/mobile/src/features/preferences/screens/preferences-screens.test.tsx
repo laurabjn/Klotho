@@ -222,6 +222,29 @@ describe('PreferencesScreen', () => {
     expect(screen.getByText('Ma colorimétrie')).toBeOnTheScreen();
   });
 
+  it('saves her hair and her taste for makeup', async () => {
+    api.get.mockResolvedValue(saved());
+    api.save.mockImplementation((profile) =>
+      Promise.resolve(saved(profile as Partial<StyleProfile>)),
+    );
+    await renderWithProviders(<PreferencesScreen />);
+
+    await fireEvent.press(await screen.findByTestId('hair-length-long'));
+    await fireEvent.press(screen.getByTestId('hair-texture-curly'));
+    await fireEvent.press(screen.getByTestId('makeup-light'));
+    await press('Enregistrer');
+
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    await waitForIdle();
+    expect(api.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hairLength: 'long',
+        hairTexture: 'curly',
+        makeupPreference: 'light',
+      }),
+    );
+  });
+
   it('offers to go back to the top once scrolled down', async () => {
     api.get.mockResolvedValue(saved());
     await renderWithProviders(<PreferencesScreen />);

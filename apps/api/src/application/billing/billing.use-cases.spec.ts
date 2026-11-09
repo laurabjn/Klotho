@@ -1,6 +1,7 @@
 import {
   GenerationLimitReachedError,
   PieceLimitReachedError,
+  PremiumRequiredError,
   StoreUnavailableError,
 } from '../../domain/billing/errors';
 import { InMemoryAiUsageRepository } from '../../testing/ai-fakes';
@@ -73,6 +74,24 @@ describe('Billing', () => {
 
     it('shows the history of the last 7 days', async () => {
       await expect(plans.historyFrom(LAURA)).resolves.toBe('2026-09-25');
+    });
+
+    it('keeps the Premium features for paid plans', async () => {
+      await expect(plans.assertPremium(LAURA)).rejects.toBeInstanceOf(
+        PremiumRequiredError,
+      );
+
+      billing.entitlements.set(LAURA, {
+        plan: 'founders',
+        productId: 'klotho_founders',
+        expiresAt: null,
+      });
+      await expect(plans.assertPremium(LAURA)).resolves.toBeUndefined();
+    });
+
+    it('opens the Premium features to everyone while payments are off', async () => {
+      build({ ...SETTINGS, enabled: false });
+      await expect(plans.assertPremium(LAURA)).resolves.toBeUndefined();
     });
 
     it('lifts every limit while payments are off (beta)', async () => {
