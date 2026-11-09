@@ -65,7 +65,7 @@ for suffix, (title, sub) in FEATURE.items():
 
 HOOKS = {
     'a': ('Ton dressing, en douceur', 'Ta tenue du jour, sans y passer la matinée.'),
-    'b': ('Ta tenue du jour', 'Rien à te mettre ? Ton dressing a déjà la réponse.'),
+    'b': ('Ta tenue du jour', 'Rien à te mettre ? Ton dressing a déjà la réponse.'),
 }
 CTAS = {'bientot': 'Bientôt sur Google Play', 'disponible': 'Disponible sur Google Play'}
 SUB = 'Klotho range ta garde-robe et compose des tenues selon la météo, ton style et l’occasion.'
@@ -107,6 +107,43 @@ for key, (over, title) in HOOKS.items():
 <img class="art" src="{SRC}/hero.png" style="right:10px;top:500px;height:800px">
 <div style="position:absolute;left:0;right:0;bottom:60px;text-align:center">
   <p class="pill" style="font-size:30px;padding:20px 46px">{cta}</p>
+</div>
+""")
+
+
+# Google Ads app campaign: landscape, square and portrait, once the app is live.
+for key, (over, title) in HOOKS.items():
+    cta = CTAS['disponible']
+    VISUALS[f'ads/google-paysage-{key}-1200x628'] = (1200, 628, f"""
+<div style="position:absolute;left:72px;top:64px;width:600px">
+  {logo(40)}
+  <p class="over" style="font-size:16px;margin-top:34px">{over}</p>
+  <h1 style="font-size:54px;margin:14px 0 16px">{title}</h1>
+  <p style="font-size:20px;line-height:1.45;width:520px">{SUB}</p>
+  <p class="pill" style="font-size:20px;padding:14px 28px;margin-top:26px">{cta}</p>
+</div>
+<img class="art" src="{SRC}/hero.png" style="right:48px;top:24px;height:580px">
+""")
+    VISUALS[f'ads/google-carre-{key}-1200x1200'] = (1200, 1200, f"""
+<div style="position:absolute;left:92px;top:92px">{logo(50)}</div>
+<div style="position:absolute;left:92px;top:250px;width:560px">
+  <p class="over" style="font-size:21px">{over}</p>
+  <h1 style="font-size:78px;margin:22px 0 26px">{title}</h1>
+  <p style="font-size:28px;line-height:1.45;width:450px">{SUB}</p>
+  <p class="pill" style="font-size:30px;padding:22px 42px;margin-top:42px">{cta}</p>
+</div>
+<img class="art" src="{SRC}/hero.png" style="right:24px;bottom:66px;height:730px">
+""")
+    VISUALS[f'ads/google-portrait-{key}-1200x1500'] = (1200, 1500, f"""
+<div style="position:absolute;left:0;right:0;top:90px;text-align:center;padding:0 110px">
+  <div style="display:flex;justify-content:center">{logo(56)}</div>
+  <p class="over" style="font-size:22px;margin-top:44px">{over}</p>
+  <h1 style="font-size:88px;margin:20px 0 24px">{title}</h1>
+  <p style="font-size:30px;line-height:1.45">{SUB}</p>
+</div>
+<img class="art" src="{SRC}/hero.png" style="left:50%;transform:translateX(-50%);bottom:170px;height:780px">
+<div style="position:absolute;left:0;right:0;bottom:80px;text-align:center">
+  <p class="pill" style="font-size:32px;padding:22px 48px">{cta}</p>
 </div>
 """)
 
