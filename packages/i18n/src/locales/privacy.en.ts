@@ -1,7 +1,7 @@
 import type { TranslationResource } from './fr';
 
 export const privacyEn: TranslationResource['privacy'] = {
-  title: 'Privacy',
+  title: 'Privacy policy',
   overline: 'Your data, your control',
   intro:
     'Klotho only keeps what it needs to put your outfits together. Nothing is sold or used for advertising.',
@@ -33,11 +33,11 @@ export const privacyEn: TranslationResource['privacy'] = {
     },
     rights: {
       title: 'Your rights',
-      body: 'You can access, correct, retrieve or erase your data, and object to its use. Write to klotho.app.contact@gmail.com. You can also contact your data protection authority.',
+      body: 'You can access, correct, retrieve or erase your data, and object to its use. Write to contact@dressingklotho.fr. You can also contact your data protection authority.',
     },
     legal: {
       title: 'Legal notice',
-      body: 'Publisher: Laura Bojon EI, sole trader (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact: klotho.app.contact@gmail.com. Publication director: Laura Bojon. Host: Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, United States.',
+      body: 'Publisher: Laura Bojon EI, sole trader (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact: contact@dressingklotho.fr. Publication director: Laura Bojon. Host: Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, United States.',
     },
   },
   deletePage: {

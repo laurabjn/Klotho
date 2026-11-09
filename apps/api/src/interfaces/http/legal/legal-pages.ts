@@ -82,12 +82,12 @@ function content(page: LegalPage, locale: Locale, contactEmail: string) {
 
 const LINKS: Record<Locale, Record<LegalPage, string>> = {
   fr: {
-    privacy: 'Confidentialité',
+    privacy: 'Politique de confidentialité',
     terms: 'Conditions générales',
     'delete-account': 'Suppression de compte',
   },
   en: {
-    privacy: 'Privacy',
+    privacy: 'Privacy policy',
     terms: 'Terms of use',
     'delete-account': 'Account deletion',
   },
