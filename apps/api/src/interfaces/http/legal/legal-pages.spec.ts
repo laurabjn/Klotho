@@ -162,6 +162,18 @@ describe('website pages', () => {
     );
   });
 
+  it('names the privacy policy as such, with the contact address', () => {
+    const fr = renderLegalPage('privacy', 'fr', SITE);
+    const en = renderLegalPage('privacy', 'en', SITE);
+
+    expect(fr).toContain(
+      '<title>Politique de confidentialité · Klotho</title>',
+    );
+    expect(fr).toContain('contact@dressingklotho.fr');
+    expect(en).toContain('<title>Privacy policy · Klotho</title>');
+    expect(fr).not.toContain('gmail.com');
+  });
+
   it('shows the same banner on the legal pages', () => {
     const html = renderLegalPage('privacy', 'en', { ...SITE, pixels: PIXELS });
 

@@ -1,7 +1,7 @@
 // Privacy policy, legal notices and account deletion (Moi → Confidentialité).
 // The [bracketed] fields are to be completed by the publisher before release.
 export const privacyFr = {
-  title: 'Confidentialité',
+  title: 'Politique de confidentialité',
   overline: 'Tes données, ton contrôle',
   intro:
     'Klotho ne garde que ce qui sert à composer tes tenues. Rien n’est vendu ni utilisé pour de la publicité.',
@@ -33,11 +33,11 @@ export const privacyFr = {
     },
     rights: {
       title: 'Tes droits',
-      body: 'Tu peux accéder à tes données, les corriger, les récupérer ou les effacer, et t’opposer à leur utilisation. Écris à klotho.app.contact@gmail.com. Tu peux aussi saisir la CNIL (cnil.fr).',
+      body: 'Tu peux accéder à tes données, les corriger, les récupérer ou les effacer, et t’opposer à leur utilisation. Écris à contact@dressingklotho.fr. Tu peux aussi saisir la CNIL (cnil.fr).',
     },
     legal: {
       title: 'Mentions légales',
-      body: 'Éditrice : Laura Bojon EI, entrepreneuse individuelle (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact : klotho.app.contact@gmail.com. Directrice de la publication : Laura Bojon. Hébergeur : Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis.',
+      body: 'Éditrice : Laura Bojon EI, entrepreneuse individuelle (micro-entreprise), SIRET 989 670 385 00016, 39 rue du Réduit, 33520 Bruges, France. Contact : contact@dressingklotho.fr. Directrice de la publication : Laura Bojon. Hébergeur : Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis.',
     },
   },
   deletePage: {
