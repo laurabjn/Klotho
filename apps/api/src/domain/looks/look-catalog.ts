@@ -1,4 +1,5 @@
 import type {
+  ColorFamily,
   HairLength,
   HairTexture,
   Hairstyle,
@@ -30,6 +31,8 @@ export interface MakeupTraits {
   styles: readonly Style[];
   /** Long-wearing: fine under rain and on the move. */
   holds: boolean;
+  /** A colourful look, best when it echoes a colour of the outfit. */
+  echoes?: readonly ColorFamily[];
 }
 
 const ALL: readonly HairLength[] = ['short', 'medium', 'long'];
@@ -305,5 +308,45 @@ export const MAKEUP_TRAITS: Record<MakeupLook, MakeupTraits> = {
     formality: [3, 5],
     styles: ['victorian', 'romantic'],
     holds: false,
+  },
+  coloredLiner: {
+    intensity: 2,
+    tone: 'cool',
+    formality: [1, 4],
+    styles: ['y2k', 'artsy', 'streetwear', 'rock', 'casual'],
+    holds: false,
+    echoes: ['blues', 'greens', 'purples'],
+  },
+  pastelEyes: {
+    intensity: 2,
+    tone: 'cool',
+    formality: [1, 4],
+    styles: ['romantic', 'coquette', 'cottagecore', 'y2k', 'artsy'],
+    holds: false,
+    echoes: ['purples', 'greens', 'blues'],
+  },
+  sunsetEyes: {
+    intensity: 3,
+    tone: 'warm',
+    formality: [2, 5],
+    styles: ['boho', 'evening', 'glamour', 'artsy'],
+    holds: false,
+    echoes: ['warm', 'pinksAndReds'],
+  },
+  brightLips: {
+    intensity: 3,
+    tone: 'neutral',
+    formality: [2, 5],
+    styles: ['artsy', 'y2k', 'chic', 'streetwear', 'evening'],
+    holds: false,
+    echoes: ['pinksAndReds', 'warm'],
+  },
+  jewelEyes: {
+    intensity: 3,
+    tone: 'cool',
+    formality: [3, 5],
+    styles: ['evening', 'glamour', 'artsy', 'rock'],
+    holds: false,
+    echoes: ['greens', 'blues', 'purples'],
   },
 };

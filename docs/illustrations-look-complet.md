@@ -1,6 +1,6 @@
 # Illustrations du look complet
 
-40 illustrations, une par coiffure et par maquillage. Tant qu'une image
+45 illustrations, une par coiffure et par maquillage. Tant qu'une image
 manque, l'application affiche une icône à la place : on peut les ajouter au
 fur et à mesure.
 
@@ -73,3 +73,8 @@ visibles.
 | `y2kGloss`       | lèvres très brillantes au gloss rosé, paupières pailletées     |
 | `glitter`        | paillettes dorées sur les paupières, lèvres nude               |
 | `victorianPale`  | teint de porcelaine, joues rosées, lèvres rouge sombre estompé |
+| `coloredLiner`   | trait d'eye-liner bleu électrique au ras des cils              |
+| `pastelEyes`     | paupières lilas et menthe pastel, lumineuses                   |
+| `sunsetEyes`     | dégradé orange, rose et doré sur les paupières                 |
+| `brightLips`     | lèvres fuchsia vif, teint léger                                |
+| `jewelEyes`      | paupières émeraude irisées, effet pierre précieuse             |
