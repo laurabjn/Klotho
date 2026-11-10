@@ -58,6 +58,20 @@ describe('website pages', () => {
     expect(html).not.toContain('Gérer les cookies');
   });
 
+  it('shows the complete look: the video in French, the illustrations in English', () => {
+    const fr = renderHomePage('fr', SITE);
+    const en = renderHomePage('en', SITE);
+
+    expect(fr).toContain('id="look"');
+    expect(fr).toContain(
+      '<video src="/site/look-complet.mp4" poster="/site/look-complet.webp"',
+    );
+    expect(fr).toContain('autoplay muted loop playsinline');
+    expect(en).toContain('The complete look');
+    expect(en).toContain('/site/look-complet-en.webp');
+    expect(en).not.toContain('<video');
+  });
+
   it('links to the Play Store once the app is live, with the campaign', () => {
     const html = renderHomePage(
       'fr',

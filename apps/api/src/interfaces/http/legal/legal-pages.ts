@@ -171,6 +171,14 @@ section.block h2 { font-size: clamp(32px, 4vw, 44px); text-align: center; margin
 .card h3 { font-size: 24px; margin: 16px 0 6px; }
 .card p { margin: 0; }
 .how { background: #F7EDE6; }
+.look .wrap { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+.look h2 { text-align: left !important; margin-bottom: 16px !important; }
+.look ul { padding-left: 20px; margin: 20px 0 0; }
+.look li { margin-bottom: 8px; }
+.look figure { margin: 0; justify-self: center; width: min(100%, 340px); }
+.look video, .look figure img { width: 100%; aspect-ratio: 9 / 16; height: auto;
+  border-radius: 28px;
+  box-shadow: 0 24px 48px rgba(62, 35, 28, .22); background: #F9F0EA; object-fit: cover; }
 .how .wrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: center; }
 .how h2, .privacy h2 { text-align: left !important; }
 .privacy h2 { margin-bottom: 16px !important; }
@@ -235,7 +243,7 @@ footer.bottom .copy { margin-left: auto; }
 }
 @media (max-width: 860px) {
   .bar .pill { display: none; }
-  .hero .wrap, .how .wrap, .privacy .wrap { grid-template-columns: 1fr; }
+  .hero .wrap, .how .wrap, .privacy .wrap, .look .wrap { grid-template-columns: 1fr; }
   .hero .wrap { padding-top: 40px; }
   .hero figure { max-width: 380px; margin: 0 auto !important; }
   .grid, .plans { grid-template-columns: minmax(0, 1fr); }
@@ -377,6 +385,31 @@ export function renderSitemap(): string {
 ${urls.join('\n')}
 </urlset>
 `;
+}
+
+/**
+ * "Le look complet": the video of the app in French (its texts are French),
+ * the illustrations alone in English. Muted and looping, so no script.
+ */
+function lookSection(locale: Locale): string {
+  const t = resources[locale].translation.site.look;
+  const media =
+    locale === 'fr'
+      ? `<video src="/site/look-complet.mp4" poster="/site/look-complet.webp" width="540" height="960" autoplay muted loop playsinline preload="metadata" aria-label="${escape(t.alt)}"></video>`
+      : `<img src="/site/look-complet-en.webp" alt="${escape(t.alt)}" width="540" height="960" loading="lazy">`;
+  return `<section class="block look" id="look">
+  <div class="wrap">
+    <div>
+      <span class="overline">${escape(t.overline)}</span>
+      <h2>${escape(t.title)}</h2>
+      <p>${escape(t.body)}</p>
+      <ul>
+${t.points.map((point) => `        <li>${escape(point)}</li>`).join('\n')}
+      </ul>
+    </div>
+    <figure>${media}</figure>
+  </div>
+</section>`;
 }
 
 /** The plans, with the wording and the prices of the Premium screen. */
@@ -545,6 +578,7 @@ ${steps}
     </div>
   </div>
 </section>
+${lookSection(locale)}
 ${site.offer ? pricingSection(locale, site.offer, now) : ''}<section class="block privacy" id="privacy">
   <div class="wrap">
     <div>
