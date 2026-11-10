@@ -6,9 +6,10 @@ import {
   NotFoundException,
   Param,
   Query,
+  Req,
   Res,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { isSupportedLocale, type Locale } from '@klotho/i18n';
 
 import { Public } from '../auth/public.decorator';
@@ -19,7 +20,7 @@ import {
   renderSitemap,
   type LegalPage,
 } from './legal-pages';
-import { siteAsset } from './site-assets';
+import { byteRange, siteAsset } from './site-assets';
 import type { SiteSettings } from './site-tracking';
 
 export const SITE_SETTINGS = Symbol('SiteSettings');
@@ -75,8 +76,12 @@ export class LegalController {
   /** Logo and illustrations of the website (fixed list). */
   @Public()
   @Get('site/:file')
-  asset(@Param('file') file: string, @Res() res: Response): void {
-    sendAsset(file, res);
+  asset(
+    @Param('file') file: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): void {
+    sendAsset(file, res, req.headers.range);
   }
 
   /** Fonts of the website (fixed list). */
@@ -87,11 +92,26 @@ export class LegalController {
   }
 }
 
-function sendAsset(name: string, res: Response): void {
+function sendAsset(name: string, res: Response, range?: string): void {
   const found = siteAsset(name);
   if (!found) throw new NotFoundException();
   res
     .type(found.contentType)
     .set('Cache-Control', 'public, max-age=604800')
-    .send(found.body);
+    .set('Accept-Ranges', 'bytes');
+  // Safari only plays a video served in parts ("Range: bytes=0-1").
+  const part = range && byteRange(range, found.body.length);
+  if (part === null) {
+    res.status(416).set('Content-Range', `bytes */${found.body.length}`).end();
+    return;
+  }
+  if (part) {
+    const [start, end] = part;
+    res
+      .status(206)
+      .set('Content-Range', `bytes ${start}-${end}/${found.body.length}`)
+      .send(found.body.subarray(start, end + 1));
+    return;
+  }
+  res.send(found.body);
 }

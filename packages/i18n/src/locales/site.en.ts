@@ -62,6 +62,17 @@ export const siteEn: TranslationResource['site'] = {
       body: 'Every day, ideas for the weather and the occasion, to keep as a favourite or to plan.',
     },
   ],
+  look: {
+    overline: 'New · Premium',
+    title: 'The complete look',
+    body: 'For each outfit, Klotho also suggests a matching hairstyle and makeup look, with an illustration and the steps to do it.',
+    points: [
+      '25 hairstyles and 20 makeup looks, including colourful ones',
+      'For the weather, the occasion and the style of the outfit',
+      'Made for your hair and your taste for makeup',
+    ],
+    alt: 'Illustrations of hairstyles and makeup looks suggested by Klotho.',
+  },
   pricing: {
     title: 'Free to start, unlimited if you like',
     freePrice: '€0',

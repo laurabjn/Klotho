@@ -61,6 +61,17 @@ export const siteFr = {
       body: 'Chaque jour, des propositions selon la météo et l’occasion, à garder en favori ou à planifier.',
     },
   ],
+  look: {
+    overline: 'Nouveau · Premium',
+    title: 'Le look complet',
+    body: 'Pour chaque tenue, Klotho te propose aussi une coiffure et un maquillage assortis, avec une illustration et les gestes pour les réaliser.',
+    points: [
+      '25 coiffures et 20 maquillages, dont des looks colorés',
+      'Selon la météo, l’occasion et le style de la tenue',
+      'Pensé pour tes cheveux et ton envie de maquillage',
+    ],
+    alt: 'Le look complet dans l’application Klotho : une coiffure et un maquillage proposés pour la tenue du jour.',
+  },
   pricing: {
     title: 'Gratuit pour commencer, sans limite si tu veux',
     freePrice: '0 €',
