@@ -159,9 +159,50 @@ ces 15 pièces. Change la saison selon la date de tournage.
 **Légende :** Le test de la garde-robe capsule avec mon appli. Tu ferais quelles
 15 pièces ? `#capsulewardrobe #garderobecapsule #modedurable`
 
+### 9. Le look complet
+
+**Accroche à l'écran :** Mon appli choisit aussi ma coiffure et mon maquillage
+
+| Temps   | Image                                               | Texte à l'écran               |
+| ------- | --------------------------------------------------- | ----------------------------- |
+| 0-2 s   | Toi, cheveux pas coiffés, sans maquillage           | L'accroche                    |
+| 2-5 s   | L'écran de la tenue du jour dans Klotho             | La tenue : ok                 |
+| 5-9 s   | Tu fais défiler jusqu'au bloc « Le look complet »   | Et la coiffure ? Le make-up ? |
+| 9-12 s  | Gros plan sur les deux idées et leurs illustrations | Selon la météo et l'occasion  |
+| 12-18 s | Tu te coiffes et te maquilles en accéléré           | Je suis l'idée                |
+| 18-22 s | Le look final, tenue + coiffure + maquillage        | Le look complet ✿             |
+
+Tourne un jour de pluie ou pour une occasion (soirée, travail) : la raison
+affichée sous l'idée (« Tient bien sous la pluie »…) rend la vidéo plus
+crédible. Le bloc est réservé à Premium : filme avec ton compte.
+
+**Légende :** Je laisse mon appli décider de tout, même de ma coiffure. Tu
+testerais ? `#grwm #getreadywithme #coiffurefacile #maquillagedujour`
+
+### 10. Le maquillage assorti à la tenue
+
+**Accroche à l'écran :** Une tenue colorée = un maquillage coloré ?
+
+| Temps   | Image                                           | Texte à l'écran                      |
+| ------- | ----------------------------------------------- | ------------------------------------ |
+| 0-2 s   | Une pièce de couleur vive tenue devant toi      | L'accroche                           |
+| 2-5 s   | Préférences : tu coches « J'adore la couleur »  | J'adore la couleur                   |
+| 5-9 s   | La tenue dans Klotho, puis le bloc maquillage   | Il me propose…                       |
+| 9-11 s  | Gros plan sur la raison                         | « Rappelle une couleur de ta tenue » |
+| 11-17 s | Tu te maquilles en accéléré                     | On tente                             |
+| 17-21 s | Le look final, la couleur de la tenue en rappel | Validé ou pas ?                      |
+
+Choisis une pièce bleue, verte ou violette : Klotho propose alors un
+eye-liner coloré, des paupières pastel ou les pierres précieuses.
+
+**Légende :** Mon appli m'a proposé un maquillage assorti à ma tenue. Validé ou
+pas ? `#maquillagecolore #makeuplook #grwm #ideetenue`
+
 ## Publier
 
-- **Ordre conseillé :** 1, 5, 3, puis la série 2 si l'une des trois a plu.
+- **Ordre conseillé :** 1, 5, 3, puis la série 2 si l'une des trois a plu. Le
+  9 et le 10 présentent la nouveauté de la 1.1.0 : glisse-les dès la première
+  semaine.
 - **Rythme :** 3 vidéos par semaine pendant un mois, puis garde les formats qui
   retiennent le mieux.
 - **Mesure :** regarde la part de personnes qui vont jusqu'au bout, les partages
